@@ -112,10 +112,10 @@ static void ssv6006c_sec_lut_setting(struct ssv_hw *sh)
     u8 lut_sel = 1;
     sh->sc->ccmp_h_sel = 1;
     if (sh->cfg.hw_caps & SSV6200_HW_CAP_AMPDU_TX) {
-        printk("Support AMPDU TX mode, ccmp header source must from SW\n");
+        dev_dbg(sh->sc->dev, "Support AMPDU TX mode, ccmp header source must from SW\n");
         sh->sc->ccmp_h_sel = 1;
     }
-    printk("CCMP header source from %s, Security LUT version V%d\n", (sh->sc->ccmp_h_sel == 1) ? "SW" : "LUT", lut_sel+1);
+    dev_dbg(sh->sc->dev, "CCMP header source from %s, Security LUT version V%d\n", (sh->sc->ccmp_h_sel == 1) ? "SW" : "LUT", lut_sel+1);
     SMAC_REG_SET_BITS(sh, ADR_GLBLE_SET, (sh->sc->ccmp_h_sel << 22), 0x400000);
     SMAC_REG_SET_BITS(sh, ADR_GLBLE_SET, (lut_sel << 23), 0x800000);
 }
@@ -155,7 +155,7 @@ static int ssv6006c_init_mac(struct ssv_hw *sh)
         SMAC_REG_READ(sh, ADR_BRG_SW_RST, & regval);
         i ++;
         if (i >10000) {
-            printk("MAC reset fail !!!!\n");
+            dev_dbg(sc->dev, "MAC reset fail !!!!\n");
             WARN_ON(1);
             ret = 1;
             goto exit;
@@ -184,7 +184,7 @@ static int ssv6006c_init_mac(struct ssv_hw *sh)
         SET_PRESCALER_US(40);
         break;
     default:
-        printk("digi clk is invalid for mac!!!!\n");
+        dev_dbg(sc->dev, "digi clk is invalid for mac!!!!\n");
         goto exit;
     }
     ret = HAL_WRITE_MAC_INI(sh);
@@ -197,7 +197,7 @@ static int ssv6006c_init_mac(struct ssv_hw *sh)
             regval &= HCI_RX_LEN_I_MSK;
             i++;
             if (i > 10000) {
-                printk("CANNOT ENABLE HCI RX AGGREGATION!!!\n");
+                dev_dbg(sc->dev, "CANNOT ENABLE HCI RX AGGREGATION!!!\n");
                 WARN_ON(1);
                 ret = 1;
                 goto exit;
@@ -279,7 +279,7 @@ static int ssv6006c_init_hw_sec_phy_table(struct ssv_softc *sc)
     *hw_buf_ptr = ssv6006c_alloc_pbuf(sc, SSV6006_HW_SEC_TABLE_SIZE
                                       , RX_BUF);
     if((*hw_buf_ptr >> 28) != 8) {
-        printk("opps allocate pbuf error\n");
+        dev_dbg(sc->dev, "opps allocate pbuf error\n");
         WARN_ON(1);
         ret = 1;
         goto exit;
@@ -329,7 +329,7 @@ static int ssv6006c_set_macaddr(struct ssv_hw *sh, int vif_idx)
             ret = SMAC_REG_WRITE(sh, ADR_STA_MAC1_1, *((u32 *)&sh->cfg.maddr[1][4]));
         break;
     default:
-        printk("Does not support set MAC address to HW for VIF %d\n", vif_idx);
+        dev_dbg(sh->sc->dev, "Does not support set MAC address to HW for VIF %d\n", vif_idx);
         ret = -1;
         break;
     }
@@ -353,7 +353,7 @@ static int ssv6006c_set_bssid(struct ssv_hw *sh, u8 *bssid, int vif_idx)
             ret = SMAC_REG_WRITE(sh, ADR_BSSID1_1, *((u32 *)&sc->bssid[1][4]));
         break;
     default:
-        printk("Does not support set BSSID to HW for VIF %d\n", vif_idx);
+        dev_dbg(sc->dev, "Does not support set BSSID to HW for VIF %d\n", vif_idx);
         ret = -1;
         break;
     }
@@ -389,7 +389,7 @@ static void ssv6006c_set_mrx_mode(struct ssv_hw *sh, u32 val)
     int retval = 0;
     skb = ssv_skb_alloc(sh->sc, HOST_CMD_HDR_LEN);
     if (!skb) {
-        printk("%s(): Fail to alloc cmd buffer.\n", __FUNCTION__);
+        dev_dbg(sh->sc->dev, "%s(): Fail to alloc cmd buffer.\n", __FUNCTION__);
     }
     skb_put(skb, HOST_CMD_HDR_LEN);
     host_cmd = (struct cfg_host_cmd *)skb->data;
@@ -400,7 +400,7 @@ static void ssv6006c_set_mrx_mode(struct ssv_hw *sh, u32 val)
     host_cmd->len = skb->len;
     retval = HCI_SEND_CMD(sh, skb);
     if (retval)
-        printk("%s(): Fail to send mrx mode\n", __FUNCTION__);
+        dev_dbg(sh->sc->dev, "%s(): Fail to send mrx mode\n", __FUNCTION__);
     ssv_skb_free(sh->sc, skb);
     SMAC_REG_WRITE(sh, ADR_MRX_FLT_TB13, val);
 }
@@ -457,7 +457,7 @@ static void ssv6006c_set_aes_tkip_hw_crypto_group_key (struct ssv_softc *sc,
     if (wsid == (-1))
         return;
     BUG_ON(key_idx == 0);
-    printk("Set CCMP/TKIP group key index %d to WSID %d.\n", key_idx, wsid);
+    dev_dbg(sc->dev, "Set CCMP/TKIP group key index %d to WSID %d.\n", key_idx, wsid);
     if (vif_info->vif_priv != NULL)
         dev_info(sc->dev, "Write group key index %d to VIF %d \n",
                  key_idx, vif_info->vif_priv->vif_idx);
@@ -564,7 +564,7 @@ static void ssv6006c_write_key_to_hw(struct ssv_softc *sc, struct ssv_vif_priv_d
         break;
     case SSV6XXX_WSID_SEC_GROUP:
         if(key_idx < 0) {
-            printk("invalid group key index %d.\n",key_idx);
+            dev_dbg(sc->dev, "invalid group key index %d.\n",key_idx);
             return;
         }
         ssv6006c_write_hw_group_keyidx(sc->sh, vif_priv, key_idx);
@@ -577,7 +577,7 @@ static void ssv6006c_write_key_to_hw(struct ssv_softc *sc, struct ssv_vif_priv_d
             SMAC_REG_WRITE(sc->sh, address+(i*4), *(pointer++));
         break;
     default:
-        printk(KERN_ERR "invalid key type %d.",key_type);
+        dev_dbg(sc->dev, "invalid key type %d.",key_type);
         break;
     }
 }
@@ -593,7 +593,7 @@ static void ssv6006c_set_pairwise_cipher_type(struct ssv_hw *sh, u8 cipher, u8 w
     temp = (temp & 0xffff00ff);
     temp |= (cipher << 8);
     SMAC_REG_WRITE(sh, address, temp);
-    printk(KERN_ERR "Set parewise key type %d\n", cipher);
+    dev_dbg(sh->sc->dev, "Set parewise key type %d\n", cipher);
 }
 static void ssv6006c_set_group_cipher_type(struct ssv_hw *sh, struct ssv_vif_priv_data *vif_priv, u8 cipher)
 {
@@ -606,7 +606,7 @@ static void ssv6006c_set_group_cipher_type(struct ssv_hw *sh, struct ssv_vif_pri
     temp = (temp & 0xffff00ff);
     temp |= (cipher << 8);
     SMAC_REG_WRITE(sh, address, temp);
-    printk(KERN_ERR "Set group key type %d\n", cipher);
+    dev_dbg(sh->sc->dev, "Set group key type %d\n", cipher);
 }
 #ifdef CONFIG_PM
 static void ssv6006c_save_clear_trap_reason(struct ssv_softc *sc)
@@ -616,7 +616,7 @@ static void ssv6006c_save_clear_trap_reason(struct ssv_softc *sc)
     SMAC_REG_READ(sc->sh, ADR_REASON_TRAP1, &trap1);
     SMAC_REG_WRITE(sc->sh, ADR_REASON_TRAP0, 0x00000000);
     SMAC_REG_WRITE(sc->sh, ADR_REASON_TRAP1, 0x00000000);
-    printk("trap0 %08x, trap1 %08x\n", trap0, trap1);
+    dev_dbg(sc->dev, "trap0 %08x, trap1 %08x\n", trap0, trap1);
     sc->trap_data.reason_trap0 = trap0;
     sc->trap_data.reason_trap1 = trap1;
 }
@@ -635,7 +635,7 @@ static void ssv6006c_pmu_awake(struct ssv_softc *sc)
         MDELAY(5);
         SMAC_REG_SET_BITS(sc->sh, ADR_FN1_INT_CTRL_RESET, (0<<24), 0x01000000);
     } else if (dev_type == SSV_HWIF_INTERFACE_USB) {
-        printk("ssv6006c_pmu_awake: USB TODO\n");
+        dev_dbg(sc->dev, "ssv6006c_pmu_awake: USB TODO\n");
     }
 #endif
 }
@@ -658,11 +658,11 @@ static void ssv6006c_store_wep_key(struct ssv_softc *sc, struct ssv_vif_priv_dat
                                    struct ssv_sta_priv_data *sta_priv, enum SSV_CIPHER_E cipher, struct ieee80211_key_conf *key)
 {
     if ((vif_priv->has_hw_decrypt == true) && (vif_priv->has_hw_encrypt == true)) {
-        printk("Store WEP key index %d to HW group_key[%d] of VIF %d\n", key->keyidx, key->keyidx,vif_priv->vif_idx);
+        dev_dbg(sc->dev, "Store WEP key index %d to HW group_key[%d] of VIF %d\n", key->keyidx, key->keyidx,vif_priv->vif_idx);
         ssv6006c_write_key_to_hw(sc, vif_priv, key->key, 0, key->keyidx, SSV6XXX_WSID_SEC_GROUP);
         ssv6xxx_foreach_vif_sta(sc, &sc->vif_info[vif_priv->vif_idx], ssv6006c_set_wep_hw_crypto_setting, key);
     } else
-        printk("Not support HW security\n");
+        dev_dbg(sc->dev, "Not support HW security\n");
 }
 static void ssv6006c_set_replay_ignore(struct ssv_hw *sh,u8 ignore)
 {
@@ -728,7 +728,7 @@ static void ssv6006c_set_op_mode(struct ssv_hw *sh, u32 op_mode, int vif_idx)
         SMAC_REG_SET_BITS(sh, ADR_OP_MODE1, op_mode, OP_MODE1_MSK);
         break;
     default:
-        printk("Does not support set OP mode to HW for VIF %d\n", vif_idx);
+        dev_dbg(sh->sc->dev, "Does not support set OP mode to HW for VIF %d\n", vif_idx);
         break;
     }
 }
@@ -832,12 +832,12 @@ static bool ssv6006c_free_pbuf(struct ssv_softc *sc, u32 pbuf_addr)
     u8 *p_tx_page_cnt = &sc->sh->page_count[PACKET_ADDR_2_ID(pbuf_addr)];
     while (ssv6006c_mcu_input_full(sc)) {
         if (failCount++ < 1000) continue;
-        printk("=============>ERROR!!MAILBOX Block[%d]\n", failCount);
+        dev_dbg(sc->dev, "=============>ERROR!!MAILBOX Block[%d]\n", failCount);
         return false;
     }
     mutex_lock(&sc->mem_mutex);
     regval = ((M_ENG_TRASH_CAN << HW_ID_OFFSET) |(pbuf_addr >> ADDRESS_OFFSET));
-    printk("[A] ssv6xxx_pbuf_free addr[%08x][%x]\n", pbuf_addr, regval);
+    dev_dbg(sc->dev, "[A] ssv6xxx_pbuf_free addr[%08x][%x]\n", pbuf_addr, regval);
     SMAC_REG_WRITE(sc->sh, ADR_CH0_TRIG_1, regval);
     if (*p_tx_page_cnt) {
         sc->sh->tx_page_available += *p_tx_page_cnt;
@@ -875,7 +875,7 @@ static u8 ssv6006c_read_efuse(struct ssv_hw *sh, u8 *pbuf)
             i++;
             udelay(100);
             if ( i > 10000) {
-                printk("EFUSE read error!!\n");
+                dev_dbg(sh->sc->dev, "EFUSE read error!!\n");
                 break;
             }
         }
@@ -945,7 +945,7 @@ static enum ssv6xxx_beacon_type ssv6006c_beacon_get_valid_cfg(struct ssv_hw *sh)
     else if(regval==0x1)
         return SSV6xxx_BEACON_1;
     else
-        printk("=============>ERROR!!drv_bcn_reg_available\n");
+        dev_dbg(sh->sc->dev, "=============>ERROR!!drv_bcn_reg_available\n");
     return SSV6xxx_BEACON_0;
 }
 static void ssv6006c_set_beacon_reg_lock(struct ssv_hw *sh, bool val)
@@ -998,7 +998,7 @@ static void ssv6006_send_soft_beacon_cmd(struct ssv_hw *sh, bool bEnable)
     int retval = 0;
     skb = ssv_skb_alloc(sh->sc, HOST_CMD_HDR_LEN);
     if (!skb) {
-        printk("%s(): Fail to alloc cmd buffer.\n", __FUNCTION__);
+        dev_dbg(sh->sc->dev, "%s(): Fail to alloc cmd buffer.\n", __FUNCTION__);
     }
     skb_put(skb, HOST_CMD_HDR_LEN);
     host_cmd = (struct cfg_host_cmd *)skb->data;
@@ -1009,7 +1009,7 @@ static void ssv6006_send_soft_beacon_cmd(struct ssv_hw *sh, bool bEnable)
     host_cmd->len = skb->len;
     retval = HCI_SEND_CMD(sh, skb);
     if (retval)
-        printk("%s(): Fail to send soft beacon cmd\n", __FUNCTION__);
+        dev_dbg(sh->sc->dev, "%s(): Fail to send soft beacon cmd\n", __FUNCTION__);
     ssv_skb_free(sh->sc, skb);
 }
 static bool ssv6006c_beacon_enable(struct ssv_softc *sc, bool bEnable)
@@ -1017,17 +1017,17 @@ static bool ssv6006c_beacon_enable(struct ssv_softc *sc, bool bEnable)
     u32 regval = 0;
     bool ret = 0;
     if (bEnable && !sc->beacon_usage) {
-        printk("[A] Reject to set beacon!!!. ssv6xxx_beacon_enable bEnable[%d] sc->beacon_usage[%d]\n",
+        dev_dbg(sc->dev, "[A] Reject to set beacon!!!. ssv6xxx_beacon_enable bEnable[%d] sc->beacon_usage[%d]\n",
                bEnable,sc->beacon_usage);
         sc->enable_beacon = BEACON_WAITING_ENABLED;
         return ret;
     }
     if((bEnable && (BEACON_ENABLED & sc->enable_beacon))||
        (!bEnable && !sc->enable_beacon)) {
-        printk("[A] ssv6xxx_beacon_enable bEnable[%d] and sc->enable_beacon[%d] are the same. no need to execute.\n",
+        dev_dbg(sc->dev, "[A] ssv6xxx_beacon_enable bEnable[%d] and sc->enable_beacon[%d] are the same. no need to execute.\n",
                bEnable,sc->enable_beacon);
         if(bEnable) {
-            printk("        Ignore enable beacon cmd!!!!\n");
+            dev_dbg(sc->dev, "        Ignore enable beacon cmd!!!!\n");
             return ret;
         }
     }
@@ -1513,7 +1513,7 @@ static void ssv6006c_cmd_loopback_start(struct ssv_hw *sh)
                 len = sizeof(struct ieee80211_hdr_3addr) + (len % 2000);
                 skb = ssv_skb_alloc(sc, len + tx_desc_size);
                 if (!skb) {
-                    printk("%s(): Fail to alloc lpbk buffer.\n", __FUNCTION__);
+                    dev_dbg(sc->dev, "%s(): Fail to alloc lpbk buffer.\n", __FUNCTION__);
                     goto out;
                 }
                 skb_put(skb, len + tx_desc_size);
@@ -2363,7 +2363,7 @@ static int ssv6006c_burst_read_reg(struct ssv_hw *sh, u32 *addr, u32 *buf, u8 re
         for (i = 0 ; i < reg_amount ; i++) {
             ret = SMAC_REG_READ(sh, addr[i], &buf[i]);
             if (ret != 0) {
-                printk("%s(): read 0x%08x failed.\n", __func__, addr[i]);
+                dev_dbg(sh->sc->dev, "%s(): read 0x%08x failed.\n", __func__, addr[i]);
                 break;
             }
         }
@@ -2380,7 +2380,7 @@ static int ssv6006c_burst_write_reg(struct ssv_hw *sh, u32 *addr, u32 *buf, u8 r
         for (i = 0 ; i < reg_amount ; i++) {
             ret = SMAC_REG_WRITE(sh, addr[i], buf[i]);
             if (ret != 0) {
-                printk("%s(): write 0x%08x failed.\n", __func__, addr[i]);
+                dev_dbg(sh->sc->dev, "%s(): write 0x%08x failed.\n", __func__, addr[i]);
                 break;
             }
         }
@@ -2467,7 +2467,7 @@ static int ssv6006c_reset_cpu(struct ssv_hw *sh)
         while(!GET_N10_STANDBY) {
             cnt++;
             if (cnt > 10) {
-                printk("Reset CPU failed! CPU can't enter standby\n");
+                dev_dbg(sh->sc->dev, "Reset CPU failed! CPU can't enter standby\n");
                 return -1;
             }
         }
@@ -2534,19 +2534,19 @@ static void ssv6006c_set_usb_lpm(struct ssv_softc *sc, u8 enable)
     int dev_type = HCI_DEVICE_TYPE(sc->sh->hci.hci_ctrl);
     int i = 0;
     if (dev_type != SSV_HWIF_INTERFACE_USB) {
-        printk("Not support set USB LPM for this model!!\n");
+        dev_dbg(sc->dev, "Not support set USB LPM for this model!!\n");
         return;
     }
     for(i=0 ; i<SSV6200_MAX_VIF ; i++) {
         if (sc->vif_info[i].vif == NULL)
             continue;
         if (sc->vif_info[i].vif->type == NL80211_IFTYPE_AP) {
-            printk("Force to disable USB LPM function due to exist AP interface\n");
+            dev_dbg(sc->dev, "Force to disable USB LPM function due to exist AP interface\n");
             SMAC_REG_SET_BITS(sc->sh, 0x70004008, (0 << 11), 0x800);
             return;
         }
     }
-    printk("Set USB LPM support to %d\n", enable);
+    dev_dbg(sc->dev, "Set USB LPM support to %d\n", enable);
     SMAC_REG_SET_BITS(sc->sh, 0x70004008, (enable << 11), 0x800);
 }
 static int ssv6006c_jump_to_rom(struct ssv_softc *sc)
@@ -2755,7 +2755,7 @@ static void ssv6006c_wait_usb_rom_ready(struct ssv_hw *sh)
             if (i > 100) break;
             mdelay(1);
         }
-        printk("wait %d ms for usb rom code ready\n", i);
+        dev_dbg(sh->sc->dev, "wait %d ms for usb rom code ready\n", i);
     }
 }
 static void ssv6006c_detach_usb_hci(struct ssv_hw *sh)
@@ -2898,32 +2898,32 @@ void ssv_attach_ssv6006(struct ssv_softc *sc, struct ssv_hal_ops *hal_ops)
     *((u32 *)&fpga_tag[0])= __be32_to_cpu(regval);
     fpga_tag[4] = 0x0;
     ic_time_tag = _ssv6006_get_ic_time_tag(sc);
-    printk(KERN_INFO"Load SSV6006 common code\n");
+    dev_dbg(sc->dev, "Load SSV6006 common code\n");
     ssv_attach_ssv6006_common(hal_ops);
     if (strstr(priv->chip_id, SSV6006C)
         || strstr(priv->chip_id, SSV6006D)) {
         ssv_attach_ssv6006c_mac(hal_ops);
-        printk(KERN_INFO"Load SSV6006C/D HAL MAC function \n");
+        dev_dbg(sc->dev, "Load SSV6006C/D HAL MAC function \n");
     }
 #ifdef SSV_SUPPORT_SSV6006AB
     else {
         ssv_attach_ssv6006_mac(hal_ops);
-        printk(KERN_INFO"Load SSV6006 HAL MAC function \n");
+        dev_dbg(sc->dev, "Load SSV6006 HAL MAC function \n");
     }
 #endif
     ssv_hwif_read_reg(sc, ADR_CHIP_TYPE_VER, &regval);
     chip_type = regval >>24;
-    printk(KERN_INFO"Chip type %x\n", chip_type);
+    dev_dbg(sc->dev, "Chip type %x\n", chip_type);
     if (chip_type == CHIP_TYPE_CHIP) {
-        printk(KERN_INFO"Load SSV6006 HAL common PHY function \n");
+        dev_dbg(sc->dev, "Load SSV6006 HAL common PHY function \n");
         ssv_attach_ssv6006_phy(hal_ops);
         if (strstr(priv->chip_id, SSV6006C)
             || strstr(priv->chip_id, SSV6006D)) {
-            printk(KERN_INFO"Load SSV6006C/D HAL BB-RF function \n");
+            dev_dbg(sc->dev, "Load SSV6006C/D HAL BB-RF function \n");
             ssv_attach_ssv6006_turismoC_BBRF(hal_ops);
 #ifdef SSV_SUPPORT_SSV6006AB
         } else {
-            printk(KERN_INFO"Load SSV6006 HAL shuttle BB-RF function \n");
+            dev_dbg(sc->dev, "Load SSV6006 HAL shuttle BB-RF function \n");
             ssv_attach_ssv6006_turismoB_BBRF(hal_ops);
 #endif
         }
@@ -2931,26 +2931,26 @@ void ssv_attach_ssv6006(struct ssv_softc *sc, struct ssv_hal_ops *hal_ops)
 #ifdef SSV_SUPPORT_SSV6006AB
     else {
         if (strstr(&fpga_tag[0], FPGA_PHY_5)) {
-            printk(KERN_INFO"Load SSV6006 HAL common PHY function \n");
+            dev_dbg(sc->dev, "Load SSV6006 HAL common PHY function \n");
             ssv_attach_ssv6006_phy(hal_ops);
             ssv_hwif_read_reg(sc, ADR_GEMINA_TRX_VER, &regval);
             if (regval == RF_GEMINA) {
-                printk(KERN_INFO"Load SSV6006 HAL GeminiA BB-RF function \n");
+                dev_dbg(sc->dev, "Load SSV6006 HAL GeminiA BB-RF function \n");
                 ssv_attach_ssv6006_geminiA_BBRF(hal_ops);
 #ifdef SSV_SUPPORT_TURISMOA
             } else {
                 ssv_hwif_read_reg(sc, ADR_GEMINA_TRX_VER, &regval);
                 if (regval == RF_TURISMOA) {
-                    printk(KERN_INFO"Load SSV6006 HAL TurismoA BB-RF function \n");
+                    dev_dbg(sc->dev, "Load SSV6006 HAL TurismoA BB-RF function \n");
                     ssv_attach_ssv6006_turismoA_BBRF(hal_ops);
                 }
 #endif
             }
 #ifdef SSV6006_SUPPORT_CABRIOA
         } else if (ic_time_tag == FPGA_PHY_4) {
-            printk(KERN_INFO"Load SSV6006 HAL common PHY function \n");
+            dev_dbg(sc->dev, "Load SSV6006 HAL common PHY function \n");
             ssv_attach_ssv6006_phy(hal_ops);
-            printk(KERN_INFO"Load SSV6006 HAL CabrioA BB-RF function \n");
+            dev_dbg(sc->dev, "Load SSV6006 HAL CabrioA BB-RF function \n");
             ssv_attach_ssv6006_cabrioA_BBRF(hal_ops);
 #endif
         }
