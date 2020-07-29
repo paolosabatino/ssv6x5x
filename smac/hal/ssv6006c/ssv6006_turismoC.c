@@ -59,7 +59,7 @@ static u32 ssv6006_turismoC_get_rf_table_size(struct ssv_hw *sh)
 static void _restore_cal (struct ssv_hw *sh)
 {
     int i, wifi_dc_addr;
-    PRINT("Restore calibration result\n");
+    dev_dbg(sh->sc->dev, "Restore calibration result");
     for (i = 0; i < 21; i++) {
         wifi_dc_addr = ADR_WF_DCOC_IDAC_REGISTER1+ (i << 2);
         REG32_W(wifi_dc_addr, sh->cal.rxdc_2g[i]);
@@ -113,7 +113,7 @@ static void ssv6006_turismoC_init_PLL(struct ssv_hw *sh)
         if (regval == 0x13)
             break;
         if (count > 100) {
-            PRINT(" PLL initial fails \r\n");
+            dev_dbg(sh->sc->dev, " PLL initial fails ");
             break;
         }
     } while (1);
@@ -274,10 +274,10 @@ static void _debug__2p4g_rxdc_cal(struct ssv_hw *sh)
             if(adc_out_sumQ>63) {
                 adc_out_sumQ -= 128;
             }
-            PRINT("lna gain is %d, pga gain is %d, ADC_OUT_I is %d, ADC_OUT_Q is %d\n",
+            dev_dbg(sh->sc->dev, "lna gain is %d, pga gain is %d, ADC_OUT_I is %d, ADC_OUT_Q is %d",
                   rg_rfg, rg_pgag, adc_out_sum_i, adc_out_sumQ);
         }
-        PRINT("------------------------------------------------------------\n");
+        dev_dbg(sh->sc->dev, "------------------------------------------------------------");
     }
     SET_RG_RX_GAIN_MANUAL(0);
 }
@@ -293,21 +293,18 @@ static void _turismoC_2p4g_rxdc_cal(struct ssv_hw *sh)
     while (GET_RO_WF_DCCAL_DONE == 0) {
         i ++;
         if (i >10000) {
-            PRINT_ERR("%s: 5G RXDC cal failed\r\n",__func__);
+            dev_err(sh->sc->dev, "%s: 5G RXDC cal failed",__func__);
             break;
         }
         UDELAY(1);
     }
-    PRINT("--------------------------------------------%d\r\n",i);
-    PRINT("--------- 2.4 G Rx DC Calibration result----------------");
+    dev_dbg(sh->sc->dev, "--------------------------------------------%d",i);
+    dev_dbg(sh->sc->dev, "--------- 2.4 G Rx DC Calibration result----------------");
     for (i = 0; i < 21; i++) {
-        if (i %4 == 0)
-            PRINT("\r\n");
         wifi_dc_addr = (ADR_WF_DCOC_IDAC_REGISTER1)+ (i << 2);
         sh->cal.rxdc_2g[i] = REG32_R(wifi_dc_addr);
-        PRINT("addr %x : val %x, ", wifi_dc_addr, sh->cal.rxdc_2g[i]);
+        dev_dbg(sh->sc->dev, "addr %x : val %x, ", wifi_dc_addr, sh->cal.rxdc_2g[i]);
     }
-    PRINT("\r\n");
     _debug__2p4g_rxdc_cal(sh);
     SET_RG_CAL_INDEX(CAL_IDX_NONE);
 }
@@ -331,10 +328,10 @@ static void _debug_5g_rxdc_cal(struct ssv_hw *sh)
             if(adc_out_sumQ>63) {
                 adc_out_sumQ -= 128;
             }
-            PRINT("lna gain is %d, pga gain is %d, ADC_OUT_I is %d, ADC_OUT_Q is %d\n",
+            dev_dbg(sh->sc->dev, "lna gain is %d, pga gain is %d, ADC_OUT_I is %d, ADC_OUT_Q is %d",
                   rg_rfg, rg_pgag, adc_out_sum_i, adc_out_sumQ);
         }
-        PRINT("------------------------------------------------------------\n");
+        dev_dbg(sh->sc->dev, "------------------------------------------------------------");
     }
     SET_RG_RX_GAIN_MANUAL(0);
 }
@@ -350,29 +347,26 @@ static void _turismoC_5g_rxdc_cal(struct ssv_hw *sh)
     while (GET_RO_5G_DCCAL_DONE == 0) {
         i ++;
         if (i >100000) {
-            PRINT_ERR("%s: 5G RXDC cal failed\r\n",__func__);
+            dev_err(sh->sc->dev, "%s: 5G RXDC cal failed",__func__);
             break;
         }
         UDELAY(1);
     }
-    PRINT("--------------------------------------------%d\r\n",i);
-    PRINT("--------- 5 G Rx DC Calibration result----------------");
+    dev_dbg(sh->sc->dev, "--------------------------------------------%d",i);
+    dev_dbg(sh->sc->dev, "--------- 5 G Rx DC Calibration result----------------");
     for (i = 0; i < 21; i++) {
-        if (i %4 == 0)
-            PRINT("\r\n");
         wifi_dc_addr = (ADR_5G_DCOC_IDAC_REGISTER1)+ (i << 2);
         sh->cal.rxdc_5g[i] = REG32_R(wifi_dc_addr);
-        PRINT("addr %x : val %x, ", wifi_dc_addr,sh->cal.rxdc_5g[i]);
+        dev_dbg(sh->sc->dev, "addr %x : val %x, ", wifi_dc_addr,sh->cal.rxdc_5g[i]);
     }
-    PRINT("\r\n");
     _debug_5g_rxdc_cal(sh);
     SET_RG_CAL_INDEX(CAL_IDX_NONE);
 }
 static void _turismoC_bw20_rxrc_cal(struct ssv_hw *sh)
 {
     int count = 0;
-    PRINT("--------------------------------------------\r\n");
-    PRINT("Before WiFi BW20 RG_WF_RX_ABBCTUNE: %d\n", GET_RG_WF_RX_ABBCTUNE);
+    dev_dbg(sh->sc->dev, "--------------------------------------------");
+    dev_dbg(sh->sc->dev, "Before WiFi BW20 RG_WF_RX_ABBCTUNE: %d", GET_RG_WF_RX_ABBCTUNE);
     SET_RG_RX_RCCAL_DELAY(2);
     SET_RG_PHASE_17P5M(0x20d0);
     SET_REG(ADR_RF_D_CAL_TOP_6,
@@ -386,21 +380,21 @@ static void _turismoC_bw20_rxrc_cal(struct ssv_hw *sh)
     while (GET_RO_RCCAL_DONE == 0) {
         count ++;
         if (count > 100000) {
-            PRINT_ERR("%s: bw20 RXRC cal failed\r\n",__func__);
+            dev_err(sh->sc->dev, "%s: bw20 RXRC cal failed",__func__);
             break;
         }
         UDELAY(1);
     }
-    PRINT("--------------------------------------------%d\r\n", count);
+    dev_dbg(sh->sc->dev, "--------------------------------------------%d", count);
     sh->cal.rxrc_bw20 = GET_RG_WF_RX_ABBCTUNE;
-    PRINT("WiFi BW20 RG_WF_RX_ABBCTUNE CAL RESULT: %d\n", sh->cal.rxrc_bw20);
+    dev_dbg(sh->sc->dev, "WiFi BW20 RG_WF_RX_ABBCTUNE CAL RESULT: %d", sh->cal.rxrc_bw20);
     SET_RG_CAL_INDEX(CAL_IDX_NONE);
 }
 static void _turismoC_bw40_rxrc_cal(struct ssv_hw *sh)
 {
     int count = 0;
-    PRINT("--------------------------------------------\r\n");
-    PRINT("Before WiFi BW40 RG_WF_RX_N_ABBCTUNE: %d\n", GET_RG_WF_N_RX_ABBCTUNE);
+    dev_dbg(sh->sc->dev, "--------------------------------------------");
+    dev_dbg(sh->sc->dev, "Before WiFi BW40 RG_WF_RX_N_ABBCTUNE: %d", GET_RG_WF_N_RX_ABBCTUNE);
     SET_RG_RX_N_RCCAL_DELAY(2);
     SET_RG_PHASE_35M(0x3fff);
     SET_REG(ADR_RF_D_CAL_TOP_6,
@@ -414,14 +408,14 @@ static void _turismoC_bw40_rxrc_cal(struct ssv_hw *sh)
     while (GET_RO_RCCAL_DONE == 0) {
         count ++;
         if (count > 100000) {
-            PRINT_ERR("%s: BW40 RXRC cal failed\r\n",__func__);
+            dev_err(sh->sc->dev, "%s: BW40 RXRC cal failed",__func__);
             break;
         }
         UDELAY(1);
     }
-    PRINT("--------------------------------------------%d\r\n", count);
+    dev_dbg(sh->sc->dev, "--------------------------------------------%d", count);
     sh->cal.rxrc_bw40 = GET_RG_WF_N_RX_ABBCTUNE;
-    PRINT("WiFi BW40 RG_WF_N_RX_ABBCTUNE CAL RESULT: %d\n", sh->cal.rxrc_bw40);
+    dev_dbg(sh->sc->dev, "WiFi BW40 RG_WF_N_RX_ABBCTUNE CAL RESULT: %d", sh->cal.rxrc_bw40);
     SET_RG_CAL_INDEX(CAL_IDX_NONE);
 }
 static void _turismoC_txdc_cal(struct ssv_hw *sh)
@@ -430,8 +424,8 @@ static void _turismoC_txdc_cal(struct ssv_hw *sh)
     SET_REG(ADR_SX_2_4GB_5GB_REGISTER_INT3BIT___CH_TABLE,
             (0x6 << RG_SX_CHANNEL_SFT) | (0x1 << RG_SX_RFCH_MAP_EN_SFT), 0,
             (RG_SX_CHANNEL_I_MSK & RG_SX_RFCH_MAP_EN_I_MSK));
-    PRINT("--------------------------------------------\r\n");
-    PRINT("Before txdc calibration WiFi 2P4G Tx DAC IOFFSET: %d, QOFFSET %d\n",
+    dev_dbg(sh->sc->dev, "--------------------------------------------");
+    dev_dbg(sh->sc->dev, "Before txdc calibration WiFi 2P4G Tx DAC IOFFSET: %d, QOFFSET %d",
           GET_RG_WF_TX_DAC_IOFFSET, GET_RG_WF_TX_DAC_QOFFSET);
     SET_RG_TXGAIN_PHYCTRL(1);
     SET_REG(ADR_CALIBRATION_GAIN_REGISTER0,
@@ -448,15 +442,15 @@ static void _turismoC_txdc_cal(struct ssv_hw *sh)
     while (GET_RO_TXDC_DONE == 0) {
         count ++;
         if (count > 100000) {
-            PRINT_ERR("%s: 2.4G TXDC cal failed\r\n",__func__);
+            dev_err(sh->sc->dev, "%s: 2.4G TXDC cal failed",__func__);
             break;
         }
         UDELAY(1);
     }
-    PRINT("--------------------------------------------%d\r\n", count);
+    dev_dbg(sh->sc->dev, "--------------------------------------------%d", count);
     sh->cal.txdc_i_2g = GET_RG_WF_TX_DAC_IOFFSET;
     sh->cal.txdc_q_2g = GET_RG_WF_TX_DAC_QOFFSET;
-    PRINT("After txdc calibration WiFi 2P4G Tx DAC IOFFSET: %d, QOFFSET %d\n",
+    dev_dbg(sh->sc->dev, "After txdc calibration WiFi 2P4G Tx DAC IOFFSET: %d, QOFFSET %d",
           sh->cal.txdc_i_2g, sh->cal.txdc_q_2g);
     SET_RG_CAL_INDEX(CAL_IDX_NONE);
 }
@@ -466,8 +460,8 @@ static void _turismoC_txiq_cal(struct ssv_hw *sh)
     SET_REG(ADR_SX_2_4GB_5GB_REGISTER_INT3BIT___CH_TABLE,
             (0x6 << RG_SX_CHANNEL_SFT) | (0x1 << RG_SX_RFCH_MAP_EN_SFT), 0,
             (RG_SX_CHANNEL_I_MSK & RG_SX_RFCH_MAP_EN_I_MSK));
-    PRINT("--------------------------------------------\r\n");
-    PRINT("before tx iq 2.4G calibration, tx alpha: %d, tx theta %d\n",
+    dev_dbg(sh->sc->dev, "--------------------------------------------");
+    dev_dbg(sh->sc->dev, "before tx iq 2.4G calibration, tx alpha: %d, tx theta %d",
           GET_RG_TX_IQ_2500_ALPHA, GET_RG_TX_IQ_2500_THETA);
     SET_RG_TXGAIN_PHYCTRL(1);
     SET_REG(ADR_CALIBRATION_GAIN_REGISTER0,
@@ -484,15 +478,15 @@ static void _turismoC_txiq_cal(struct ssv_hw *sh)
     while (GET_RO_TXIQ_DONE == 0) {
         count ++;
         if (count > 100000) {
-            PRINT_ERR("%s: 2.4G TXIQ cal failed\r\n",__func__);
+            dev_err(sh->sc->dev, "%s: 2.4G TXIQ cal failed",__func__);
             break;
         }
         UDELAY(1);
     }
-    PRINT("--------------------------------------------%d\r\n", count);
+    dev_dbg(sh->sc->dev, "--------------------------------------------%d", count);
     sh->cal.txiq_alpha[BAND_2G] = GET_RG_TX_IQ_2500_ALPHA;
     sh->cal.txiq_theta[BAND_2G] = GET_RG_TX_IQ_2500_THETA;
-    PRINT("After tx iq calibration, tx alpha: %d, tx theta %d\n",
+    dev_dbg(sh->sc->dev, "After tx iq calibration, tx alpha: %d, tx theta %d",
           sh->cal.txiq_alpha[BAND_2G], sh->cal.txiq_theta[BAND_2G]);
     SET_RG_CAL_INDEX(CAL_IDX_NONE);
 }
@@ -509,7 +503,7 @@ static void _debug_rxiq_cal(struct ssv_hw *sh)
             (RG_SPECTRUM_PWR_UPDATE_I_MSK & RG_SPECTRUM_LO_FIX_I_MSK));
     regval1 = GET_RG_SPECTRUM_PWR_UPDATE;
     regval = GET_RO_SPECTRUM_IQ_PWR_31_0;
-    PRINT("The spectrum power is 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x\n",
+    dev_dbg(sh->sc->dev, "The spectrum power is 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x",
           ((regval1 >> 4) & 0xf), (regval1 & 0xf), ((regval >> 28) & 0xf), ((regval >> 24) & 0xf),
           ((regval >> 20) & 0xf), ((regval >> 16) & 0xf), ((regval >> 12) & 0xf), ((regval >> 8) & 0xf),
           ((regval >> 4) & 0xf), (regval & 0xf));
@@ -524,7 +518,7 @@ static void _debug_rxiq_cal(struct ssv_hw *sh)
             (RG_SPECTRUM_PWR_UPDATE_I_MSK & RG_SPECTRUM_LO_FIX_I_MSK));
     regval1 = GET_RG_SPECTRUM_PWR_UPDATE;
     regval = GET_RO_SPECTRUM_IQ_PWR_31_0;
-    PRINT("The spectrum power is 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x\n",
+    dev_dbg(sh->sc->dev, "The spectrum power is 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x",
           ((regval1 >> 4) & 0xf), (regval1 & 0xf), ((regval >> 28) & 0xf), ((regval >> 24) & 0xf),
           ((regval >> 20) & 0xf), ((regval >> 16) & 0xf), ((regval >> 12) & 0xf), ((regval >> 8) & 0xf),
           ((regval >> 4) & 0xf), (regval & 0xf));
@@ -536,8 +530,8 @@ static void _turismoC_rxiq_cal(struct ssv_hw *sh)
     SET_REG(ADR_SX_2_4GB_5GB_REGISTER_INT3BIT___CH_TABLE,
             (0x6 << RG_SX_CHANNEL_SFT) | (0x1 << RG_SX_RFCH_MAP_EN_SFT), 0,
             (RG_SX_CHANNEL_I_MSK & RG_SX_RFCH_MAP_EN_I_MSK));
-    PRINT("--------------------------------------------\r\n");
-    PRINT("Before rx iq calibration, rx alpha: %d, rx theta %d\n",
+    dev_dbg(sh->sc->dev, "--------------------------------------------");
+    dev_dbg(sh->sc->dev, "Before rx iq calibration, rx alpha: %d, rx theta %d",
           GET_RG_RX_IQ_2500_ALPHA, GET_RG_RX_IQ_2500_THETA);
     SET_RG_TXGAIN_PHYCTRL(1);
     SET_RG_RFG_RXIQCAL(0x0);
@@ -554,17 +548,17 @@ static void _turismoC_rxiq_cal(struct ssv_hw *sh)
     while (GET_RO_RXIQ_DONE == 0) {
         count ++;
         if (count > 100000) {
-            PRINT_ERR("%s: 2.4G RXIQ cal failed\r\n",__func__);
+            dev_err(sh->sc->dev, "%s: 2.4G RXIQ cal failed",__func__);
             break;
         }
         UDELAY(1);
     }
     SET_RG_PHASE_STEP_VALUE(0xccc);
     _debug_rxiq_cal(sh);
-    PRINT("--------------------------------------------%d\r\n", count);
+    dev_dbg(sh->sc->dev, "--------------------------------------------%d", count);
     sh->cal.rxiq_alpha[BAND_2G] = GET_RG_RX_IQ_2500_ALPHA;
     sh->cal.rxiq_theta[BAND_2G] = GET_RG_RX_IQ_2500_THETA;
-    PRINT("After rx iq calibration, rx alpha: %d, rx theta %d\n",
+    dev_dbg(sh->sc->dev, "After rx iq calibration, rx alpha: %d, rx theta %d",
           sh->cal.rxiq_alpha[BAND_2G], sh->cal.rxiq_theta[BAND_2G]);
     SET_RG_CAL_INDEX(CAL_IDX_NONE);
 }
@@ -574,8 +568,8 @@ static void _turismoC_5g_txdc_cal(struct ssv_hw *sh)
     SET_REG(ADR_SX_5GB_REGISTER_INT3BIT___CH_TABLE,
             (100 << RG_SX5GB_CHANNEL_SFT) | (0x1 << RG_SX5GB_RFCH_MAP_EN_SFT), 0,
             (RG_SX5GB_CHANNEL_I_MSK & RG_SX5GB_RFCH_MAP_EN_I_MSK));
-    PRINT("--------------------------------------------\r\n");
-    PRINT("Before 5G txdc calibration WiFi 5G Tx DAC IOFFSET: %d, QOFFSET %d\n",
+    dev_dbg(sh->sc->dev, "--------------------------------------------");
+    dev_dbg(sh->sc->dev, "Before 5G txdc calibration WiFi 5G Tx DAC IOFFSET: %d, QOFFSET %d",
           GET_RG_5G_TX_DAC_IOFFSET, GET_RG_5G_TX_DAC_QOFFSET);
     SET_RG_TXGAIN_PHYCTRL(1);
     SET_RG_TONE_SCALE(0x80);
@@ -592,15 +586,15 @@ static void _turismoC_5g_txdc_cal(struct ssv_hw *sh)
     while (GET_RO_5G_TXDC_DONE == 0) {
         count ++;
         if (count >100000) {
-            PRINT_ERR("%s: 5G TXDC cal failed\r\n",__func__);
+            dev_err(sh->sc->dev, "%s: 5G TXDC cal failed",__func__);
             break;
         }
         UDELAY(1);
     }
-    PRINT("--------------------------------------------%d\r\n", count);
+    dev_dbg(sh->sc->dev, "--------------------------------------------%d", count);
     sh->cal.txdc_i_5g = GET_RG_5G_TX_DAC_IOFFSET;
     sh->cal.txdc_q_5g = GET_RG_5G_TX_DAC_QOFFSET;
-    PRINT("After 5G txdc calibration WiFi 5G Tx DAC IOFFSET: %d, QOFFSET %d\n",
+    dev_dbg(sh->sc->dev, "After 5G txdc calibration WiFi 5G Tx DAC IOFFSET: %d, QOFFSET %d",
           sh->cal.txdc_i_5g, sh->cal.txdc_q_5g);
     SET_RG_CAL_INDEX(CAL_IDX_NONE);
 }
@@ -609,8 +603,8 @@ static void _turismoC_5g_txiq_cal(struct ssv_hw *sh)
     int count = 0;
     int band;
     SET_RG_SX5GB_RFCH_MAP_EN(1);
-    PRINT("--------------------------------------------\r\n");
-    PRINT("before 5G tx iq calibration, tx alpha: %d %d %d %d, tx theta %d %d %d %d\n",
+    dev_dbg(sh->sc->dev, "--------------------------------------------");
+    dev_dbg(sh->sc->dev, "before 5G tx iq calibration, tx alpha: %d %d %d %d, tx theta %d %d %d %d",
           GET_RG_TX_IQ_5100_ALPHA, GET_RG_TX_IQ_5500_ALPHA,
           GET_RG_TX_IQ_5700_ALPHA, GET_RG_TX_IQ_5900_ALPHA,
           GET_RG_TX_IQ_5100_THETA, GET_RG_TX_IQ_5500_THETA,
@@ -636,14 +630,14 @@ static void _turismoC_5g_txiq_cal(struct ssv_hw *sh)
         while (GET_RO_5G_TXIQ_DONE == 0) {
             count ++;
             if (count > 100000) {
-                PRINT_ERR("%s: 5G TXIQ band %d cal failed\r\n",__func__, band);
+                dev_err(sh->sc->dev, "%s: 5G TXIQ band %d cal failed",__func__, band);
                 break;
             }
             UDELAY(1);
         }
         SET_RG_CAL_INDEX(CAL_IDX_NONE);
     }
-    PRINT("--------------------------------------------%d\r\n", count);
+    dev_dbg(sh->sc->dev, "--------------------------------------------%d", count);
     sh->cal.txiq_alpha[BAND_5100] = GET_RG_TX_IQ_5100_ALPHA;
     sh->cal.txiq_theta[BAND_5100] = GET_RG_TX_IQ_5100_THETA;
     sh->cal.txiq_alpha[BAND_5500] = GET_RG_TX_IQ_5500_ALPHA;
@@ -652,7 +646,7 @@ static void _turismoC_5g_txiq_cal(struct ssv_hw *sh)
     sh->cal.txiq_theta[BAND_5700] = GET_RG_TX_IQ_5700_THETA;
     sh->cal.txiq_alpha[BAND_5900] = GET_RG_TX_IQ_5900_ALPHA;
     sh->cal.txiq_theta[BAND_5900] = GET_RG_TX_IQ_5900_THETA;
-    PRINT("after 5G tx iq calibration, tx alpha: %d %d %d %d, tx theta %d %d %d %d\n",
+    dev_dbg(sh->sc->dev, "after 5G tx iq calibration, tx alpha: %d %d %d %d, tx theta %d %d %d %d",
           sh->cal.txiq_alpha[BAND_5100], sh->cal.txiq_alpha[BAND_5500],
           sh->cal.txiq_alpha[BAND_5700], sh->cal.txiq_alpha[BAND_5900],
           sh->cal.txiq_theta[BAND_5100], sh->cal.txiq_theta[BAND_5500],
@@ -688,8 +682,8 @@ void _turismoC_5g_txiq_cal_band(struct ssv_hw *sh, int pa_band)
     default:
         break;
     }
-    PRINT("--------------------------------------------\r\n");
-    PRINT("before 5G band %d tx iq calibration, tx alpha: %d, tx theta %d\n",
+    dev_dbg(sh->sc->dev, "--------------------------------------------");
+    dev_dbg(sh->sc->dev, "before 5G band %d tx iq calibration, tx alpha: %d, tx theta %d",
           pa_band, alpha, theta);
     SET_RG_TXGAIN_PHYCTRL(1);
     SET_RG_TONE_SCALE(0x80);
@@ -704,7 +698,7 @@ void _turismoC_5g_txiq_cal_band(struct ssv_hw *sh, int pa_band)
     while (GET_RO_5G_TXIQ_DONE == 0) {
         count ++;
         if (count > 100000) {
-            PRINT_ERR("%s: 5G TXIQ band %d cal failed\r\n",__func__, pa_band);
+            dev_err(sh->sc->dev, "%s: 5G TXIQ band %d cal failed",__func__, pa_band);
             break;
         }
         UDELAY(1);
@@ -730,8 +724,8 @@ void _turismoC_5g_txiq_cal_band(struct ssv_hw *sh, int pa_band)
     default:
         break;
     }
-    PRINT("--------------------------------------------%d\r\n", count);
-    PRINT("after 5G band %d tx iq calibration, tx alpha: %d, tx theta %d\n",
+    dev_dbg(sh->sc->dev, "--------------------------------------------%d", count);
+    dev_dbg(sh->sc->dev, "after 5G band %d tx iq calibration, tx alpha: %d, tx theta %d",
           pa_band, sh->cal.txiq_alpha[pa_band], sh->cal.txiq_theta[pa_band]);
 }
 static void _debug_5g_rxiq_cal(struct ssv_hw *sh)
@@ -747,7 +741,7 @@ static void _debug_5g_rxiq_cal(struct ssv_hw *sh)
             (RG_SPECTRUM_PWR_UPDATE_I_MSK & RG_SPECTRUM_LO_FIX_I_MSK));
     regval1 = GET_RG_SPECTRUM_PWR_UPDATE;
     regval = GET_RO_SPECTRUM_IQ_PWR_31_0;
-    PRINT("The spectrum power is 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x\n",
+    dev_dbg(sh->sc->dev, "The spectrum power is 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x",
           ((regval1 >> 4) & 0xf), (regval1 & 0xf), ((regval >> 28) & 0xf), ((regval >> 24) & 0xf),
           ((regval >> 20) & 0xf), ((regval >> 16) & 0xf), ((regval >> 12) & 0xf), ((regval >> 8) & 0xf),
           ((regval >> 4) & 0xf), (regval & 0xf));
@@ -762,7 +756,7 @@ static void _debug_5g_rxiq_cal(struct ssv_hw *sh)
             (RG_SPECTRUM_PWR_UPDATE_I_MSK & RG_SPECTRUM_LO_FIX_I_MSK));
     regval1 = GET_RG_SPECTRUM_PWR_UPDATE;
     regval = GET_RO_SPECTRUM_IQ_PWR_31_0;
-    PRINT("The spectrum power is 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x\n",
+    dev_dbg(sh->sc->dev, "The spectrum power is 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x",
           ((regval1 >> 4) & 0xf), (regval1 & 0xf), ((regval >> 28) & 0xf), ((regval >> 24) & 0xf),
           ((regval >> 20) & 0xf), ((regval >> 16) & 0xf), ((regval >> 12) & 0xf), ((regval >> 8) & 0xf),
           ((regval >> 4) & 0xf), (regval & 0xf));
@@ -773,8 +767,8 @@ static void _turismoC_5g_rxiq_cal(struct ssv_hw *sh)
     int count = 0;
     int band;
     SET_RG_SX5GB_RFCH_MAP_EN(1);
-    PRINT("--------------------------------------------\r\n");
-    PRINT("before 5G rx iq calibration, rx alpha: %d %d %d %d, rx theta %d %d %d %d\n",
+    dev_dbg(sh->sc->dev, "--------------------------------------------");
+    dev_dbg(sh->sc->dev, "before 5G rx iq calibration, rx alpha: %d %d %d %d, rx theta %d %d %d %d",
           GET_RG_RX_IQ_5100_ALPHA, GET_RG_RX_IQ_5500_ALPHA,
           GET_RG_RX_IQ_5700_ALPHA, GET_RG_RX_IQ_5900_ALPHA,
           GET_RG_RX_IQ_5100_THETA, GET_RG_RX_IQ_5500_THETA,
@@ -795,7 +789,7 @@ static void _turismoC_5g_rxiq_cal(struct ssv_hw *sh)
         while (GET_RO_5G_RXIQ_DONE == 0) {
             count ++;
             if (count > 100000) {
-                PRINT_ERR("%s: 5G RXIQ band %d cal failed\r\n",__func__, band);
+                dev_err(sh->sc->dev, "%s: 5G RXIQ band %d cal failed",__func__, band);
                 break;
             }
             UDELAY(1);
@@ -804,7 +798,7 @@ static void _turismoC_5g_rxiq_cal(struct ssv_hw *sh)
         _debug_5g_rxiq_cal(sh);
         SET_RG_CAL_INDEX(CAL_IDX_NONE);
     }
-    PRINT("--------------------------------------------%d\r\n", count);
+    dev_dbg(sh->sc->dev, "--------------------------------------------%d", count);
     sh->cal.rxiq_alpha[BAND_5100] = GET_RG_RX_IQ_5100_ALPHA;
     sh->cal.rxiq_theta[BAND_5100] = GET_RG_RX_IQ_5100_THETA;
     sh->cal.rxiq_alpha[BAND_5500] = GET_RG_RX_IQ_5500_ALPHA;
@@ -813,7 +807,7 @@ static void _turismoC_5g_rxiq_cal(struct ssv_hw *sh)
     sh->cal.rxiq_theta[BAND_5700] = GET_RG_RX_IQ_5700_THETA;
     sh->cal.rxiq_alpha[BAND_5900] = GET_RG_RX_IQ_5900_ALPHA;
     sh->cal.rxiq_theta[BAND_5900] = GET_RG_RX_IQ_5900_THETA;
-    PRINT("After 5G rx iq calibration, rx alpha: %d %d %d %d, rx theta %d %d %d %d\n",
+    dev_dbg(sh->sc->dev, "After 5G rx iq calibration, rx alpha: %d %d %d %d, rx theta %d %d %d %d",
           sh->cal.rxiq_alpha[BAND_5100], sh->cal.rxiq_alpha[BAND_5500],
           sh->cal.rxiq_alpha[BAND_5700], sh->cal.rxiq_alpha[BAND_5900],
           sh->cal.rxiq_theta[BAND_5100], sh->cal.rxiq_theta[BAND_5500],
@@ -861,8 +855,8 @@ void _turismoC_5g_rxiq_cal_band(struct ssv_hw *sh, int pa_band)
     default:
         break;
     }
-    PRINT("--------------------------------------------\r\n");
-    PRINT("before 5G band%d rx iq calibration, rx alpha: %d, rx theta %d\n",
+    dev_dbg(sh->sc->dev, "--------------------------------------------");
+    dev_dbg(sh->sc->dev, "before 5G band%d rx iq calibration, rx alpha: %d, rx theta %d",
           pa_band, alpha, theta);
     SET_RG_TXGAIN_PHYCTRL(1);
     SET_RG_5G_RFG_RXIQCAL(0x0);
@@ -878,7 +872,7 @@ void _turismoC_5g_rxiq_cal_band(struct ssv_hw *sh, int pa_band)
     while (GET_RO_5G_RXIQ_DONE == 0) {
         count ++;
         if (count > 100000) {
-            PRINT_ERR("%s: 5G RXIQ band %d cal failed\r\n",__func__, pa_band);
+            dev_err(sh->sc->dev, "%s: 5G RXIQ band %d cal failed",__func__, pa_band);
             break;
         }
         UDELAY(1);
@@ -906,8 +900,8 @@ void _turismoC_5g_rxiq_cal_band(struct ssv_hw *sh, int pa_band)
     default:
         break;
     }
-    PRINT("--------------------------------------------%d\r\n", count);
-    PRINT("After 5G band%d rx iq calibration, rx alpha: %d, rx theta %d\n",
+    dev_dbg(sh->sc->dev, "--------------------------------------------%d", count);
+    dev_dbg(sh->sc->dev, "After 5G band%d rx iq calibration, rx alpha: %d, rx theta %d",
           pa_band, sh->cal.rxiq_alpha[pa_band], sh->cal.rxiq_theta[pa_band]);
 }
 #define MULTIPLIER 1024
@@ -1009,13 +1003,13 @@ void _check_padpd_gain(struct ssv_hw *sh, int pa_band, int init_gain, int *ret)
 {
     int rg_tx_scale;
     int am, pm;
-    PRINT("check PA DPD on band %d\n", pa_band);
+    dev_dbg(sh->sc->dev, "check PA DPD on band %d", pa_band);
     _pre_padpd(sh, pa_band, init_gain);
     rg_tx_scale = 48+(MAX_PADPD_TONE - 1-5)*4;
     _dpd_set_txscale_get_result(sh, rg_tx_scale, &am, &pm);
     if (am >=510) {
         *ret = 1;
-        PRINT("gain probe fail, am %d\n", am);
+        dev_dbg(sh->sc->dev, "gain probe fail, am %d", am);
     }
     _post_padpd(sh);
 }
@@ -1026,14 +1020,14 @@ static void _start_padpd(struct ssv_hw *sh, struct ssv6006dpd *val, int pa_band,
     int slope_ini = 0, phase_ini = 0;
     int padpd_am = 0, padpd_pm = 0;
     u32 addr_am = 0, addr_pm = 0, mask_am = 0, mask_pm = 0;
-    PRINT("start PA DPD on band %d\n", pa_band);
+    dev_dbg(sh->sc->dev, "start PA DPD on band %d", pa_band);
     _pre_padpd(sh, pa_band, init_gain);
 #if 0
     rg_tx_scale = 8;
     _dpd_set_txscale_get_result(sh, rg_tx_scale, &am, &pm);
     slope_ini = (am * MULTIPLIER) / rg_tx_scale;
     phase_ini = pm;
-    PRINT("slope is (%d/%d), initial phase is %d \n", slope_ini, MULTIPLIER, pm);
+    dev_dbg(sh->sc->dev, "slope is (%d/%d), initial phase is %d ", slope_ini, MULTIPLIER, pm);
     rg_tx_scale = 48+(MAX_PADPD_TONE - 1-5)*4;
     _dpd_set_txscale_get_result(sh, rg_tx_scale, &am, &pm);
     if (am >=510) {
@@ -1064,8 +1058,7 @@ static void _start_padpd(struct ssv_hw *sh, struct ssv6006dpd *val, int pa_band,
             padpd_am = 1023;
         }
         padpd_pm = (phase_ini >= pm) ? (phase_ini - pm) : (phase_ini - pm + 8192);
-        PRINT("index %d, padpd_am %d, padpd_pm 0x%04x, ", i, padpd_am, padpd_pm);
-        if ((i%2 == 1) || (i == (MAX_PADPD_TONE -1))) PRINT("\n");
+        dev_dbg(sh->sc->dev, "index %d, padpd_am %d, padpd_pm 0x%04x, ", i, padpd_am, padpd_pm);
         addr_am = padpd_am_addr_table[pa_band][(i >> 1)];
         mask_am = am_mask[i%2];
         addr_pm = padpd_pm_addr_table[pa_band][(i >> 1)];
@@ -1160,7 +1153,7 @@ void _verify_dpd(struct ssv_hw *sh, struct ssv6006_padpd *dpd, int pa_band)
         break;
     }
     if (hw_dpd_bbscale == 0x80) {
-        PRINT("HW DPD value changed, restore DPD\n");
+        dev_dbg(sh->sc->dev, "HW DPD value changed, restore DPD");
         _restore_dpd(sh, dpd);
     }
     if (dpd->current_band != pa_band) {
@@ -1183,7 +1176,7 @@ static void _check_padpd(struct ssv_hw *sh, struct ssv6006_padpd *dpd, int pa_ba
         switch (dpd->current_band) {
         case BAND_2G:
             SET_RG_DPD_BB_SCALE_2500(dpd->bbscale[BAND_2G]);
-            PRINT("set dpd bbscale to %d\n", dpd->bbscale[BAND_2G]);
+            dev_dbg(sh->sc->dev, "set dpd bbscale to %d", dpd->bbscale[BAND_2G]);
             break;
         case BAND_5100:
             SET_RG_DPD_BB_SCALE_5100(dpd->bbscale[BAND_5100]);
@@ -1208,25 +1201,25 @@ static void _check_padpd(struct ssv_hw *sh, struct ssv6006_padpd *dpd, int pa_ba
                 ret = 0;
                 _check_padpd_gain(sh, pa_band, init_gain, &ret);
                 if (!ret) break;
-                PRINT("Check padpd init gain %d fail on band %d\r\n", init_gain, pa_band);
+                dev_dbg(sh->sc->dev, "Check padpd init gain %d fail on band %d", init_gain, pa_band);
                 init_gain --;
                 if (init_gain == 0) break;
             }
-            PRINT("Start PADPD on band %d ,init gain %d\n", pa_band, init_gain);
+            dev_dbg(sh->sc->dev, "Start PADPD on band %d ,init gain %d", pa_band, init_gain);
             while (1) {
                 ret = 0;
                 _start_padpd(sh, val, pa_band, init_gain, dpd_bbscale, &ret);
                 if (!ret) {
-                    PRINT("PA DPD done!!\r\n");
+                    dev_dbg(sh->sc->dev, "PA DPD done!!");
                     dpd->dpd_done[pa_band] = true;
                     break;
                 }
                 init_gain--;
-                PRINT("\r\nFailed on band %d, Lower gain to %d\r\n", pa_band, init_gain);
+                dev_dbg(sh->sc->dev, "Failed on band %d, Lower gain to %d", pa_band, init_gain);
                 if (init_gain < 0) {
                     SET_RG_DPD_AM_EN(0);
                     SET_RG_TXGAIN_PHYCTRL(0);
-                    PRINT_ERR("WARNING:PADPD FAIL\n");
+                    dev_err(sh->sc->dev, "WARNING:PADPD FAIL");
                     break;
                 }
             }
@@ -1239,7 +1232,7 @@ static void _check_padpd(struct ssv_hw *sh, struct ssv6006_padpd *dpd, int pa_ba
 void _check_iqk(struct ssv_hw *sh, struct ssv6006_cal_result *cal, int pa_band)
 {
     if (cal->cal_iq_done[pa_band] == false) {
-        printk("do iqk on band %d\n", pa_band);
+        printk("do iqk on band %d", pa_band);
         SET_RG_DPD_AM_EN(0);
         SET_RG_TXGAIN_PHYCTRL(1);
         if (pa_band == BAND_2G) {
@@ -1389,7 +1382,7 @@ static int ssv6006_turismoC_set_channel(struct ssv_softc *sc, struct ieee80211_c
                               "NL80211_CHAN_HT40MINUS",
                               "NL80211_CHAN_HT40PLUS"
                              };
-    PRINT("%s: ch %d, type %s\r\n", __func__, ch, chan_type[channel_type]);
+    dev_dbg(sh->sc->dev, "%s: ch %d, type %s", __func__, ch, chan_type[channel_type]);
     SET_RG_SOFT_RST_N_11B_RX(0);
     SET_RG_SOFT_RST_N_11GN_RX(0);
     _remove_spur_patch(sh, dpd, cal);
@@ -1407,7 +1400,7 @@ static int ssv6006_turismoC_set_channel(struct ssv_softc *sc, struct ieee80211_c
         SET_SIGEXT(0);
         _set_5g_channel(sh, ch);
     } else {
-        PRINT("invalid channel %d\n", ch);
+        dev_dbg(sh->sc->dev, "invalid channel %d", ch);
     }
 #endif
     ssv6006_turismoC_update_channel_dpd_bbscale(sc, ch);
@@ -1497,7 +1490,7 @@ void ssv6006_turismoC_write_rf_table(struct ssv_hw *sh )
 #ifndef USE_COMMON_MACRO
 static void _update_rf_patch(struct ssv_hw *sh, int xtal)
 {
-    PRINT("Set XTAL to %sM\n", xtal_type[xtal]);
+    dev_dbg(sh->sc->dev, "Set XTAL to %sM", xtal_type[xtal]);
     SET_RG_DP_XTAL_FREQ(xtal);
     SET_RG_SX_XTAL_FREQ(xtal);
 }
@@ -1510,7 +1503,7 @@ static void single_band_patch(struct ssv_hw *sh, int xtal)
         SET_RG_SX_VCO_RXOB_AW(0x1);
         SET_RG_SX_VCO_TXOB_AW(0x1);
         SET_RG_SX_CP_ISEL_WF(xtal_sx_cp_isel_wf[xtal]);
-        PRINT("set single band spur patch %x\n", REG32_R(ADR_CHIP_ID_2));
+        dev_dbg(sh->sc->dev, "set single band spur patch %x", REG32_R(ADR_CHIP_ID_2));
     }
 }
 #endif
@@ -1549,7 +1542,7 @@ static int ssv6006_turismoC_set_pll_phy_rf(struct ssv_hw *sh
         xtal = XTAL32M;
         break;
     default:
-        printk("Please redefine xtal_clock(wifi.cfg)!!\n");
+        printk("Please redefine xtal_clock(wifi.cfg)!!");
         WARN_ON(1);
         return 1;
         break;
@@ -1563,14 +1556,14 @@ static int ssv6006_turismoC_set_pll_phy_rf(struct ssv_hw *sh
         patch.dcdc = true;
     }
 #ifdef USE_COMMON_MACRO
-    PRINT("%s: use common macro\n",__func__);
+    dev_dbg(sh->sc->dev, "%s: use common macro",__func__);
     if (sh->cfg.hw_caps & SSV6200_HW_CAP_5GHZ) {
         INIT_TURISMOC_SYS(patch, AG_BAND_BOTH, cal);
     } else {
         INIT_TURISMOC_SYS(patch,G_BAND_ONLY, cal);
     }
 #else
-    PRINT("%s: Not use common macro\n",__func__);
+    dev_dbg(sh->sc->dev, "%s: Not use common macro",__func__);
     ret = SSV6XXX_SET_HW_TABLE(sh, ssv6006_turismoC_rf_setting);
     if (patch.dcdc) {
         SET_RG_DCDC_MODE(0x0);
@@ -1627,14 +1620,14 @@ static bool ssv6006_turismoC_dump_phy_reg(struct ssv_hw *sh)
     ssv_cabrio_reg *raw;
     struct ssv_cmd_data *cmd_data = &sh->sc->cmd_data;
     raw = ssv6006_turismoC_phy_setting;
-    snprintf_res(cmd_data, ">> PHY Register Table:\n");
+    snprintf_res(cmd_data, ">> PHY Register Table:");
     for(s = 0; s < ssv6006_turismoC_phy_tbl_size/sizeof(ssv_cabrio_reg); s++, raw++) {
         SMAC_REG_READ(sh, raw->address, &regval);
-        snprintf_res(cmd_data, "   ADDR[0x%08x] = 0x%08x\n",
+        snprintf_res(cmd_data, "   ADDR[0x%08x] = 0x%08x",
                      raw->address, regval);
     }
-    snprintf_res(cmd_data, ">>PHY Table version: %s\n", SSV6006_TURISMOC_PHY_TABLE_VER);
-    snprintf_res(cmd_data, "\n\n");
+    snprintf_res(cmd_data, ">>PHY Table version: %s", SSV6006_TURISMOC_PHY_TABLE_VER);
+    snprintf_res(cmd_data, "");
     return 0;
 }
 static bool ssv6006_turismoC_dump_rf_reg(struct ssv_hw *sh)
@@ -1644,14 +1637,14 @@ static bool ssv6006_turismoC_dump_rf_reg(struct ssv_hw *sh)
     ssv_cabrio_reg *raw;
     struct ssv_cmd_data *cmd_data = &sh->sc->cmd_data;
     raw = ssv6006_turismoC_rf_setting;
-    snprintf_res(cmd_data, ">> RF Register Table:\n");
+    snprintf_res(cmd_data, ">> RF Register Table:");
     for(s = 0; s < ssv6006_turismoC_rf_tbl_size/sizeof(ssv_cabrio_reg); s++, raw++) {
         SMAC_REG_READ(sh, raw->address, &regval);
-        snprintf_res(cmd_data, "   ADDR[0x%08x] = 0x%08x\n",
+        snprintf_res(cmd_data, "   ADDR[0x%08x] = 0x%08x",
                      raw->address, regval);
     }
-    snprintf_res(cmd_data, ">>RF Table version: %s\n", SSV6006_TURISMOC_RF_TABLE_VER);
-    snprintf_res(cmd_data, "\n\n");
+    snprintf_res(cmd_data, ">>RF Table version: %s", SSV6006_TURISMOC_RF_TABLE_VER);
+    snprintf_res(cmd_data, "");
     return 0;
 }
 static bool ssv6006_turismoC_support_iqk_cmd(struct ssv_hw *sh)
@@ -1668,55 +1661,55 @@ static void ssv6006_cmd_turismoC_cali(struct ssv_hw *sh, int argc, char *argv[])
         sh->cal.cal_done = false;
         ssv6006_turismoC_init_cali(sh, &sh->cal);
         HAL_SET_CHANNEL(sc, &chan, sc->hw_chan_type);
-        snprintf_res(cmd_data,"\n   CALIRATION DONE\n");
+        snprintf_res(cmd_data,"   CALIRATION DONE");
     } else if(!strcmp(argv[1], "show")) {
         u32 i, regval = 0, wifi_dc_addr;
         snprintf_res(cmd_data,"---------2.4G DC Calibration result-----------");
         for (i = 0; i < 21; i++) {
             if (i %2 == 0)
-                snprintf_res(cmd_data,"\n");
+                snprintf_res(cmd_data,"");
             wifi_dc_addr = ADR_WF_DCOC_IDAC_REGISTER1+ (i << 2);
             SMAC_REG_READ(sh, wifi_dc_addr, &regval);
             snprintf_res(cmd_data,"addr %x : val %x, %x,", wifi_dc_addr, regval, sh->cal.rxdc_2g[i]);
         }
-        snprintf_res(cmd_data,"\n--------------------------------------------\n");
-        snprintf_res(cmd_data,"WiFi BW20 RG_WF_RX_ABBCTUNE: %d, %d\n", GET_RG_WF_RX_ABBCTUNE, sh->cal.rxrc_bw20);
-        snprintf_res(cmd_data,"WiFi BW40 RG_WF_RX_N_ABBCTUNE: %d, %d\n", GET_RG_WF_N_RX_ABBCTUNE, sh->cal.rxrc_bw40);
-        snprintf_res(cmd_data,"TxDC calibration WiFi 2P4G Tx DAC IOFFSET: %d %d, QOFFSET %d %d\n",
+        snprintf_res(cmd_data,"--------------------------------------------");
+        snprintf_res(cmd_data,"WiFi BW20 RG_WF_RX_ABBCTUNE: %d, %d", GET_RG_WF_RX_ABBCTUNE, sh->cal.rxrc_bw20);
+        snprintf_res(cmd_data,"WiFi BW40 RG_WF_RX_N_ABBCTUNE: %d, %d", GET_RG_WF_N_RX_ABBCTUNE, sh->cal.rxrc_bw40);
+        snprintf_res(cmd_data,"TxDC calibration WiFi 2P4G Tx DAC IOFFSET: %d %d, QOFFSET %d %d",
                      GET_RG_WF_TX_DAC_IOFFSET, sh->cal.txdc_i_2g, GET_RG_WF_TX_DAC_QOFFSET, sh->cal.txdc_q_2g);
-        snprintf_res(cmd_data,"Tx iq calibration, tx alpha: %d %d, tx theta %d %d\r\n",
+        snprintf_res(cmd_data,"Tx iq calibration, tx alpha: %d %d, tx theta %d %d",
                      GET_RG_TX_IQ_2500_ALPHA, sh->cal.txiq_alpha[BAND_2G], GET_RG_TX_IQ_2500_THETA, sh->cal.txiq_theta[BAND_2G]);
-        snprintf_res(cmd_data,"Rx iq calibration, rx alpha: %d %d, rx theta %d %d\r\n",
+        snprintf_res(cmd_data,"Rx iq calibration, rx alpha: %d %d, rx theta %d %d",
                      GET_RG_RX_IQ_2500_ALPHA, sh->cal.rxiq_alpha[BAND_2G], GET_RG_RX_IQ_2500_THETA, sh->cal.rxiq_theta[BAND_2G]);
         if (sh->cfg.hw_caps & SSV6200_HW_CAP_5GHZ) {
-            snprintf_res(cmd_data,"--------------------------------------------\r\n");
+            snprintf_res(cmd_data,"--------------------------------------------");
             snprintf_res(cmd_data,"--------- 5 G Rx DC Calibration result----------------");
             for (i = 0; i < 21; i++) {
                 if (i %2 == 0)
-                    snprintf_res(cmd_data,"\r\n");
+                    snprintf_res(cmd_data,"");
                 wifi_dc_addr = (ADR_5G_DCOC_IDAC_REGISTER1)+ (i << 2);
                 SMAC_REG_READ(sh, wifi_dc_addr, &regval);
                 snprintf_res(cmd_data,"addr %x : val %x, %x,", wifi_dc_addr, regval, sh->cal.rxdc_5g[i]);
             }
-            snprintf_res(cmd_data,"\r\n");
-            snprintf_res(cmd_data,"5G txdc calibration WiFi 5G Tx DAC IOFFSET: %d %d, QOFFSET %d %d\r\n",
+            snprintf_res(cmd_data,"");
+            snprintf_res(cmd_data,"5G txdc calibration WiFi 5G Tx DAC IOFFSET: %d %d, QOFFSET %d %d",
                          GET_RG_5G_TX_DAC_IOFFSET, sh->cal.txdc_i_5g, GET_RG_5G_TX_DAC_QOFFSET, sh->cal.txdc_q_5g);
-            snprintf_res(cmd_data,"5G tx iq in memory, tx alpha: %d %d %d %d, tx theta %d %d %d %d\n",
+            snprintf_res(cmd_data,"5G tx iq in memory, tx alpha: %d %d %d %d, tx theta %d %d %d %d",
                          sh->cal.txiq_alpha[BAND_5100], sh->cal.txiq_alpha[BAND_5500],
                          sh->cal.txiq_alpha[BAND_5700], sh->cal.txiq_alpha[BAND_5900],
                          sh->cal.txiq_theta[BAND_5100], sh->cal.txiq_theta[BAND_5500],
                          sh->cal.txiq_theta[BAND_5700], sh->cal.txiq_theta[BAND_5900]);
-            snprintf_res(cmd_data,"5G tx iq read back, tx alpha: %d %d %d %d, tx theta %d %d %d %d\n",
+            snprintf_res(cmd_data,"5G tx iq read back, tx alpha: %d %d %d %d, tx theta %d %d %d %d",
                          GET_RG_TX_IQ_5100_ALPHA, GET_RG_TX_IQ_5500_ALPHA,
                          GET_RG_TX_IQ_5700_ALPHA, GET_RG_TX_IQ_5900_ALPHA,
                          GET_RG_TX_IQ_5100_THETA, GET_RG_TX_IQ_5500_THETA,
                          GET_RG_TX_IQ_5700_THETA, GET_RG_TX_IQ_5900_THETA);
-            snprintf_res(cmd_data,"5G rx iq in memory, rx alpha: %d %d %d %d, rx theta %d %d %d %d\n",
+            snprintf_res(cmd_data,"5G rx iq in memory, rx alpha: %d %d %d %d, rx theta %d %d %d %d",
                          sh->cal.rxiq_alpha[BAND_5100], sh->cal.rxiq_alpha[BAND_5500],
                          sh->cal.rxiq_alpha[BAND_5700], sh->cal.rxiq_alpha[BAND_5900],
                          sh->cal.rxiq_theta[BAND_5100], sh->cal.rxiq_theta[BAND_5500],
                          sh->cal.rxiq_theta[BAND_5700], sh->cal.rxiq_theta[BAND_5900]);
-            snprintf_res(cmd_data,"5G rx iq read back, rx alpha: %d %d %d %d, rx theta %d %d %d %d\n",
+            snprintf_res(cmd_data,"5G rx iq read back, rx alpha: %d %d %d %d, rx theta %d %d %d %d",
                          GET_RG_RX_IQ_5100_ALPHA, GET_RG_RX_IQ_5500_ALPHA,
                          GET_RG_RX_IQ_5700_ALPHA, GET_RG_RX_IQ_5900_ALPHA,
                          GET_RG_RX_IQ_5100_THETA, GET_RG_RX_IQ_5500_THETA,
@@ -1724,11 +1717,11 @@ static void ssv6006_cmd_turismoC_cali(struct ssv_hw *sh, int argc, char *argv[])
         }
     } else if(!strcmp(argv[1], "restore")) {
         _restore_cal(sh);
-        snprintf_res(cmd_data, "\n Restore calibration result done!\n");
+        snprintf_res(cmd_data, " Restore calibration result done!");
     } else if(!strcmp(argv[1], "dpd")) {
         if(!strcmp(argv[2], "show")) {
             int pa_band;
-            snprintf_res(cmd_data, "\n DPD result: \n");
+            snprintf_res(cmd_data, " DPD result: ");
             for (pa_band = 0; pa_band < PADPDBAND; pa_band++) {
                 u32 regval;
                 switch (pa_band) {
@@ -1753,39 +1746,39 @@ static void ssv6006_cmd_turismoC_cali(struct ssv_hw *sh, int argc, char *argv[])
                 if (pa_band == sc->dpd.current_band) {
                     snprintf_res(cmd_data,":current band");
                 }
-                snprintf_res(cmd_data,"\n");
+                snprintf_res(cmd_data,"");
                 if (sc->dpd.dpd_done[pa_band]) {
                     int i;
                     snprintf_res(cmd_data,"\t\tam_am:");
                     for (i = 0 ; i < MAX_PADPD_TONE/2; i ++) {
                         if (i %4 == 0)
-                            snprintf_res(cmd_data,"\n\t\t");
+                            snprintf_res(cmd_data,"\t\t");
                         snprintf_res(cmd_data, "%03d %03d ", sc->dpd.val[pa_band].am[i] & 0xffff,
                                      (sc->dpd.val[pa_band].am[i] >>16) & 0xffff);
                     }
-                    snprintf_res(cmd_data,"\n\t\tread back bank%d am_am:", pa_band);
+                    snprintf_res(cmd_data,"\t\tread back bank%d am_am:", pa_band);
                     for (i = 0 ; i < MAX_PADPD_TONE/2; i ++) {
                         if (i %4 == 0)
-                            snprintf_res(cmd_data,"\n\t\t");
+                            snprintf_res(cmd_data,"\t\t");
                         regval = REG32_R(padpd_am_addr_table[pa_band][i]);
                         snprintf_res(cmd_data, "%03d %03d ", regval & 0xffff,
                                      (regval >>16) & 0xffff);
                     }
-                    snprintf_res(cmd_data,"\n");
+                    snprintf_res(cmd_data,"");
                 } else {
-                    snprintf_res(cmd_data,"\t\t DPD result not available\n");
+                    snprintf_res(cmd_data,"\t\t DPD result not available");
                 }
             }
         } else if(!strcmp(argv[2], "enable")) {
             sc->dpd.dpd_disable[sc->dpd.current_band] = false;
             SET_RG_DPD_AM_EN(1);
             SET_RG_TXGAIN_PHYCTRL(0);
-            snprintf_res(cmd_data,"enable DPD\r\n");
+            snprintf_res(cmd_data,"enable DPD");
         } else if(!strcmp(argv[2], "disable")) {
             sc->dpd.dpd_disable[sc->dpd.current_band] = true;
             SET_RG_DPD_AM_EN(0);
             SET_RG_TXGAIN_PHYCTRL(0);
-            snprintf_res(cmd_data,"disable DPD\r\n");
+            snprintf_res(cmd_data,"disable DPD");
         } else if(!strcmp(argv[2], "do")) {
             int pa_band = 0, ch = sc->hw_chan;
             struct ssv6006_padpd *dpd = &sc->dpd;
@@ -1810,25 +1803,25 @@ static void ssv6006_cmd_turismoC_cali(struct ssv_hw *sh, int argc, char *argv[])
             SET_RG_SOFT_RST_N_11B_RX(1);
             SET_RG_SOFT_RST_N_11GN_RX(1);
             HCI_RESUME(sc->sh, (TXQ_EDCA_0|TXQ_EDCA_1|TXQ_EDCA_2|TXQ_EDCA_3| TXQ_MGMT));
-            snprintf_res(cmd_data,"DPD done\r\n");
+            snprintf_res(cmd_data,"DPD done");
         } else if(!strcmp(argv[2], "restore")) {
             int pa_band = 0, ch = sc->hw_chan;
             struct ssv6006_padpd *dpd = &sc->dpd;
             pa_band = ssv6006_get_pa_band(ch);
             TU_RESTORE_DPD(dpd);
-            snprintf_res(cmd_data, "\n Restore current band dpd result done!\n");
+            snprintf_res(cmd_data, " Restore current band dpd result done!");
         } else {
-            snprintf_res(cmd_data,"\n cali [do|show|restore|dpd(do|show|enable|disable|restore)] \n");
+            snprintf_res(cmd_data," cali [do|show|restore|dpd(do|show|enable|disable|restore)] ");
         }
     } else if(!strcmp(argv[1], "iqk")) {
         if(!strcmp(argv[2], "do")) {
             chan.hw_value = sc->hw_chan;
             ssv6006_turismoC_init_iqk(sh, &sh->cal);
             HAL_SET_CHANNEL(sc, &chan, sc->hw_chan_type);
-            snprintf_res(cmd_data,"\n   CALIRATION DONE\n");
+            snprintf_res(cmd_data,"   CALIRATION DONE");
         }
     } else {
-        snprintf_res(cmd_data,"\n cali [do|show|restore|dpd(show|enable|disable)] \n");
+        snprintf_res(cmd_data," cali [do|show|restore|dpd(show|enable|disable)] ");
     }
 }
 static void ssv6006c_cmd_lpbk_setup_env_sec_talbe(struct ssv_hw *sh)
@@ -1974,7 +1967,7 @@ static void ssv6006c_cmd_loopback_setup_env(struct ssv_hw *sh)
         SSV_PHY_ENABLE(sh, 1);
         break;
     default:
-        printk("LPBK invalid setting!!!\n");
+        printk("LPBK invalid setting!!!");
         break;
     }
     msleep(10);
@@ -1988,19 +1981,19 @@ static void ssv6006_cmd_turismoC_loopback(struct ssv_hw *sh, int argc, char *arg
     char *endp;
     int val;
     if (argc < 2) {
-        snprintf_res(cmd_data, "\n lpbk [show|set|start]\n");
+        snprintf_res(cmd_data, " lpbk [show|set|start]");
         return;
     }
     if (!strcmp(argv[1], "show")) {
-        snprintf_res(cmd_data, "\n lpbk parameters for ssv6006\n");
-        snprintf_res(cmd_data, " lpbk packet count    = %d\n", (!sh->cfg.lpbk_pkt_cnt) ? 10: sh->cfg.lpbk_pkt_cnt);
-        snprintf_res(cmd_data, " lpbk type            = %s\n", lpbk_types[sh->cfg.lpbk_type]);
-        snprintf_res(cmd_data, " lpbk security        = %s\n", lpbk_secs[sh->cfg.lpbk_sec]);
-        snprintf_res(cmd_data, " lpbk fixed rate      = %s\n", (!sh->cfg.lpbk_mode ? "all rates" : "sample rate"));
+        snprintf_res(cmd_data, " lpbk parameters for ssv6006");
+        snprintf_res(cmd_data, " lpbk packet count    = %d", (!sh->cfg.lpbk_pkt_cnt) ? 10: sh->cfg.lpbk_pkt_cnt);
+        snprintf_res(cmd_data, " lpbk type            = %s", lpbk_types[sh->cfg.lpbk_type]);
+        snprintf_res(cmd_data, " lpbk security        = %s", lpbk_secs[sh->cfg.lpbk_sec]);
+        snprintf_res(cmd_data, " lpbk fixed rate      = %s", (!sh->cfg.lpbk_mode ? "all rates" : "sample rate"));
     } else if (!strcmp(argv[1], "set")) {
         if (argc == 4) {
             val = simple_strtoul(argv[3], &endp, 0);
-            snprintf_res(cmd_data, "\n set lpbk %s to %d\n", argv[2], val);
+            snprintf_res(cmd_data, " set lpbk %s to %d", argv[2], val);
             if (!strcmp(argv[2], "pkt_cnt")) {
                 sh->cfg.lpbk_pkt_cnt = val;
             } else if (!strcmp(argv[2], "type")) {
@@ -2010,16 +2003,16 @@ static void ssv6006_cmd_turismoC_loopback(struct ssv_hw *sh, int argc, char *arg
             } else if (!strcmp(argv[2], "fixed_rate")) {
                 sh->cfg.lpbk_mode = (val > 0) ? 1 : 0;
             } else {
-                snprintf_res(cmd_data, "\n lpbk set [env_setup|pkt_cnt|type|security|fixed_rate]\n");
+                snprintf_res(cmd_data, " lpbk set [env_setup|pkt_cnt|type|security|fixed_rate]");
             }
         } else {
-            snprintf_res(cmd_data, "\n lpbk set [env_setup|pkt_cnt|type|security|fixed_rate]\n");
+            snprintf_res(cmd_data, " lpbk set [env_setup|pkt_cnt|type|security|fixed_rate]");
         }
     } else if (!strcmp(argv[1], "start")) {
         HAL_CMD_LOOPBACK_SETUP_ENV(sh);
         HAL_CMD_LOOPBACK_START(sh);
     } else {
-        snprintf_res(cmd_data, "\n lpbk [show|set|start]\n");
+        snprintf_res(cmd_data, " lpbk [show|set|start]");
     }
 }
 static void ssv6006_cmd_turismoC_txgen(struct ssv_hw *sh)
@@ -2066,7 +2059,7 @@ static void ssv6006_cmd_turismoC_rf(struct ssv_hw *sh, int argc, char *argv[])
     if(!strcmp(argv[1], "bbscale")) {
         if (argc == 4) {
             regval = simple_strtoul(argv[3], &endp, 0);
-            snprintf_res(cmd_data,"Set bbscale to 0x%x\n", regval);
+            snprintf_res(cmd_data,"Set bbscale to 0x%x", regval);
             if (!strcmp(argv[2], "ht40")) {
                 REG32_W(ADR_WIFI_PHY_COMMON_BB_SCALE_REG_3, regval);
             } else if(!strcmp(argv[2], "ht20")) {
@@ -2098,20 +2091,20 @@ static void ssv6006_cmd_turismoC_rf(struct ssv_hw *sh, int argc, char *argv[])
             }
             return;
         } else {
-            snprintf_res(cmd_data,"./cli rf bbscale ht40|ht20|g|b|dpd [value]\n");
+            snprintf_res(cmd_data,"./cli rf bbscale ht40|ht20|g|b|dpd [value]");
             return;
         }
     } else if(!strcmp(argv[1], "ack")) {
         if (argc == 3) {
             if (!strcmp(argv[2], "disable")) {
                 SET_RG_TXD_SEL(1);
-                snprintf_res(cmd_data,"\n set %s %s\n", argv[1], argv[2]);
+                snprintf_res(cmd_data," set %s %s", argv[1], argv[2]);
             } else if (!strcmp(argv[2], "enable")) {
                 SET_RG_TXD_SEL(0);
-                snprintf_res(cmd_data,"\n set %s %s\n", argv[1], argv[2]);
+                snprintf_res(cmd_data," set %s %s", argv[1], argv[2]);
             }
         } else {
-            snprintf_res(cmd_data,"\n\t incorrect set ack format\n");
+            snprintf_res(cmd_data,"\t incorrect set ack format");
         }
         return;
     } else if(!strcmp(argv[1], "ifs")) {
@@ -2120,7 +2113,7 @@ static void ssv6006_cmd_turismoC_rf(struct ssv_hw *sh, int argc, char *argv[])
             SET_RG_IFS_TIME((regval & 0x3f));
             SET_RG_IFS_TIME_EXT((regval >> 6));
         }
-        snprintf_res(cmd_data,"\n set ifs to %d us\n", regval);
+        snprintf_res(cmd_data," set ifs to %d us", regval);
         return;
     } else if(!strcmp(argv[1], "rate")) {
         if (argc == 3) {
@@ -2139,39 +2132,39 @@ static void ssv6006_cmd_turismoC_rf(struct ssv_hw *sh, int argc, char *argv[])
                     SET_RG_PKT_MODE(2);
                     break;
                 default:
-                    snprintf_res(cmd_data,"\t %s\n", "Invalid phy mode");
+                    snprintf_res(cmd_data,"\t %s", "Invalid phy mode");
                     break;
                 }
                 SET_RG_CH_BW(((sc->rf_rc & SSV6006RC_20_40_MSK) >> SSV6006RC_20_40_SFT)) ;
                 SET_RG_SHORTGI((sc->rf_rc & SSV6006RC_LONG_SHORT_MSK) >> SSV6006RC_LONG_SHORT_SFT);
                 SET_RG_RATE((sc->rf_rc & SSV6006RC_RATE_MSK) >> SSV6006RC_RATE_SFT);
-                snprintf_res(cmd_data,"Set rate to 0x%x\n", sc->rf_rc);
+                snprintf_res(cmd_data,"Set rate to 0x%x", sc->rf_rc);
                 return;
             } else {
-                snprintf_res(cmd_data,"Not support rf rate index %d\n", regval);
+                snprintf_res(cmd_data,"Not support rf rate index %d", regval);
                 return;
             }
         } else {
-            snprintf_res(cmd_data,"\n\t Incorrect rf rate set format\n");
+            snprintf_res(cmd_data,"\t Incorrect rf rate set format");
             return;
         }
     } else if(!strcmp(argv[1], "freq")) {
         if (argc == 3) {
             regval = simple_strtoul(argv[2], &endp, 0);
-            snprintf_res(cmd_data,"Set cbanki/cbanko to 0x%x\n", regval);
+            snprintf_res(cmd_data,"Set cbanki/cbanko to 0x%x", regval);
             SET_RG_XO_CBANKI(regval);
             SET_RG_XO_CBANKO(regval);
             return;
         } else {
-            snprintf_res(cmd_data,"./cli rf freq [value]\n");
+            snprintf_res(cmd_data,"./cli rf freq [value]");
             return;
         }
     } else if(!strcmp(argv[1], "rfreq")) {
         if (argc == 2) {
-            snprintf_res(cmd_data,"Get freq 0x%x/0x%x\n", GET_RG_XO_CBANKI, GET_RG_XO_CBANKO);
+            snprintf_res(cmd_data,"Get freq 0x%x/0x%x", GET_RG_XO_CBANKI, GET_RG_XO_CBANKO);
             return;
         } else {
-            snprintf_res(cmd_data,"./cli rf rfreq\n");
+            snprintf_res(cmd_data,"./cli rf rfreq");
             return;
         }
     } else if(!strcmp(argv[1], "greentx")) {
@@ -2182,7 +2175,7 @@ static void ssv6006_cmd_turismoC_rf(struct ssv_hw *sh, int argc, char *argv[])
                 sc->gt_enabled = true;
                 sc->green_pwr = 0xff;
                 HAL_UPDATE_RF_PWR(sc);
-                snprintf_res(cmd_data,"\n\t Green Tx enabled, start attenuation from -%d dB\n"
+                snprintf_res(cmd_data,"\t Green Tx enabled, start attenuation from -%d dB"
                              , sh->cfg.greentx & GT_PWR_START_MASK);
             } else if(!strcmp(argv[2], "disable")) {
                 sh->cfg.greentx &= (~GT_ENABLE);
@@ -2190,37 +2183,37 @@ static void ssv6006_cmd_turismoC_rf(struct ssv_hw *sh, int argc, char *argv[])
                 sc->green_pwr = 0xff;
                 HAL_UPDATE_RF_PWR(sc);
                 sc->gt_enabled = false;
-                snprintf_res(cmd_data,"\n\t Green Tx disabled");
+                snprintf_res(cmd_data,"\t Green Tx disabled");
             }
         } else if ((argc == 4) && (!strcmp(argv[2], "dbg"))) {
             if(!strcmp(argv[3], "enable")) {
                 sh->cfg.greentx |= GT_DBG;
-                snprintf_res(cmd_data,"\n\t Green Tx Debug enable\n");
+                snprintf_res(cmd_data,"\t Green Tx Debug enable");
             } else if(!strcmp(argv[3], "disable")) {
                 sh->cfg.greentx &= (~GT_DBG);
-                snprintf_res(cmd_data,"\n\t Green Tx debug disabled");
+                snprintf_res(cmd_data,"\t Green Tx debug disabled");
             }
         } else if ((argc == 4) && (!strcmp(argv[2], "stepsize"))) {
             regval = simple_strtoul(argv[3], &endp, 0);
             sh->cfg.gt_stepsize = regval;
-            snprintf_res(cmd_data,"\n\t Green Tx set step size to %d\n", regval);
+            snprintf_res(cmd_data,"\t Green Tx set step size to %d", regval);
         } else if ((argc == 4) && (!strcmp(argv[2], "max_atten"))) {
             regval = simple_strtoul(argv[3], &endp, 0);
             sh->cfg.gt_max_attenuation = regval;
-            snprintf_res(cmd_data,"\n\t Green Tx set gt_max_attenuation  to %d\n", regval);
+            snprintf_res(cmd_data,"\t Green Tx set gt_max_attenuation  to %d", regval);
         } else {
-            snprintf_res(cmd_data,"\n\t Incorrect rf greentx format\n");
+            snprintf_res(cmd_data,"\t Incorrect rf greentx format");
         }
         return;
     } else if (!strcmp(argv[1], "rgreentx")) {
-        snprintf_res(cmd_data,"\n cfg.greentx 0x%x, Tx Gain : %d %d %d %d %d\n",
+        snprintf_res(cmd_data," cfg.greentx 0x%x, Tx Gain : %d %d %d %d %d",
                      sh->cfg.greentx, GET_RG_TX_GAIN, GET_RG_5G_TX_GAIN_F0,
                      GET_RG_5G_TX_GAIN_F1, GET_RG_5G_TX_GAIN_F2, GET_RG_5G_TX_GAIN_F3);
-        snprintf_res(cmd_data,"\n step size %d, max attenuaton %d\n",
+        snprintf_res(cmd_data," step size %d, max attenuaton %d",
                      sh->cfg.gt_stepsize, sh->cfg.gt_max_attenuation);
         return;
     } else if(!strcmp(argv[1], "rssi")) {
-        snprintf_res(cmd_data,"\n ofdm RSSI -%d, B mode RSSI -%d\n",
+        snprintf_res(cmd_data," ofdm RSSI -%d, B mode RSSI -%d",
                      GET_RO_11GN_RCPI, GET_RO_11B_RCPI);
         return;
     } else if(!strcmp(argv[1], "sar")) {
@@ -2234,7 +2227,7 @@ static void ssv6006_cmd_turismoC_rf(struct ssv_hw *sh, int argc, char *argv[])
         } while(1);
         SET_RG_SARADC_THERMAL(0);
         SET_RG_EN_SARADC(0);
-        snprintf_res(cmd_data,"\n\tuSarCode[%d] \n", GET_DB_DA_SARADC_BIT);
+        snprintf_res(cmd_data,"\tuSarCode[%d] ", GET_DB_DA_SARADC_BIT);
         return;
     } else if (!strcmp(argv[1], "phy_txgen")) {
         if (argc == 3) {
@@ -2246,19 +2239,19 @@ static void ssv6006_cmd_turismoC_rf(struct ssv_hw *sh, int argc, char *argv[])
             SET_RG_TX_START(1);
         }
         regval = (GET_RG_IFS_TIME)+ (GET_RG_IFS_TIME_EXT << 6);
-        snprintf_res(cmd_data,"\n\t phy_txgen triggered!! ifs %d us\n", regval);
+        snprintf_res(cmd_data,"\t phy_txgen triggered!! ifs %d us", regval);
         return;
     } else if(!strcmp(argv[1], "block")) {
         sc->sc_flags |= SC_OP_BLOCK_CNTL;
         sc->sc_flags |= SC_OP_CHAN_FIXED;
-        snprintf_res(cmd_data,"\n\t block control form system\n");
+        snprintf_res(cmd_data,"\t block control form system");
         return;
     } else if(!strcmp(argv[1], "unblock")) {
         sc->sc_flags &= ~SC_OP_BLOCK_CNTL;
         sc->sc_flags &= ~SC_OP_CHAN_FIXED;
         SET_RG_TXD_SEL(0);
         SET_RG_TX_START(0);
-        snprintf_res(cmd_data,"\n\t unblock control form system\n");
+        snprintf_res(cmd_data,"\t unblock control form system");
         return;
     } else if(!strcmp(argv[1], "count")) {
         if (argc == 3) {
@@ -2278,28 +2271,28 @@ static void ssv6006_cmd_turismoC_rf(struct ssv_hw *sh, int argc, char *argv[])
                 point = ((err*10000)/count)%100;
             }
             if (valid) {
-                snprintf_res(cmd_data,"count = %d\n", count);
-                snprintf_res(cmd_data,"err = %d\n", err);
-                snprintf_res(cmd_data,"err_rate = %01d.%02d%\n", integer, point);
+                snprintf_res(cmd_data,"count = %d", count);
+                snprintf_res(cmd_data,"err = %d", err);
+                snprintf_res(cmd_data,"err_rate = %01d.%02d%", integer, point);
                 return;
             }
         }
-        snprintf_res(cmd_data,"\n\t./cli rf count 0|1\n");
+        snprintf_res(cmd_data,"\t./cli rf count 0|1");
         return;
     } else {
         snprintf_res(cmd_data,
-                     "\n\t./cli rf phy_txgen|block|unblock|count|ack|freq|rfreq|sar|rssi|rgreentx|greentx|rate|bbscale|ifs\n");
+                     "\t./cli rf phy_txgen|block|unblock|count|ack|freq|rfreq|sar|rssi|rgreentx|greentx|rate|bbscale|ifs");
         return;
     }
 out:
-    snprintf_res(cmd_data,"\n\t Current RF tool settings: ch %d, pa_band %d\n", ch, pa_band);
-    snprintf_res(cmd_data,"\t bbscale:\n");
+    snprintf_res(cmd_data,"\t Current RF tool settings: ch %d, pa_band %d", ch, pa_band);
+    snprintf_res(cmd_data,"\t bbscale:");
     if (sc->sc_flags && SC_OP_BLOCK_CNTL) {
-        snprintf_res(cmd_data,"\t system control is blocked\n");
+        snprintf_res(cmd_data,"\t system control is blocked");
     } else {
-        snprintf_res(cmd_data,"\t WARNING system control is not blocked\n");
+        snprintf_res(cmd_data,"\t WARNING system control is not blocked");
     }
-    snprintf_res(cmd_data,"\t\t HT40 0x%08x, HT20 0x%08x, Legacy 0x%08x, B 0x%02x\n",
+    snprintf_res(cmd_data,"\t\t HT40 0x%08x, HT20 0x%08x, Legacy 0x%08x, B 0x%02x",
                  REG32(ADR_WIFI_PHY_COMMON_BB_SCALE_REG_3), REG32(ADR_WIFI_PHY_COMMON_BB_SCALE_REG_2),
                  REG32(ADR_WIFI_PHY_COMMON_BB_SCALE_REG_1), GET_RG_BB_SCALE_BARKER_CCK);
     switch (pa_band) {
@@ -2321,30 +2314,30 @@ out:
     default:
         break;
     }
-    snprintf_res(cmd_data,"\t current band dpd bbscale: 0x%x\n", regval);
-    snprintf_res(cmd_data,"\t cbank:\n");
-    snprintf_res(cmd_data,"\t\t CBANKI %d, CBANKO %d\n", GET_RG_XO_CBANKI, GET_RG_XO_CBANKO);
-    snprintf_res(cmd_data,"\t tx gen rate: 0x%x\n", sc->rf_rc);
+    snprintf_res(cmd_data,"\t current band dpd bbscale: 0x%x", regval);
+    snprintf_res(cmd_data,"\t cbank:");
+    snprintf_res(cmd_data,"\t\t CBANKI %d, CBANKO %d", GET_RG_XO_CBANKI, GET_RG_XO_CBANKO);
+    snprintf_res(cmd_data,"\t tx gen rate: 0x%x", sc->rf_rc);
     snprintf_res(cmd_data,"\t\t phy mode:");
     switch ((sc->rf_rc & SSV6006RC_PHY_MODE_MSK) >> SSV6006RC_PHY_MODE_SFT) {
     case 0:
-        snprintf_res(cmd_data,"\t %s\n", "B");
+        snprintf_res(cmd_data,"\t %s", "B");
         break;
     case 2:
-        snprintf_res(cmd_data,"\t %s\n", "A/G");
+        snprintf_res(cmd_data,"\t %s", "A/G");
         break;
     case 3:
-        snprintf_res(cmd_data,"\t %s\n", "N");
+        snprintf_res(cmd_data,"\t %s", "N");
         break;
     default:
-        snprintf_res(cmd_data,"\t %s\n", "Invalid");
+        snprintf_res(cmd_data,"\t %s", "Invalid");
         break;
     }
-    snprintf_res(cmd_data,"\t\t HT40/HT20:\t %s\n",
+    snprintf_res(cmd_data,"\t\t HT40/HT20:\t %s",
                  ((sc->rf_rc & SSV6006RC_20_40_MSK) >> SSV6006RC_20_40_SFT) ? "HT40":"HT20") ;
-    snprintf_res(cmd_data,"\t\t SHORT/LONG:\t %s\n",
+    snprintf_res(cmd_data,"\t\t SHORT/LONG:\t %s",
                  ((sc->rf_rc & SSV6006RC_LONG_SHORT_MSK) >> SSV6006RC_LONG_SHORT_SFT) ?"short":"long") ;
-    snprintf_res(cmd_data,"\t\t rate index:\t %d\n", (sc->rf_rc & SSV6006RC_RATE_MSK) >> SSV6006RC_RATE_SFT) ;
+    snprintf_res(cmd_data,"\t\t rate index:\t %d", (sc->rf_rc & SSV6006RC_RATE_MSK) >> SSV6006RC_RATE_SFT) ;
 }
 static void _set_tx_pwr(struct ssv_softc *sc, u32 pa_band, u32 txpwr)
 {
@@ -2369,7 +2362,7 @@ static void _set_tx_pwr(struct ssv_softc *sc, u32 pa_band, u32 txpwr)
         break;
     }
     if (sh->cfg.greentx & GT_DBG)
-        printk("update tx power %x  to pa_band %d\n", txpwr, pa_band);
+        printk("update tx power %x  to pa_band %d", txpwr, pa_band);
 }
 void ssv6006_turismoC_update_rf_pwr(struct ssv_softc *sc)
 {
@@ -2713,7 +2706,7 @@ static void ssv6006c_rx_spectrum(struct ssv_hw *sh)
         regval1 = REG32_R(ADR_RF_D_CAL_TOP_8);
         regval2 = REG32_R(ADR_RF_D_CAL_TOP_7);
         value = (((regval2 & 0xff) << 32) | (regval1));
-        printk("The spectrum [single_tone=0x%04x] power is %llu\n", single_tone_value, value);
+        printk("The spectrum [single_tone=0x%04x] power is %llu", single_tone_value, value);
         single_tone_value = single_tone_value + single_tone_step;
     }
     SET_RG_TXD_SEL(0x0);

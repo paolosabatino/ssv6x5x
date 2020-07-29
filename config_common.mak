@@ -10,7 +10,8 @@ CONFIG_MAC80211_RC_MINSTREL_HT=y
 
 //ccflags-y += -D_ICOMM_MAC80211_
 
-ccflags-y += -D__CHECK_ENDIAN__ -DDEBUG
+ccflags-y += -D__CHECK_ENDIAN__
+#ccflags-y += -DDEBUG
 ###########################################################################
 # Compiler options                                                        #
 ###########################################################################

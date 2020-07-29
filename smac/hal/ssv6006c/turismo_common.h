@@ -409,7 +409,7 @@ do{ \
      "NL80211_CHAN_HT40MINUS", \
      "NL80211_CHAN_HT40PLUS"}; \
                                                                                             \
-    PRINT("%s: ch %d, type %s\r\n", __func__, _ch, _chan_type[_ch_type]); \
+    dev_dbg(sh->sc->dev, "%s: ch %d, type %s", __func__, _ch, _chan_type[_ch_type]); \
     TU_SET_GEMINIA_BW(_ch_type) \
     TU_SET_CHANNEL(_ch); \
 } while(0)
@@ -428,7 +428,7 @@ do{ \
         if (regval == 3) \
             break; \
         if (count > 100){ \
-            PRINT(" PLL initial fails \r\n"); \
+            dev_dbg(sh->sc->dev, " PLL initial fails "); \
             break; \
         } \
     } while (1); \
@@ -459,18 +459,16 @@ do{ \
         (RG_GEMINIA_EN_RX_ADC_I_MSK & RG_GEMINIA_RX_ADC_MANUAL_I_MSK)); \
     UDELAY(50); \
                                                                                             \
-    PRINT("--------- reset Calibration result----------------"); \
+    dev_dbg(sh->sc->dev, "--------- reset Calibration result----------------"); \
     for (i = 0; i < 22; i++) { \
-        if (i %4 == 0) \
-            PRINT("\r\n"); \
         wifi_dc_addr = (ADR_GEMINIA_WF_DCOC_IDAC_REGISTER1)+ (i << 2); \
                                                                                             \
         UDELAY(50); \
         reg_val = REG32_R(wifi_dc_addr); \
-        PRINT("addr %x : val %x, ", wifi_dc_addr, reg_val); \
+        dev_dbg(sh->sc->dev, "addr %x : val %x, ", wifi_dc_addr, reg_val); \
     } \
                                                                                             \
-    PRINT("\r\nStart WiFi Rx DC calibration...\r\n"); \
+    dev_dbg(sh->sc->dev, "Start WiFi Rx DC calibration..."); \
                                                                                             \
                                                                                             \
     SET_RG_GEMINIA_MODE_MANUAL(1); \
@@ -485,15 +483,12 @@ do{ \
                                                                                             \
     MSLEEP(10); \
                                                                                             \
-    PRINT("--------------------------------------------\r\n"); \
-    PRINT("--------- Calibration result----------------"); \
+    dev_dbg(sh->sc->dev, "--------------------------------------------"); \
+    dev_dbg(sh->sc->dev, "--------- Calibration result----------------"); \
     for (i = 0; i < 22; i++) { \
-       if (i %4 == 0) \
-          PRINT("\r\n"); \
        wifi_dc_addr = (ADR_GEMINIA_WF_DCOC_IDAC_REGISTER1)+ (i << 2); \
-       PRINT("addr %x : val %x, ", wifi_dc_addr, REG32_R(wifi_dc_addr)); \
+       dev_dbg(sh->sc->dev, "addr %x : val %x, ", wifi_dc_addr, REG32_R(wifi_dc_addr)); \
     } \
-    PRINT("\r\n"); \
                                                                                             \
     SET_RG_GEMINIA_CAL_INDEX(0); \
     UDELAY(50); \
@@ -814,7 +809,7 @@ do{ \
      "NL80211_CHAN_HT40MINUS", \
      "NL80211_CHAN_HT40PLUS"}; \
                                                                                             \
-    PRINT("%s: ch %d, type %s\r\n", __func__, _ch, chan_type[_ch_type]); \
+    dev_dbg(sh->sc->dev, "%s: ch %d, type %s", __func__, _ch, chan_type[_ch_type]); \
     TU_SET_TURISMOA_BW(_ch_type); \
     if ( _ch <=14 && _ch >=1){ \
         SET_MTX_DUR_RSP_SIFS_G(10); \
@@ -842,7 +837,7 @@ do{ \
         } \
         TURISMOA_SET_5G_CHANNEL(_ch); \
     } else { \
-        PRINT("invalid channel %d\r\n", _ch); \
+        dev_dbg(sh->sc->dev, "invalid channel %d", _ch); \
     } \
 } while(0)
 #define TU_INIT_TURISMOA_CALI \
@@ -881,16 +876,12 @@ do{ \
                                                                                             \
     MSLEEP(10); \
                                                                                             \
-    PRINT("--------------------------------------------\r\n"); \
-    PRINT("--------- 2.4 G Calibration result----------------"); \
+    dev_dbg(sh->sc->dev, "--------------------------------------------"); \
+    dev_dbg(sh->sc->dev, "--------- 2.4 G Calibration result----------------"); \
     for (i = 0; i < 22; i++) { \
-       if (i %4 == 0) \
-          PRINT("\r\n"); \
        wifi_dc_addr = (ADR_TURISMO_TRX_WF_DCOC_IDAC_REGISTER1)+ (i << 2); \
-       PRINT("addr %x : val %x, ", wifi_dc_addr, REG32_R(wifi_dc_addr)); \
+       dev_dbg(sh->sc->dev, "addr %x : val %x, ", wifi_dc_addr, REG32_R(wifi_dc_addr)); \
     } \
-    PRINT("\r\n"); \
-                                                                                            \
     SET_RG_TURISMO_TRX_CAL_INDEX(0); \
     UDELAY(50); \
                                                                                             \
@@ -907,16 +898,12 @@ do{ \
                                                                                             \
     MSLEEP(10); \
                                                                                             \
-    PRINT("--------------------------------------------\r\n"); \
-    PRINT("--------- 5 G Calibration result----------------"); \
+    dev_dbg(sh->sc->dev, "--------------------------------------------"); \
+    dev_dbg(sh->sc->dev, "--------- 5 G Calibration result----------------"); \
     for (i = 0; i < 21; i++) { \
-       if (i %4 == 0) \
-          PRINT("\r\n"); \
        wifi_dc_addr = (ADR_TURISMO_TRX_5G_DCOC_IDAC_REGISTER1)+ (i << 2); \
-       PRINT("addr %x : val %x, ", wifi_dc_addr, REG32_R(wifi_dc_addr)); \
+       dev_dbg(sh->sc->dev, "addr %x : val %x, ", wifi_dc_addr, REG32_R(wifi_dc_addr)); \
     } \
-    PRINT("\r\n"); \
-                                                                                            \
     SET_RG_TURISMO_TRX_CAL_INDEX(0); \
     UDELAY(50); \
                                                                                             \
@@ -1038,7 +1025,7 @@ do{ \
         if (regval == 0x13) \
             break; \
         if (count > 100){ \
-            PRINT(" PLL initial fails \r\n"); \
+            dev_dbg(sh->sc->dev, " PLL initial fails "); \
             break; \
         } \
     } while (1); \
@@ -1068,16 +1055,12 @@ do{ \
                                                                                             \
     MSLEEP(10); \
                                                                                             \
-    PRINT("--------------------------------------------\r\n"); \
-    PRINT("--------- 2.4 G Rx DC Calibration result----------------"); \
+    dev_dbg(sh->sc->dev, "--------------------------------------------"); \
+    dev_dbg(sh->sc->dev, "--------- 2.4 G Rx DC Calibration result----------------"); \
     for (i = 0; i < 22; i++) { \
-       if (i %4 == 0) \
-          PRINT("\r\n"); \
        wifi_dc_addr = (ADR_WF_DCOC_IDAC_REGISTER1)+ (i << 2); \
-       PRINT("addr %x : val %x, ", wifi_dc_addr, REG32_R(wifi_dc_addr)); \
+       dev_dbg(sh->sc->dev, "addr %x : val %x, ", wifi_dc_addr, REG32_R(wifi_dc_addr)); \
     } \
-    PRINT("\r\n"); \
-                                                                                            \
     SET_RG_CAL_INDEX(0); \
     UDELAY(50); \
                                                                                             \
@@ -1094,16 +1077,12 @@ do{ \
                                                                                             \
     MSLEEP(10); \
                                                                                             \
-    PRINT("--------------------------------------------\r\n"); \
-    PRINT("--------- 5 G Rx DC Calibration result----------------"); \
+    dev_dbg(sh->sc->dev, "--------------------------------------------"); \
+    dev_dbg(sh->sc->dev, "--------- 5 G Rx DC Calibration result----------------"); \
     for (i = 0; i < 21; i++) { \
-       if (i %4 == 0) \
-          PRINT("\r\n"); \
        wifi_dc_addr = (ADR_5G_DCOC_IDAC_REGISTER1)+ (i << 2); \
-       PRINT("addr %x : val %x, ", wifi_dc_addr, REG32_R(wifi_dc_addr)); \
+       dev_dbg(sh->sc->dev, "addr %x : val %x, ", wifi_dc_addr, REG32_R(wifi_dc_addr)); \
     } \
-    PRINT("\r\n"); \
-                                                                                            \
     SET_RG_CAL_INDEX(0); \
     UDELAY(50); \
                                                                                             \
@@ -1132,16 +1111,12 @@ do{ \
                                                                                             \
     MSLEEP(10); \
                                                                                             \
-    PRINT("--------------------------------------------\r\n"); \
-    PRINT("--------- 2.4 G Rx DC Calibration result----------------"); \
+    dev_dbg(sh->sc->dev, "--------------------------------------------"); \
+    dev_dbg(sh->sc->dev, "--------- 2.4 G Rx DC Calibration result----------------"); \
     for (i = 0; i < 22; i++) { \
-       if (i %4 == 0) \
-          PRINT("\r\n"); \
        wifi_dc_addr = (ADR_WF_DCOC_IDAC_REGISTER1)+ (i << 2); \
-       PRINT("addr %x : val %x, ", wifi_dc_addr, REG32_R(wifi_dc_addr)); \
+       dev_dbg(sh->sc->dev, "addr %x : val %x, ", wifi_dc_addr, REG32_R(wifi_dc_addr)); \
     } \
-    PRINT("\r\n"); \
-                                                                                            \
                                                                                             \
     SET_RG_CAL_INDEX(0); \
     UDELAY(50); \
@@ -1200,16 +1175,12 @@ do { \
                                                                                             \
     MSLEEP(10); \
                                                                                             \
-    PRINT("--------------------------------------------\r\n"); \
-    PRINT("--------- 2.4 G Rx DC Calibration result----------------"); \
+    dev_dbg(sh->sc->dev, "--------------------------------------------"); \
+    dev_dbg(sh->sc->dev, "--------- 2.4 G Rx DC Calibration result----------------"); \
     for (i = 0; i < 21; i++) { \
-       if (i %4 == 0) \
-          PRINT("\r\n"); \
        wifi_dc_addr = (ADR_WF_DCOC_IDAC_REGISTER1)+ (i << 2); \
-       PRINT("addr %x : val %x, ", wifi_dc_addr, REG32_R(wifi_dc_addr)); \
+       dev_dbg(sh->sc->dev, "addr %x : val %x, ", wifi_dc_addr, REG32_R(wifi_dc_addr)); \
     } \
-    PRINT("\r\n"); \
-                                                                                            \
     SET_RG_CAL_INDEX(0); \
                                                                                             \
                                                                                             \
@@ -1228,16 +1199,12 @@ do{ \
                                                                                             \
     MSLEEP(10); \
                                                                                             \
-    PRINT("--------------------------------------------\r\n"); \
-    PRINT("--------- 5 G Rx DC Calibration result----------------"); \
+    dev_dbg(sh->sc->dev, "--------------------------------------------"); \
+    dev_dbg(sh->sc->dev, "--------- 5 G Rx DC Calibration result----------------"); \
     for (i = 0; i < 21; i++) { \
-       if (i %4 == 0) \
-          PRINT("\r\n"); \
        wifi_dc_addr = (ADR_5G_DCOC_IDAC_REGISTER1)+ (i << 2); \
-       PRINT("addr %x : val %x, ", wifi_dc_addr, REG32_R(wifi_dc_addr)); \
+       dev_dbg(sh->sc->dev, "addr %x : val %x, ", wifi_dc_addr, REG32_R(wifi_dc_addr)); \
     } \
-    PRINT("\r\n"); \
-                                                                                            \
                                                                                             \
     SET_RG_CAL_INDEX(0); \
                                                                                             \
@@ -1248,8 +1215,8 @@ do{ \
 do{ \
     int count = 0; \
                                                                                             \
-    PRINT("--------------------------------------------\r\n"); \
-    PRINT("Before WiFi BW20 RG_WF_RX_ABBCTUNE: %d\r\n", GET_RG_WF_RX_ABBCTUNE); \
+    dev_dbg(sh->sc->dev, "--------------------------------------------"); \
+    dev_dbg(sh->sc->dev, "Before WiFi BW20 RG_WF_RX_ABBCTUNE: %d", GET_RG_WF_RX_ABBCTUNE); \
                                                                                             \
     SET_RG_RX_RCCAL_DELAY(2); \
                                                                                             \
@@ -1276,8 +1243,8 @@ do{ \
     } \
                                                                                             \
     MSLEEP(10); \
-    PRINT("--------------------------------------------%d\r\n", count); \
-    PRINT("WiFi BW20 RG_WF_RX_ABBCTUNE CAL RESULT: %d\r\n", GET_RG_WF_RX_ABBCTUNE); \
+    dev_dbg(sh->sc->dev, "--------------------------------------------%d", count); \
+    dev_dbg(sh->sc->dev, "WiFi BW20 RG_WF_RX_ABBCTUNE CAL RESULT: %d", GET_RG_WF_RX_ABBCTUNE); \
                                                                                             \
                                                                                             \
     SET_RG_CAL_INDEX(0); \
@@ -1288,8 +1255,8 @@ do { \
     int count = 0; \
                                                                                             \
                                                                                             \
-    PRINT("--------------------------------------------\r\n"); \
-    PRINT("Before WiFi BW40 RG_WF_RX_N_ABBCTUNE: %d\r\n", GET_RG_WF_N_RX_ABBCTUNE); \
+    dev_dbg(sh->sc->dev, "--------------------------------------------"); \
+    dev_dbg(sh->sc->dev, "Before WiFi BW40 RG_WF_RX_N_ABBCTUNE: %d", GET_RG_WF_N_RX_ABBCTUNE); \
                                                                                             \
     SET_RG_RX_N_RCCAL_DELAY(2); \
                                                                                             \
@@ -1322,8 +1289,8 @@ do { \
     } \
                                                                                             \
     MSLEEP(10); \
-    PRINT("--------------------------------------------%d\r\n", count); \
-    PRINT("WiFi BW40 RG_WF_N_RX_ABBCTUNE CAL RESULT: %d\r\n", GET_RG_WF_N_RX_ABBCTUNE); \
+    dev_dbg(sh->sc->dev, "--------------------------------------------%d", count); \
+    dev_dbg(sh->sc->dev, "WiFi BW40 RG_WF_N_RX_ABBCTUNE CAL RESULT: %d", GET_RG_WF_N_RX_ABBCTUNE); \
                                                                                             \
                                                                                             \
     SET_RG_CAL_INDEX(0); \
@@ -1333,8 +1300,8 @@ do { \
     int count = 0; \
                                                                                             \
                                                                                             \
-    PRINT("--------------------------------------------\r\n"); \
-    PRINT("Before txdc calibration WiFi 2P4G Tx DAC IOFFSET: %d, QOFFSET %d\r\n", \
+    dev_dbg(sh->sc->dev, "--------------------------------------------"); \
+    dev_dbg(sh->sc->dev, "Before txdc calibration WiFi 2P4G Tx DAC IOFFSET: %d, QOFFSET %d", \
          GET_RG_WF_TX_DAC_IOFFSET, GET_RG_WF_TX_DAC_QOFFSET); \
                                                                                             \
     SET_RG_TONE_SCALE(0x80); \
@@ -1367,8 +1334,8 @@ do { \
     } \
                                                                                             \
     MSLEEP(10); \
-    PRINT("--------------------------------------------%d\r\n", count); \
-    PRINT("After txdc calibration WiFi 2P4G Tx DAC IOFFSET: %d, QOFFSET %d\r\n", \
+    dev_dbg(sh->sc->dev, "--------------------------------------------%d", count); \
+    dev_dbg(sh->sc->dev, "After txdc calibration WiFi 2P4G Tx DAC IOFFSET: %d, QOFFSET %d", \
          GET_RG_WF_TX_DAC_IOFFSET, GET_RG_WF_TX_DAC_QOFFSET); \
                                                                                             \
                                                                                             \
@@ -1379,8 +1346,8 @@ do { \
     int count = 0; \
                                                                                             \
                                                                                             \
-    PRINT("--------------------------------------------\r\n"); \
-    PRINT("before tx iq calibration, tx alpha: %d, tx theta %d\r\n", \
+    dev_dbg(sh->sc->dev, "--------------------------------------------"); \
+    dev_dbg(sh->sc->dev, "before tx iq calibration, tx alpha: %d, tx theta %d", \
          GET_RO_TX_IQ_ALPHA, GET_RO_TX_IQ_THETA); \
                                                                                             \
     SET_RG_TONE_SCALE(0x80); \
@@ -1413,8 +1380,8 @@ do { \
     } \
                                                                                             \
     MSLEEP(10); \
-    PRINT("--------------------------------------------%d\r\n", count); \
-    PRINT("After tx iq calibration, tx alpha: %d, tx theta %d\r\n", \
+    dev_dbg(sh->sc->dev, "--------------------------------------------%d", count); \
+    dev_dbg(sh->sc->dev, "After tx iq calibration, tx alpha: %d, tx theta %d", \
          GET_RO_TX_IQ_ALPHA, GET_RO_TX_IQ_THETA); \
                                                                                             \
                                                                                             \
@@ -1426,8 +1393,8 @@ do { \
     int count = 0; \
                                                                                             \
                                                                                             \
-    PRINT("--------------------------------------------\r\n"); \
-    PRINT("Before rx iq calibration, rx alpha: %d, rx theta %d\r\n", \
+    dev_dbg(sh->sc->dev, "--------------------------------------------"); \
+    dev_dbg(sh->sc->dev, "Before rx iq calibration, rx alpha: %d, rx theta %d", \
          GET_RO_RX_IQ_ALPHA, GET_RO_RX_IQ_THETA); \
                                                                                             \
     SET_RG_RFG_RXIQCAL(0x0); \
@@ -1462,8 +1429,8 @@ do { \
     } \
                                                                                             \
     MSLEEP(10); \
-    PRINT("--------------------------------------------%d\r\n", count); \
-    PRINT("After rx iq calibration, rx alpha: %d, rx theta %d\r\n", \
+    dev_dbg(sh->sc->dev, "--------------------------------------------%d", count); \
+    dev_dbg(sh->sc->dev, "After rx iq calibration, rx alpha: %d, rx theta %d", \
          GET_RO_RX_IQ_ALPHA, GET_RO_RX_IQ_THETA); \
                                                                                             \
                                                                                             \
@@ -1474,8 +1441,8 @@ do { \
 do { \
     int count = 0; \
                                                                                             \
-    PRINT("--------------------------------------------\r\n"); \
-    PRINT("Before 5G txdc calibration WiFi 5G Tx DAC IOFFSET: %d, QOFFSET %d\r\n", \
+    dev_dbg(sh->sc->dev, "--------------------------------------------"); \
+    dev_dbg(sh->sc->dev, "Before 5G txdc calibration WiFi 5G Tx DAC IOFFSET: %d, QOFFSET %d", \
          GET_RG_5G_TX_DAC_IOFFSET, GET_RG_5G_TX_DAC_QOFFSET); \
                                                                                             \
     SET_RG_TONE_SCALE(0x80); \
@@ -1508,8 +1475,8 @@ do { \
     } \
                                                                                             \
     MSLEEP(10); \
-    PRINT("--------------------------------------------%d\r\n", count); \
-    PRINT("After 5G txdc calibration WiFi 5G Tx DAC IOFFSET: %d, QOFFSET %d\r\n", \
+    dev_dbg(sh->sc->dev, "--------------------------------------------%d", count); \
+    dev_dbg(sh->sc->dev, "After 5G txdc calibration WiFi 5G Tx DAC IOFFSET: %d, QOFFSET %d", \
          GET_RG_5G_TX_DAC_IOFFSET, GET_RG_5G_TX_DAC_QOFFSET); \
                                                                                             \
                                                                                             \
@@ -1521,8 +1488,8 @@ do { \
     int count = 0; \
                                                                                             \
                                                                                             \
-    PRINT("--------------------------------------------\r\n"); \
-    PRINT("before 5G tx iq calibration, tx alpha: %d, tx theta %d\r\n", \
+    dev_dbg(sh->sc->dev, "--------------------------------------------"); \
+    dev_dbg(sh->sc->dev, "before 5G tx iq calibration, tx alpha: %d, tx theta %d", \
          GET_RO_TX_IQ_ALPHA, GET_RO_TX_IQ_THETA); \
                                                                                             \
     SET_RG_TONE_SCALE(0x80); \
@@ -1555,8 +1522,8 @@ do { \
     } \
                                                                                             \
     MSLEEP(10); \
-    PRINT("--------------------------------------------%d\r\n", count); \
-    PRINT("After 5G tx iq calibration, tx alpha: %d, tx theta %d\r\n", \
+    dev_dbg(sh->sc->dev, "--------------------------------------------%d", count); \
+    dev_dbg(sh->sc->dev, "After 5G tx iq calibration, tx alpha: %d, tx theta %d", \
          GET_RO_TX_IQ_ALPHA, GET_RO_TX_IQ_THETA); \
                                                                                             \
                                                                                             \
@@ -1568,8 +1535,8 @@ do { \
     int count = 0; \
                                                                                             \
                                                                                             \
-    PRINT("--------------------------------------------\r\n"); \
-    PRINT("Before 5G rx iq calibration, rx alpha: %d, rx theta %d\r\n", \
+    dev_dbg(sh->sc->dev, "--------------------------------------------"); \
+    dev_dbg(sh->sc->dev, "Before 5G rx iq calibration, rx alpha: %d, rx theta %d", \
          GET_RO_RX_IQ_ALPHA, GET_RO_RX_IQ_THETA); \
                                                                                             \
     SET_RG_5G_RFG_RXIQCAL(0x0); \
@@ -1605,8 +1572,8 @@ do { \
     } \
                                                                                             \
     MSLEEP(10); \
-    PRINT("--------------------------------------------%d\r\n", count); \
-    PRINT("After 5G rx iq calibration, rx alpha: %d, rx theta %d\r\n", \
+    dev_dbg(sh->sc->dev, "--------------------------------------------%d", count); \
+    dev_dbg(sh->sc->dev, "After 5G rx iq calibration, rx alpha: %d, rx theta %d", \
          GET_RO_RX_IQ_ALPHA, GET_RO_RX_IQ_THETA); \
                                                                                             \
                                                                                             \
@@ -1801,7 +1768,7 @@ do{ \
      "NL80211_CHAN_HT40MINUS", \
      "NL80211_CHAN_HT40PLUS"}; \
                                                                                             \
-    PRINT("%s: ch %d, type %s\r\n", __func__, _ch, chan_type[_ch_type]); \
+    dev_dbg(sh->sc->dev, "%s: ch %d, type %s", __func__, _ch, chan_type[_ch_type]); \
     TU_SET_TURISMOB_BW(_ch_type); \
     if ( _ch <=14 && _ch >=1){ \
         SET_MTX_DUR_RSP_SIFS_G(10); \
@@ -1814,7 +1781,7 @@ do{ \
      SET_TX2TX_SIFS(19); \
         TURISMOB_SET_5G_CHANNEL(_ch); \
     } else { \
-        PRINT("invalid channel %d\r\n", _ch); \
+        dev_dbg(sh->sc->dev, "invalid channel %d", _ch); \
     } \
 } while(0)
 #define TU_INIT_TURISMOC_PLL \
@@ -1831,7 +1798,7 @@ do{ \
         if (regval == 0x13) \
             break; \
         if (count > 100){ \
-            PRINT(" PLL initial fails \r\n"); \
+            dev_dbg(sh->sc->dev, " PLL initial fails "); \
             break; \
         } \
     } while (1); \
@@ -1891,10 +1858,10 @@ do { \
             if(adc_out_sumQ>63){ \
                 adc_out_sumQ -= 128; \
             } \
-            PRINT("lna gain is %d, pga gain is %d, ADC_OUT_I is %d, ADC_OUT_Q is %d\r\n", \
+            dev_dbg(sh->sc->dev, "lna gain is %d, pga gain is %d, ADC_OUT_I is %d, ADC_OUT_Q is %d", \
                rg_rfg, rg_pgag, adc_out_sum_i, adc_out_sumQ); \
         } \
-        PRINT("------------------------------------------------------------\r\n"); \
+        dev_dbg(sh->sc->dev, "------------------------------------------------------------"); \
     } \
                                                                                             \
     SET_RG_RX_GAIN_MANUAL(0); \
@@ -1913,22 +1880,18 @@ do { \
     while (GET_RO_WF_DCCAL_DONE == 0){ \
         i ++; \
         if (i >10000) { \
-            PRINT_ERR("%s: 2.4 RXDC cal failed\r\n",__func__); \
+            dev_err(sh->sc->dev, "%s: 2.4 RXDC cal failed",__func__); \
             break; \
         } \
         UDELAY(1); \
     } \
-    PRINT("------------------------------------------------%d\r\n",i); \
-    PRINT("--------- 2.4 G Rx DC Calibration result----------------"); \
+    dev_dbg(sh->sc->dev, "------------------------------------------------%d",i); \
+    dev_dbg(sh->sc->dev, "--------- 2.4 G Rx DC Calibration result----------------"); \
     for (i = 0; i < 21; i++) { \
-       if (i %4 == 0) \
-          PRINT("\r\n"); \
        wifi_dc_addr = (ADR_WF_DCOC_IDAC_REGISTER1)+ (i << 2); \
        _cal->rxdc_2g[i] = REG32_R(wifi_dc_addr); \
-       PRINT("addr %x : val %x, ", wifi_dc_addr, _cal->rxdc_2g[i]); \
+       dev_dbg(sh->sc->dev, "addr %x : val %x, ", wifi_dc_addr, _cal->rxdc_2g[i]); \
     } \
-    PRINT("\r\n"); \
-                                                                                            \
                                                                                             \
                                                                                             \
                                                                                             \
@@ -1958,10 +1921,10 @@ do { \
             if(adc_out_sumQ>63){ \
                 adc_out_sumQ -= 128; \
             } \
-            PRINT("lna gain is %d, pga gain is %d, ADC_OUT_I is %d, ADC_OUT_Q is %d\r\n", \
+            dev_dbg(sh->sc->dev, "lna gain is %d, pga gain is %d, ADC_OUT_I is %d, ADC_OUT_Q is %d", \
                rg_rfg, rg_pgag, adc_out_sum_i, adc_out_sumQ); \
         } \
-        PRINT("------------------------------------------------------------\r\n"); \
+        dev_dbg(sh->sc->dev, "------------------------------------------------------------"); \
     } \
                                                                                             \
     SET_RG_RX_GAIN_MANUAL(0); \
@@ -1981,23 +1944,19 @@ do { \
     while (GET_RO_5G_DCCAL_DONE == 0){ \
         i ++; \
         if (i >10000) { \
-            PRINT_ERR("%s: 5G RXDC cal failed\r\n",__func__); \
+            dev_err(sh->sc->dev, "%s: 5G RXDC cal failed",__func__); \
             break; \
         } \
         UDELAY(1); \
     } \
                                                                                             \
-    PRINT("------------------------------------------------%d\r\n",i); \
-    PRINT("--------- 5 G Rx DC Calibration result----------------"); \
+    dev_dbg(sh->sc->dev, "------------------------------------------------%d",i); \
+    dev_dbg(sh->sc->dev, "--------- 5 G Rx DC Calibration result----------------"); \
     for (i = 0; i < 21; i++) { \
-       if (i %4 == 0) \
-          PRINT("\r\n"); \
        wifi_dc_addr = (ADR_5G_DCOC_IDAC_REGISTER1)+ (i << 2); \
        _cal->rxdc_5g[i] = REG32_R(wifi_dc_addr); \
-       PRINT("addr %x : val %x, ", wifi_dc_addr, _cal->rxdc_5g[i]); \
+       dev_dbg(sh->sc->dev, "addr %x : val %x, ", wifi_dc_addr, _cal->rxdc_5g[i]); \
     } \
-    PRINT("\r\n"); \
-                                                                                            \
                                                                                             \
                                                                                             \
     SET_RG_CAL_INDEX(CAL_IDX_NONE); \
@@ -2007,8 +1966,8 @@ do { \
 do { \
     int count = 0; \
                                                                                             \
-    PRINT("--------------------------------------------\r\n"); \
-    PRINT("Before WiFi BW20 RG_WF_RX_ABBCTUNE: %d\r\n", GET_RG_WF_RX_ABBCTUNE); \
+    dev_dbg(sh->sc->dev, "--------------------------------------------"); \
+    dev_dbg(sh->sc->dev, "Before WiFi BW20 RG_WF_RX_ABBCTUNE: %d", GET_RG_WF_RX_ABBCTUNE); \
                                                                                             \
     SET_RG_RX_RCCAL_DELAY(2); \
                                                                                             \
@@ -2031,15 +1990,15 @@ do { \
     while (GET_RO_RCCAL_DONE == 0){ \
         count ++; \
         if (count >100000) { \
-            PRINT_ERR("%s: bw20 RXRC cal failed\r\n",__func__); \
+            dev_err(sh->sc->dev, "%s: bw20 RXRC cal failed",__func__); \
             break; \
         } \
         UDELAY(1); \
     } \
                                                                                             \
-    PRINT("--------------------------------------------%d\r\n", count); \
+    dev_dbg(sh->sc->dev, "--------------------------------------------%d", count); \
     _cal->rxrc_bw20 = GET_RG_WF_RX_ABBCTUNE; \
-    PRINT("WiFi BW20 RG_WF_RX_ABBCTUNE CAL RESULT: %d\r\n", _cal->rxrc_bw20); \
+    dev_dbg(sh->sc->dev, "WiFi BW20 RG_WF_RX_ABBCTUNE CAL RESULT: %d", _cal->rxrc_bw20); \
                                                                                             \
                                                                                             \
     SET_RG_CAL_INDEX(CAL_IDX_NONE); \
@@ -2049,8 +2008,8 @@ do { \
 do { \
     int count = 0; \
                                                                                             \
-    PRINT("--------------------------------------------\r\n"); \
-    PRINT("Before WiFi BW40 RG_WF_RX_N_ABBCTUNE: %d\r\n", GET_RG_WF_N_RX_ABBCTUNE); \
+    dev_dbg(sh->sc->dev, "--------------------------------------------"); \
+    dev_dbg(sh->sc->dev, "Before WiFi BW40 RG_WF_RX_N_ABBCTUNE: %d", GET_RG_WF_N_RX_ABBCTUNE); \
                                                                                             \
     SET_RG_RX_N_RCCAL_DELAY(2); \
                                                                                             \
@@ -2073,14 +2032,14 @@ do { \
     while (GET_RO_RCCAL_DONE == 0){ \
         count ++; \
         if (count >100000) { \
-            PRINT_ERR("%s: bw40 RXRC cal failed\r\n",__func__); \
+            dev_err(sh->sc->dev, "%s: bw40 RXRC cal failed",__func__); \
             break; \
         } \
         UDELAY(1); \
     } \
-    PRINT("--------------------------------------------%d\r\n", count); \
+    dev_dbg(sh->sc->dev, "--------------------------------------------%d", count); \
     _cal->rxrc_bw40 = GET_RG_WF_N_RX_ABBCTUNE; \
-    PRINT("WiFi BW40 RG_WF_N_RX_ABBCTUNE CAL RESULT: %d\r\n", _cal->rxrc_bw40); \
+    dev_dbg(sh->sc->dev, "WiFi BW40 RG_WF_N_RX_ABBCTUNE CAL RESULT: %d", _cal->rxrc_bw40); \
                                                                                             \
                                                                                             \
     SET_RG_CAL_INDEX(CAL_IDX_NONE); \
@@ -2094,8 +2053,8 @@ do { \
         (0x6 << RG_SX_CHANNEL_SFT) | (0x1 << RG_SX_RFCH_MAP_EN_SFT), 0, \
         (RG_SX_CHANNEL_I_MSK & RG_SX_RFCH_MAP_EN_I_MSK)); \
                                                                                         \
-    PRINT("--------------------------------------------\r\n"); \
-    PRINT("Before txdc calibration WiFi 2P4G Tx DAC IOFFSET: %d, QOFFSET %d\r\n", \
+    dev_dbg(sh->sc->dev, "--------------------------------------------"); \
+    dev_dbg(sh->sc->dev, "Before txdc calibration WiFi 2P4G Tx DAC IOFFSET: %d, QOFFSET %d", \
          GET_RG_WF_TX_DAC_IOFFSET, GET_RG_WF_TX_DAC_QOFFSET); \
                                                                                         \
     SET_RG_TXGAIN_PHYCTRL(1); \
@@ -2122,16 +2081,16 @@ do { \
     while (GET_RO_TXDC_DONE == 0){ \
         count ++; \
         if (count >100000) { \
-            PRINT_ERR("%s: 2.4G TXDC cal failed\r\n",__func__); \
+            dev_err(sh->sc->dev, "%s: 2.4G TXDC cal failed",__func__); \
             break; \
         } \
         UDELAY(1); \
     } \
                                                                                         \
-    PRINT("--------------------------------------------%d\r\n", count); \
+    dev_dbg(sh->sc->dev, "--------------------------------------------%d", count); \
     _cal->txdc_i_2g = GET_RG_WF_TX_DAC_IOFFSET; \
     _cal->txdc_q_2g = GET_RG_WF_TX_DAC_QOFFSET; \
-    PRINT("After txdc calibration WiFi 2P4G Tx DAC IOFFSET: %d, QOFFSET %d\r\n", \
+    dev_dbg(sh->sc->dev, "After txdc calibration WiFi 2P4G Tx DAC IOFFSET: %d, QOFFSET %d", \
          _cal->txdc_i_2g, _cal->txdc_q_2g); \
                                                                                         \
                                                                                         \
@@ -2147,8 +2106,8 @@ do { \
         (RG_SX_CHANNEL_I_MSK & RG_SX_RFCH_MAP_EN_I_MSK)); \
                                                                                         \
                                                                                         \
-    PRINT("--------------------------------------------\r\n"); \
-    PRINT("before tx iq 2.4G calibration, tx alpha: %d, tx theta %d\r\n", \
+    dev_dbg(sh->sc->dev, "--------------------------------------------"); \
+    dev_dbg(sh->sc->dev, "before tx iq 2.4G calibration, tx alpha: %d, tx theta %d", \
          GET_RG_TX_IQ_2500_ALPHA, GET_RG_TX_IQ_2500_THETA); \
                                                                                         \
     SET_RG_TXGAIN_PHYCTRL(1); \
@@ -2174,15 +2133,15 @@ do { \
     while (GET_RO_TXIQ_DONE == 0){ \
         count ++; \
         if (count >1000) { \
-            PRINT_ERR("%s: 2.4G txiq cal failed\r\n",__func__); \
+            dev_err(sh->sc->dev, "%s: 2.4G txiq cal failed",__func__); \
             break; \
         } \
         UDELAY(100); \
     } \
-    PRINT("--------------------------------------------%d\r\n", count); \
+    dev_dbg(sh->sc->dev, "--------------------------------------------%d", count); \
     _cal->txiq_alpha[BAND_2G] = GET_RG_TX_IQ_2500_ALPHA; \
     _cal->txiq_theta[BAND_2G] = GET_RG_TX_IQ_2500_THETA; \
-    PRINT("After tx iq calibration, tx alpha: %d, tx theta %d\r\n", \
+    dev_dbg(sh->sc->dev, "After tx iq calibration, tx alpha: %d, tx theta %d", \
          _cal->txiq_alpha[BAND_2G], _cal->txiq_theta[BAND_2G]); \
                                                                                         \
                                                                                         \
@@ -2206,7 +2165,7 @@ do { \
                                                                                         \
     regval1 = GET_RG_SPECTRUM_PWR_UPDATE; \
     regval = GET_RO_SPECTRUM_IQ_PWR_31_0; \
-    PRINT("The spectrum power is 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x\r\n", \
+    dev_dbg(sh->sc->dev, "The spectrum power is 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x", \
         ((regval1 >> 4) & 0xf), (regval1 & 0xf), ((regval >> 28) & 0xf), ((regval >> 24) & 0xf), \
         ((regval >> 20) & 0xf), ((regval >> 16) & 0xf), ((regval >> 12) & 0xf), ((regval >> 8) & 0xf), \
         ((regval >> 4) & 0xf), (regval & 0xf)); \
@@ -2226,7 +2185,7 @@ do { \
                                                                                                         \
     regval1 = GET_RG_SPECTRUM_PWR_UPDATE; \
     regval = GET_RO_SPECTRUM_IQ_PWR_31_0; \
-    PRINT("The spectrum power is 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x\r\n", \
+    dev_dbg(sh->sc->dev, "The spectrum power is 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x", \
         ((regval1 >> 4) & 0xf), (regval1 & 0xf), ((regval >> 28) & 0xf), ((regval >> 24) & 0xf), \
         ((regval >> 20) & 0xf), ((regval >> 16) & 0xf), ((regval >> 12) & 0xf), ((regval >> 8) & 0xf), \
         ((regval >> 4) & 0xf), (regval & 0xf)); \
@@ -2242,8 +2201,8 @@ do { \
         (RG_SX_CHANNEL_I_MSK & RG_SX_RFCH_MAP_EN_I_MSK)); \
                                                                                         \
                                                                                         \
-    PRINT("--------------------------------------------\r\n"); \
-    PRINT("Before rx iq calibration, rx alpha: %d, rx theta %d\r\n", \
+    dev_dbg(sh->sc->dev, "--------------------------------------------"); \
+    dev_dbg(sh->sc->dev, "Before rx iq calibration, rx alpha: %d, rx theta %d", \
          GET_RG_RX_IQ_2500_ALPHA, GET_RG_RX_IQ_2500_THETA); \
                                                                                         \
     SET_RG_TXGAIN_PHYCTRL(1); \
@@ -2271,17 +2230,17 @@ do { \
     while (GET_RO_RXIQ_DONE == 0){ \
         count ++; \
         if (count >100000) { \
-            PRINT_ERR("%s: 2.4G RXIQ cal failed\r\n",__func__); \
+            dev_err(sh->sc->dev, "%s: 2.4G RXIQ cal failed",__func__); \
             break; \
         } \
         UDELAY(1); \
     } \
                                                                                         \
                                                                                         \
-    PRINT("--------------------------------------------%d\r\n", count); \
+    dev_dbg(sh->sc->dev, "--------------------------------------------%d", count); \
     _cal->rxiq_alpha[BAND_2G] = GET_RG_RX_IQ_2500_ALPHA; \
     _cal->rxiq_theta[BAND_2G] = GET_RG_RX_IQ_2500_THETA; \
-    PRINT("After rx iq calibration, rx alpha: %d, rx theta %d\r\n", \
+    dev_dbg(sh->sc->dev, "After rx iq calibration, rx alpha: %d, rx theta %d", \
          _cal->rxiq_alpha[BAND_2G], _cal->rxiq_theta[BAND_2G]); \
                                                                                         \
                                                                                         \
@@ -2295,8 +2254,8 @@ do{ \
         (100 << RG_SX5GB_CHANNEL_SFT) | (0x1 << RG_SX5GB_RFCH_MAP_EN_SFT), 0, \
         (RG_SX5GB_CHANNEL_I_MSK & RG_SX5GB_RFCH_MAP_EN_I_MSK)); \
                                                                                             \
-    PRINT("--------------------------------------------\r\n"); \
-    PRINT("Before 5G txdc calibration WiFi 5G Tx DAC IOFFSET: %d, QOFFSET %d\r\n", \
+    dev_dbg(sh->sc->dev, "--------------------------------------------"); \
+    dev_dbg(sh->sc->dev, "Before 5G txdc calibration WiFi 5G Tx DAC IOFFSET: %d, QOFFSET %d", \
          GET_RG_5G_TX_DAC_IOFFSET, GET_RG_5G_TX_DAC_QOFFSET); \
                                                                                             \
     SET_RG_TXGAIN_PHYCTRL(1); \
@@ -2322,15 +2281,15 @@ do{ \
     while (GET_RO_5G_TXDC_DONE == 0){ \
         count ++; \
         if (count >100000) { \
-            PRINT_ERR("%s: 5G TXDC cal failed\r\n",__func__); \
+            dev_err(sh->sc->dev, "%s: 5G TXDC cal failed",__func__); \
             break; \
         } \
         UDELAY(1); \
     } \
-    PRINT("--------------------------------------------%d\r\n", count); \
+    dev_dbg(sh->sc->dev, "--------------------------------------------%d", count); \
     _cal->txdc_i_5g = GET_RG_5G_TX_DAC_IOFFSET; \
     _cal->txdc_q_5g = GET_RG_5G_TX_DAC_QOFFSET; \
-    PRINT("After 5G txdc calibration WiFi 5G Tx DAC IOFFSET: %d, QOFFSET %d\r\n", \
+    dev_dbg(sh->sc->dev, "After 5G txdc calibration WiFi 5G Tx DAC IOFFSET: %d, QOFFSET %d", \
          _cal->txdc_i_5g, _cal->txdc_q_5g); \
                                                                                             \
                                                                                             \
@@ -2344,8 +2303,8 @@ do{ \
                                                                                             \
     SET_RG_SX5GB_RFCH_MAP_EN(1); \
                                                                                             \
-    PRINT("--------------------------------------------\r\n"); \
-    PRINT("before 5G tx iq calibration, tx alpha: %d %d %d %d, tx theta %d %d %d %d\r\n", \
+    dev_dbg(sh->sc->dev, "--------------------------------------------"); \
+    dev_dbg(sh->sc->dev, "before 5G tx iq calibration, tx alpha: %d %d %d %d, tx theta %d %d %d %d", \
          GET_RG_TX_IQ_5100_ALPHA, GET_RG_TX_IQ_5100_THETA, \
          GET_RG_TX_IQ_5500_ALPHA, GET_RG_TX_IQ_5500_THETA, \
          GET_RG_TX_IQ_5700_ALPHA, GET_RG_TX_IQ_5700_THETA, \
@@ -2383,7 +2342,7 @@ do{ \
         while (GET_RO_5G_TXIQ_DONE == 0){ \
             count ++; \
             if (count >100000) { \
-                PRINT_ERR("%s: 5G band %d TXIQ cal failed\r\n",__func__, band); \
+                dev_err(sh->sc->dev, "%s: 5G band %d TXIQ cal failed",__func__, band); \
                 break; \
             } \
             UDELAY(1); \
@@ -2392,7 +2351,7 @@ do{ \
         SET_RG_CAL_INDEX(CAL_IDX_NONE); \
     } \
                                                                                             \
-    PRINT("--------------------------------------------%d\r\n", count); \
+    dev_dbg(sh->sc->dev, "--------------------------------------------%d", count); \
     _cal->txiq_alpha[BAND_5100] = GET_RG_TX_IQ_5100_ALPHA; \
     _cal->txiq_theta[BAND_5100] = GET_RG_TX_IQ_5100_THETA; \
     _cal->txiq_alpha[BAND_5500] = GET_RG_TX_IQ_5500_ALPHA; \
@@ -2401,7 +2360,7 @@ do{ \
     _cal->txiq_theta[BAND_5700] = GET_RG_TX_IQ_5700_THETA; \
     _cal->txiq_alpha[BAND_5900] = GET_RG_TX_IQ_5900_ALPHA; \
     _cal->txiq_theta[BAND_5900] = GET_RG_TX_IQ_5900_THETA; \
-    PRINT("after 5G tx iq calibration, tx alpha: %d %d %d %d, tx theta %d %d %d %d\r\n", \
+    dev_dbg(sh->sc->dev, "after 5G tx iq calibration, tx alpha: %d %d %d %d, tx theta %d %d %d %d", \
         _cal->txiq_alpha[BAND_5100], _cal->txiq_alpha[BAND_5500], \
         _cal->txiq_alpha[BAND_5700], _cal->txiq_alpha[BAND_5900], \
         _cal->txiq_theta[BAND_5100], _cal->txiq_theta[BAND_5500], \
@@ -2440,8 +2399,8 @@ do{ \
         default: \
             break; \
     } \
-    PRINT("--------------------------------------------\r\n"); \
-    PRINT("before 5G band %d tx iq calibration, tx alpha: %d, tx theta %d\n", \
+    dev_dbg(sh->sc->dev, "--------------------------------------------"); \
+    dev_dbg(sh->sc->dev, "before 5G band %d tx iq calibration, tx alpha: %d, tx theta %d", \
          _pa_band, alpha, theta); \
                                                                                             \
     SET_RG_TXGAIN_PHYCTRL(1); \
@@ -2465,7 +2424,7 @@ do{ \
     while (GET_RO_5G_TXIQ_DONE == 0){ \
         count ++; \
         if (count >100000){ \
-            PRINT_ERR("%s: 5G band %d TXIQ cal failed\r\n",__func__, _pa_band); \
+            dev_err(sh->sc->dev, "%s: 5G band %d TXIQ cal failed",__func__, _pa_band); \
             break; \
         } \
         UDELAY(1); \
@@ -2492,8 +2451,8 @@ do{ \
         default: \
             break; \
     } \
-    PRINT("--------------------------------------------%d\r\n", count); \
-    PRINT("after 5G band %d tx iq calibration, tx alpha: %d, tx theta %d\n", \
+    dev_dbg(sh->sc->dev, "--------------------------------------------%d", count); \
+    dev_dbg(sh->sc->dev, "after 5G band %d tx iq calibration, tx alpha: %d, tx theta %d", \
         _pa_band, _cal->txiq_alpha[_pa_band], _cal->txiq_theta[_pa_band]); \
 } while(0)
 #define DEBUG_5G_RXIQ_CAL \
@@ -2515,7 +2474,7 @@ do{ \
                                                                                             \
         regval1 = GET_RG_SPECTRUM_PWR_UPDATE; \
         regval = GET_RO_SPECTRUM_IQ_PWR_31_0; \
-        PRINT("The spectrum power is 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x\r\n", \
+        dev_dbg(sh->sc->dev, "The spectrum power is 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x", \
             ((regval1 >> 4) & 0xf), (regval1 & 0xf), ((regval >> 28) & 0xf), ((regval >> 24) & 0xf), \
             ((regval >> 20) & 0xf), ((regval >> 16) & 0xf), ((regval >> 12) & 0xf), ((regval >> 8) & 0xf), \
             ((regval >> 4) & 0xf), (regval & 0xf)); \
@@ -2535,7 +2494,7 @@ do{ \
                                                                                                             \
         regval1 = GET_RG_SPECTRUM_PWR_UPDATE; \
         regval = GET_RO_SPECTRUM_IQ_PWR_31_0; \
-        PRINT("The spectrum power is 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x\r\n", \
+        dev_dbg(sh->sc->dev, "The spectrum power is 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x", \
             ((regval1 >> 4) & 0xf), (regval1 & 0xf), ((regval >> 28) & 0xf), ((regval >> 24) & 0xf), \
             ((regval >> 20) & 0xf), ((regval >> 16) & 0xf), ((regval >> 12) & 0xf), ((regval >> 8) & 0xf), \
             ((regval >> 4) & 0xf), (regval & 0xf)); \
@@ -2548,8 +2507,8 @@ do{ \
     int band; \
                                                                                             \
     SET_RG_SX5GB_RFCH_MAP_EN(1); \
-    PRINT("--------------------------------------------\r\n"); \
-    PRINT("before 5G rx iq calibration, rx alpha: %d %d %d %d, rx theta %d %d %d %d\r\n", \
+    dev_dbg(sh->sc->dev, "--------------------------------------------"); \
+    dev_dbg(sh->sc->dev, "before 5G rx iq calibration, rx alpha: %d %d %d %d, rx theta %d %d %d %d", \
          GET_RG_RX_IQ_5100_ALPHA, GET_RG_RX_IQ_5100_THETA, \
          GET_RG_RX_IQ_5500_ALPHA, GET_RG_RX_IQ_5500_THETA, \
          GET_RG_RX_IQ_5700_ALPHA, GET_RG_RX_IQ_5700_THETA, \
@@ -2589,7 +2548,7 @@ do{ \
         while (GET_RO_5G_RXIQ_DONE == 0){ \
             count ++; \
             if (count >100000) { \
-                PRINT_ERR("%s: 5G band %d RXDC cal failed\r\n",__func__, band); \
+                dev_err(sh->sc->dev, "%s: 5G band %d RXDC cal failed",__func__, band); \
                 break; \
             } \
             UDELAY(1); \
@@ -2599,7 +2558,7 @@ do{ \
                                                                                             \
         SET_RG_CAL_INDEX(CAL_IDX_NONE); \
     } \
-    PRINT("--------------------------------------------%d\r\n", count); \
+    dev_dbg(sh->sc->dev, "--------------------------------------------%d", count); \
     _cal->rxiq_alpha[BAND_5100] = GET_RG_RX_IQ_5100_ALPHA; \
     _cal->rxiq_theta[BAND_5100] = GET_RG_RX_IQ_5100_THETA; \
     _cal->rxiq_alpha[BAND_5500] = GET_RG_RX_IQ_5500_ALPHA; \
@@ -2608,7 +2567,7 @@ do{ \
     _cal->rxiq_theta[BAND_5700] = GET_RG_RX_IQ_5700_THETA; \
     _cal->rxiq_alpha[BAND_5900] = GET_RG_RX_IQ_5900_ALPHA; \
     _cal->rxiq_theta[BAND_5900] = GET_RG_RX_IQ_5900_THETA; \
-    PRINT("After 5G rx iq calibration, rx alpha: %d %d %d %d, rx theta %d %d %d %d\r\n", \
+    dev_dbg(sh->sc->dev, "After 5G rx iq calibration, rx alpha: %d %d %d %d, rx theta %d %d %d %d", \
         _cal->rxiq_alpha[BAND_5100], _cal->rxiq_alpha[BAND_5500], \
         _cal->rxiq_alpha[BAND_5700], _cal->rxiq_alpha[BAND_5900], \
         _cal->rxiq_theta[BAND_5100], _cal->rxiq_theta[BAND_5500], \
@@ -2647,8 +2606,8 @@ do{ \
         default: \
             break; \
     } \
-    PRINT("--------------------------------------------\r\n"); \
-    PRINT("before 5G band%d rx iq calibration, rx alpha: %d, rx theta %d\n", \
+    dev_dbg(sh->sc->dev, "--------------------------------------------"); \
+    dev_dbg(sh->sc->dev, "before 5G band%d rx iq calibration, rx alpha: %d, rx theta %d", \
          _pa_band, alpha, theta); \
                                                                                             \
     SET_RG_TXGAIN_PHYCTRL(1); \
@@ -2674,7 +2633,7 @@ do{ \
     while (GET_RO_5G_RXIQ_DONE == 0){ \
         count ++; \
         if (count >100000) { \
-            PRINT_ERR("%s: 5G band %d RXIQ cal failed\r\n",__func__, _pa_band); \
+            dev_err(sh->sc->dev, "%s: 5G band %d RXIQ cal failed",__func__, _pa_band); \
             break; \
         } \
         UDELAY(1); \
@@ -2706,9 +2665,9 @@ do{ \
     } \
                                                                                             \
                                                                                             \
-    PRINT("--------------------------------------------%d\r\n", count); \
+    dev_dbg(sh->sc->dev, "--------------------------------------------%d", count); \
                                                                                             \
-    PRINT("After 5G band%d rx iq calibration, rx alpha: %d, rx theta %d\n", \
+    dev_dbg(sh->sc->dev, "After 5G band%d rx iq calibration, rx alpha: %d, rx theta %d", \
         _pa_band, _cal->rxiq_alpha[pa_band], _cal->rxiq_theta[pa_band]); \
 } while (0)
 #define TU_INIT_TURISMOC_CALI(_cal) \
@@ -2828,7 +2787,7 @@ do{ \
 do{ \
      int i, wifi_dc_addr; \
                                                                                             \
-    PRINT("Restore calibration result\n"); \
+    dev_dbg(sh->sc->dev, "Restore calibration result"); \
                                                                                             \
     for (i = 0; i < 21; i++) { \
        wifi_dc_addr = ADR_WF_DCOC_IDAC_REGISTER1+ (i << 2); \
@@ -2889,12 +2848,12 @@ do{ \
 } while(0)
 #define _INIT_TURISMOC_SYS(_patch,_cal) \
 do{ \
-    PRINT_INFO("RF table ver %s PHY table ver %s, common code ver %s \n", \
+    PRINT_INFO("RF table ver %s PHY table ver %s, common code ver %s ", \
         SSV6006_TURISMOC_RF_TABLE_VER, SSV6006_TURISMOC_PHY_TABLE_VER, \
         SSV6006_TURISMOC_COMMON_CODE_VER); \
     LOAD_TURISMOC_RF_TABLE(_patch); \
     SET_RG_EN_IOTADC_160M(0); \
-    PRINT("Set XTAL to %sM\n", xtal_type[_patch.xtal]); \
+    dev_dbg(sh->sc->dev, "Set XTAL to %sM", xtal_type[_patch.xtal]); \
     SET_RG_DP_XTAL_FREQ(_patch.xtal); \
     SET_RG_SX_XTAL_FREQ(_patch.xtal); \
     TU_INIT_TURISMOC_PLL; \
@@ -3200,7 +3159,7 @@ do{ \
     int rg_tx_scale; \
     int am, pm; \
                                                                                             \
-    PRINT("check PA DPD on band %d\n", pa_band); \
+    dev_dbg(sh->sc->dev, "check PA DPD on band %d", pa_band); \
                                                                                             \
     PRE_PADPD(_pa_band, _init_gain); \
                                                                                             \
@@ -3208,7 +3167,7 @@ do{ \
     DPD_SET_TXSCALE_GET_RESULT( rg_tx_scale, am, pm); \
     if (am >=510) { \
         *_ret = 1; \
-        PRINT("gain probe fail, am %d\n", am); \
+        dev_dbg(sh->sc->dev, "gain probe fail, am %d", am); \
     } \
                                                                                             \
     POST_PADPD; \
@@ -3222,7 +3181,7 @@ do { \
     int padpd_am = 0, padpd_pm = 0; \
     u32 addr_am = 0, addr_pm = 0 , mask_am = 0, mask_pm = 0; \
                                                                                             \
-    PRINT("start PA DPD on band %d\r\n", _pa_band); \
+    dev_dbg(sh->sc->dev, "start PA DPD on band %d", _pa_band); \
                                                                                             \
     PRE_PADPD(_pa_band, _init_gain); \
                                                                                             \
@@ -3253,8 +3212,7 @@ do { \
                                                                                             \
         padpd_pm = (phase_ini >= pm) ? (phase_ini - pm) : (phase_ini - pm + 8192); \
                                                                                             \
-        PRINT("index %d, padpd_am %d, padpd_pm 0x%04x, ", i, padpd_am, padpd_pm); \
-        if ((i%2 == 1) || (i == (MAX_PADPD_TONE -1))) PRINT("\r\n"); \
+        dev_dbg(sh->sc->dev, "index %d, padpd_am %d, padpd_pm 0x%04x, ", i, padpd_am, padpd_pm); \
                                                                                             \
         addr_am = padpd_am_addr_table[pa_band][(i >> 1)]; \
         mask_am = am_mask[i%2]; \
@@ -3369,7 +3327,7 @@ do { \
                                                                                             \
     if (hw_dpd_bbscale == 0x80){ \
                                                                                             \
-        PRINT("HW DPD value changed, restore DPD\n"); \
+        dev_dbg(sh->sc->dev, "HW DPD value changed, restore DPD"); \
         TU_RESTORE_DPD(_dpd); \
     } \
 } while(0)
@@ -3415,20 +3373,20 @@ do { \
                                                                                             \
             SET_RG_DPD_AM_EN(0); \
             if (_pa_band != 0) init_gain = 2; \
-            PRINT("Start PADPD on band %d ,init gain %d\r\n", _pa_band, init_gain); \
+            dev_dbg(sh->sc->dev, "Start PADPD on band %d ,init gain %d", _pa_band, init_gain); \
             while (1){ \
                 ret = 0; \
                 START_PADPD(val, _pa_band, init_gain, dpd_bbscale, pret); \
                 if (!ret){ \
-                    PRINT("PA DPD done!!\r\n"); \
+                    dev_dbg(sh->sc->dev, "PA DPD done!!"); \
                     _dpd->dpd_done[_pa_band] = true; \
                     break; \
                 } \
                 init_gain--; \
-                PRINT("\r\nFailed on band %d, Lower gain to %d\r\n", pa_band, init_gain); \
+                dev_dbg(sh->sc->dev, "Failed on band %d, Lower gain to %d", pa_band, init_gain); \
                 if (init_gain < 0) { \
                     SET_RG_DPD_AM_EN(0); \
-                    PRINT_ERR("WARNING:PADPD FAIL on band %d\r\n", _pa_band); \
+                    dev_err(sh->sc->dev, "WARNING:PADPD FAIL on band %d", _pa_band); \
                     break; \
                 } \
             } \
@@ -3464,7 +3422,7 @@ do { \
 #define CHECK_IQK(_cal,_pa_band) \
 do { \
     if (_cal->cal_iq_done[_pa_band] == false) { \
-        PRINT("do iqk on band %d\n", _pa_band); \
+        dev_dbg(sh->sc->dev, "do iqk on band %d", _pa_band); \
                                                                                             \
         START_IQK(sh, _cal, _pa_band); \
         _cal->cal_iq_done[_pa_band] = true; \
@@ -3475,7 +3433,7 @@ do { \
 do { \
     SSV_HW *sh = NULL; \
     if (_cal->cal_iq_done[_pa_band] == false) { \
-        PRINT("do iqk on band %d\n", _pa_band); \
+        dev_dbg(sh->sc->dev, "do iqk on band %d", _pa_band); \
                                                                                             \
         START_IQK(sh, _cal, _pa_band); \
         _cal->cal_iq_done[_pa_band] = true; \
@@ -3558,7 +3516,7 @@ do{ \
      "NL80211_CHAN_HT40MINUS", \
      "NL80211_CHAN_HT40PLUS"}; \
                                                                                             \
-    PRINT("%s: ch %d, type %s\r\n", __func__, _ch, chan_type[_ch_type]); \
+    dev_dbg(sh->sc->dev, "%s: ch %d, type %s", __func__, _ch, chan_type[_ch_type]); \
     SET_RG_SOFT_RST_N_11B_RX(0); \
     SET_RG_SOFT_RST_N_11GN_RX(0); \
                                                                                             \
@@ -3580,7 +3538,7 @@ do{ \
      SET_SIGEXT(0); \
         TURISMOC_SET_5G_CHANNEL(_ch); \
     } else { \
-        PRINT("invalid channel %d\r\n", _ch); \
+        dev_dbg(sh->sc->dev, "invalid channel %d", _ch); \
     } \
                                                                                             \
 } while(0)
