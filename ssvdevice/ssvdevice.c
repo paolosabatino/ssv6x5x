@@ -301,7 +301,7 @@ static void _import_default_cfg (char *tu_stacfgpath)
     char buf[MAX_CHARS_PER_LINE], cfg_cmd[32], cfg_value[32];
     mm_segment_t fs;
     size_t s, read_len = 0, is_cmd_support = 0;
-    printk("\n*** %s, %s ***\n\n", __func__, tu_stacfgpath);
+    printk(KERN_INFO "ssv6x5x: importing configuration from %s", tu_stacfgpath);
     if (tu_stacfgpath == NULL)
         return;
     memset(&tu_ssv_cfg, 0, sizeof(tu_ssv_cfg));
@@ -309,12 +309,12 @@ static void _import_default_cfg (char *tu_stacfgpath)
     _set_initial_cfg_default();
     fp = filp_open(tu_stacfgpath, O_RDONLY, 0);
     if (IS_ERR(fp) || fp == NULL) {
-        printk("ERROR: filp_open\n");
+        printk(KERN_ERR "ERROR: filp_open\n");
         WARN_ON(1);
         return;
     }
     if (fp->f_path.dentry == NULL) {
-        printk("ERROR: dentry NULL\n");
+        printk(KERN_ERR "ERROR: dentry NULL\n");
         WARN_ON(1);
         return;
     }

@@ -505,7 +505,7 @@ static int ssv6006c_write_pairwise_key_to_hw (struct ssv_softc *sc,
         dev_err(sc->dev, "Set pair-wise key to invalid WSID %d.\n", wsid);
         return -EOPNOTSUPP;
     }
-    dev_info(sc->dev, "Set STA %d's pair-wise key of %d bytes.\n", wsid, key_len);
+    dev_dbg(sc->dev, "Set STA %d's pair-wise key of %d bytes.\n", wsid, key_len);
     ssv6006c_write_key_to_hw(sc, vif_priv, keyconf->key, wsid, index, SSV6XXX_WSID_SEC_PAIRWISE);
     return 0;
 }
@@ -525,7 +525,7 @@ static int ssv6006c_write_group_key_to_hw (struct ssv_softc *sc,
         dev_err(sc->dev, "Setting group key to NULL VIF\n");
         return -EOPNOTSUPP;
     }
-    dev_info(sc->dev, "Setting VIF %d group key %d of length %d to WSID %d.\n",
+    dev_dbg(sc->dev, "Setting VIF %d group key %d of length %d to WSID %d.\n",
              vif_priv->vif_idx, index, key_len, wsid);
     vif_priv->group_key_idx = index;
     if (sta_priv)

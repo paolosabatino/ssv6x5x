@@ -74,7 +74,6 @@ int initWlan(void)
         printk("%s : Retry to carddetect\n",__func__);
         ssv_wifi_power();
     }
-    printk("%s: tu_ssvdevice_init(): %d\n", __func__, ret);
 #ifdef ROCKCHIP_WIFI_AUTO_SUPPORT
     if (!ret) {
         strcpy(wifi_chip_type_string, "ssv6051");
@@ -98,7 +97,6 @@ void exitWlan(void)
 }
 static __init int tu_generic_wifi_init_module(void)
 {
-    printk("%s\n", __func__);
 #ifdef CONFIG_SSV_SUPPORT_AES_ASM
     sha1_mod_init();
     aes_init();
@@ -107,7 +105,6 @@ static __init int tu_generic_wifi_init_module(void)
 }
 static __exit void tu_generic_wifi_exit_module(void)
 {
-    printk("%s\n", __func__);
 #ifdef CONFIG_SSV_SUPPORT_AES_ASM
     aes_fini();
     sha1_mod_fini();

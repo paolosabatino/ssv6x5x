@@ -106,7 +106,7 @@ void dbgprint(struct ssv_cmd_data *cmd_data, u32 log_ctrl, u32 log_id, const cha
     if (log_ctrl & log_id) {
         if (!cmd_data->log_to_ram) {
             va_start(args, fmt);
-            vprintk(fmt, args);
+            printk(fmt, args);
             va_end(args);
         } else {
             va_start(args, fmt);
@@ -137,7 +137,7 @@ void ssv6xxx_hci_dbgprint(void *argc, u32 log_id, const char *fmt,...)
         log_len = vsnprintf(log, sizeof(log)-1, fmt, args);
         va_end(args);
         if (log_len == (sizeof(log) - 1))
-            printk("%s(): log message is too long\n", __FUNCTION__);
+            dev_dbg(sc->dev, "%s(): log message is too long\n", __FUNCTION__);
         log[log_len] = '\0';
         dbgprint(cmd_data, sc->log_ctrl, log_id, "%s", log);
     }
@@ -158,7 +158,7 @@ unsigned int cal_duration_of_mpdu(struct sk_buff *mpdu_skb)
     SKB_info *mpdu_skb_info = (SKB_info *)mpdu_skb->head;
     timeout = (unsigned int)ktime_to_ms(ktime_sub(ktime_get(), mpdu_skb_info->timestamp));
     if (timeout > SKB_DURATION_TIMEOUT_MS)
-        printk("*mpdu_duration: %ums\n", timeout);
+        dev_dbg(sc->dev, "*mpdu_duration: %ums\n", timeout);
     return timeout;
 }
 #endif
@@ -177,17 +177,17 @@ void _ssv6xxx_hexdump(const char *title, const u8 *buf,
                       size_t len)
 {
     size_t i;
-    printk("%s - hexdump(len=%lu):\n", title, (unsigned long) len);
+    printk(KERN_DEBUG "%s - hexdump(len=%lu):\n", title, (unsigned long) len);
     if (buf == NULL) {
-        printk(" [NULL]");
+        printk(KERN_DEBUG " [NULL]");
     } else {
         for (i = 0; i < len; i++) {
-            printk(" %02x", buf[i]);
+            printk(KERN_DEBUG " %02x", buf[i]);
             if((i+1)%16 ==0)
-                printk("\n");
+                printk(KERN_DEBUG "\n");
         }
     }
-    printk("\n-----------------------------\n");
+    printk(KERN_DEBUG "\n-----------------------------\n");
 }
 #endif
 void ssv6xxx_txbuf_free_skb(struct sk_buff *skb, void *args)
@@ -253,12 +253,12 @@ bool ssv6xxx_pbuf_free(struct ssv_softc *sc, u32 pbuf_addr)
     u8 *p_tx_page_cnt = &sc->sh->page_count[PACKET_ADDR_2_ID(pbuf_addr)];
     while (ssv6xxx_mcu_input_full(sc)) {
         if (failCount++ < 1000) continue;
-        printk("=============>ERROR!!MAILBOX Block[%d]\n", failCount);
+        dev_dbg(sc->dev, "=============>ERROR!!MAILBOX Block[%d]\n", failCount);
         return false;
     }
     mutex_lock(&sc->mem_mutex);
     regval = ((M_ENG_TRASH_CAN << HW_ID_OFFSET) |(pbuf_addr >> ADDRESS_OFFSET));
-    printk("[A] ssv6xxx_pbuf_free addr[%08x][%x]\n", pbuf_addr, regval);
+    dev_dbg(sc->dev, "[A] ssv6xxx_pbuf_free addr[%08x][%x]\n", pbuf_addr, regval);
     SMAC_REG_WRITE(sc->sh, ADR_CH0_TRIG_1, regval);
     if (*p_tx_page_cnt) {
         sc->sh->tx_page_available += *p_tx_page_cnt;
@@ -301,7 +301,7 @@ int ssv6xxx_set_channel(struct ssv_softc *sc, struct ieee80211_channel *channel,
         }
     }
     if (chidx_vld == 0) {
-        printk("%s(): fail! channel_id not found in vt_tbl\n", __FUNCTION__);
+        dev_dbg(sc->dev, "%s(): fail! channel_id not found in vt_tbl\n", __FUNCTION__);
         return -1;
     }
     do {
@@ -339,24 +339,24 @@ int ssv6xxx_set_channel(struct ssv_softc *sc, struct ieee80211_channel *channel,
                     ssv6xxx_rf_enable(sh);
                     return 0;
                 } else {
-                    printk("%s(): Lock channel %d fail!\n", __FUNCTION__, vt_tbl[chidx].channel_id);
+                    dev_dbg(sc->dev, "%s(): Lock channel %d fail!\n", __FUNCTION__, vt_tbl[chidx].channel_id);
                     if ((ret = SMAC_REG_READ(sh, ADR_CBR_READ_ONLY_FLAGS_1, &regval)) != 0) break;
-                    printk("%s(): dbg: vt-mon read out as %d when rdy\n", __FUNCTION__, ((regval & 0x00001800) >> 11));
+                    dev_dbg(sc->dev, "%s(): dbg: vt-mon read out as %d when rdy\n", __FUNCTION__, ((regval & 0x00001800) >> 11));
                     if ((ret = SMAC_REG_READ(sh, ADR_CBR_READ_ONLY_FLAGS_2, &regval)) != 0) break;
-                    printk("%s(): dbg: sub-sel read out as %d when rdy\n", __FUNCTION__, ((regval & 0x00000fe0) >> 5));
+                    dev_dbg(sc->dev, "%s(): dbg: sub-sel read out as %d when rdy\n", __FUNCTION__, ((regval & 0x00000fe0) >> 5));
                     if ((ret = SMAC_REG_READ(sh, ADR_CBR_SYN_DIV_SDM_XOSC, &regval)) != 0) break;
-                    printk("%s(): dbg: RG_SX_REFBYTWO read out as %d when rdy\n", __FUNCTION__, ((regval & 0x00002000) >> 13));
+                    dev_dbg(sc->dev, "%s(): dbg: RG_SX_REFBYTWO read out as %d when rdy\n", __FUNCTION__, ((regval & 0x00002000) >> 13));
                     if ((ret = SMAC_REG_READ(sh, ADR_CBR_SYN_RGISTER_1, &regval)) != 0) break;
-                    printk("%s(): dbg: RG_SX_RFCTRL_F read out as 0x%08x when rdy\n", __FUNCTION__, ((regval & 0x00ffffff) >> 0));
+                    dev_dbg(sc->dev, "%s(): dbg: RG_SX_RFCTRL_F read out as 0x%08x when rdy\n", __FUNCTION__, ((regval & 0x00ffffff) >> 0));
                     if ((ret = SMAC_REG_READ(sh, ADR_CBR_SYN_RGISTER_2, &regval)) != 0) break;
-                    printk("%s(): dbg: RG_SX_RFCTRL_CH read out as 0x%08x when rdy\n", __FUNCTION__, ((regval & 0x000007ff) >> 0));
+                    dev_dbg(sc->dev, "%s(): dbg: RG_SX_RFCTRL_CH read out as 0x%08x when rdy\n", __FUNCTION__, ((regval & 0x000007ff) >> 0));
                     if ((ret = SMAC_REG_READ(sh, ADR_CBR_SX_ENABLE_RGISTER, &regval)) != 0) break;
-                    printk("%s(): dbg: RG_EN_SX_VT_MON_DG read out as %d when rdy\n", __FUNCTION__, ((regval & 0x00001000) >> 12));
+                    dev_dbg(sc->dev, "%s(): dbg: RG_EN_SX_VT_MON_DG read out as %d when rdy\n", __FUNCTION__, ((regval & 0x00001000) >> 12));
                 }
             }
         }
         fail_cnt++;
-        printk("%s(): calibration fail [%d] rounds!!\n",
+        dev_dbg(sc->dev, "%s(): calibration fail [%d] rounds!!\n",
                __FUNCTION__, fail_cnt);
         if(fail_cnt == 100)
             return -1;
@@ -480,23 +480,23 @@ int ssv6xxx_set_channel(struct ssv_softc *sc, struct ieee80211_channel *chan, en
                 if ((ret = SMAC_RF_REG_READ(sc->sh, ADR_READ_ONLY_FLAGS_2, &regval)) != 0) break;
                 ret = ssv6xxx_rf_enable(sc->sh);
 #if 0
-                printk("Lock to channel %d ([0xce010098]=%x)!!\n", vt_tbl[sh->cfg.crystal_type][chidx].channel_id, regval);
-                printk("crystal_type [%d]\n",sh->cfg.crystal_type);
+                dev_dbg(sc->dev, "Lock to channel %d ([0xce010098]=%x)!!\n", vt_tbl[sh->cfg.crystal_type][chidx].channel_id, regval);
+                dev_dbg(sc->dev, "crystal_type [%d]\n",sh->cfg.crystal_type);
                 SMAC_REG_READ(sc->sh, 0xce010040, &regval);
-                printk("0xce010040 [%x]\n",regval);
+                dev_dbg(sc->dev, "0xce010040 [%x]\n",regval);
                 SMAC_REG_READ(sc->sh, 0xce0100a4, &regval);
-                printk("0xce0100a4 [%x]\n",regval);
+                dev_dbg(sc->dev, "0xce0100a4 [%x]\n",regval);
                 SMAC_REG_READ(sc->sh, ADR_DPLL_DIVIDER_REGISTER, &regval);
-                printk("0xce010060 [%x]\n",regval);
+                dev_dbg(sc->dev, "0xce010060 [%x]\n",regval);
                 SMAC_REG_READ(sc->sh, ADR_SX_ENABLE_REGISTER, &regval);
-                printk("0xce010038 [%x]\n",regval);
+                dev_dbg(sc->dev, "0xce010038 [%x]\n",regval);
                 SMAC_REG_READ(sc->sh, 0xce01003C, &regval);
-                printk("0xce01003C [%x]\n",regval);
+                dev_dbg(sc->dev, "0xce01003C [%x]\n",regval);
                 SMAC_REG_READ(sc->sh, ADR_DPLL_FB_DIVIDER_REGISTERS_I, &regval);
-                printk("0xce01009c [%x]\n",regval);
+                dev_dbg(sc->dev, "0xce01009c [%x]\n",regval);
                 SMAC_REG_READ(sc->sh, ADR_DPLL_FB_DIVIDER_REGISTERS_II, &regval);
-                printk("0xce0100a0 [%x]\n",regval);
-                printk("[%x][%x][%x]\n",vt_tbl[sh->cfg.crystal_type][chidx].rf_ctrl_N,vt_tbl[sh->cfg.crystal_type][chidx].rf_ctrl_F,vt_tbl[sh->cfg.crystal_type][chidx].rf_precision_default);
+                dev_dbg(sc->dev, "0xce0100a0 [%x]\n",regval);
+                dev_dbg(sc->dev, "[%x][%x][%x]\n",vt_tbl[sh->cfg.crystal_type][chidx].rf_ctrl_N,vt_tbl[sh->cfg.crystal_type][chidx].rf_ctrl_F,vt_tbl[sh->cfg.crystal_type][chidx].rf_precision_default);
 #endif
                 dev_info(sc->dev, "Lock to channel %d ([0xce010098]=%x)!!\n", vt_tbl[sh->cfg.crystal_type][chidx].channel_id, regval);
                 sc->hw_chan = ch;
@@ -505,7 +505,7 @@ int ssv6xxx_set_channel(struct ssv_softc *sc, struct ieee80211_channel *chan, en
             retry_cnt++;
         } while(retry_cnt < RETRY_MAX);
         fail_cnt++;
-        printk("calibation fail:[%d]\n", fail_cnt);
+        dev_dbg(sc->dev, "calibation fail:[%d]\n", fail_cnt);
     } while((fail_cnt < FAIL_MAX) && (ret == 0));
 exit:
     if(ch <= 7) {
@@ -569,7 +569,7 @@ static int ssv6xxx_set_macaddr(struct ssv_hw *sh, int vif_idx)
 {
     int ret = 0;
     if (vif_idx != 0) {
-        printk("Does not support set MAC Address to HW for VIF %d\n", vif_idx);
+        dev_dbg(sc->dev, "Does not support set MAC Address to HW for VIF %d\n", vif_idx);
         return -1;
     }
     ret = SMAC_REG_WRITE(sh, ADR_STA_MAC_0, *((u32 *)&sh->cfg.maddr[0][0]));
@@ -630,26 +630,26 @@ static void ssv6xxx_dump_tx_desc(struct sk_buff *skb)
     int s;
     u8 *dat;
     tx_desc = (struct ssv6200_tx_desc *)skb->data;
-    printk(">> Tx Frame:\n");
+    dev_dbg(sc->dev, ">> Tx Frame:\n");
     for(s=0, dat=skb->data; s<tx_desc->hdr_len; s++) {
-        printk("%02x ", dat[sizeof(*tx_desc)+s]);
+        dev_dbg(sc->dev, "%02x ", dat[sizeof(*tx_desc)+s]);
         if (((s+1)& 0x0F) == 0)
-            printk("\n");
+            dev_dbg(sc->dev, "\n");
     }
-    printk("length: %d, c_type=%d, f80211=%d, qos=%d, ht=%d, use_4addr=%d, sec=%d\n",
+    dev_dbg(sc->dev, "length: %d, c_type=%d, f80211=%d, qos=%d, ht=%d, use_4addr=%d, sec=%d\n",
            tx_desc->len, tx_desc->c_type, tx_desc->f80211, tx_desc->qos, tx_desc->ht,
            tx_desc->use_4addr, tx_desc->security);
-    printk("more_data=%d, sub_type=%x, extra_info=%d\n", tx_desc->more_data,
+    dev_dbg(sc->dev, "more_data=%d, sub_type=%x, extra_info=%d\n", tx_desc->more_data,
            tx_desc->stype_b5b4, tx_desc->extra_info);
-    printk("fcmd=0x%08x, hdr_offset=%d, frag=%d, unicast=%d, hdr_len=%d\n",
+    dev_dbg(sc->dev, "fcmd=0x%08x, hdr_offset=%d, frag=%d, unicast=%d, hdr_len=%d\n",
            tx_desc->fCmd, tx_desc->hdr_offset, tx_desc->frag, tx_desc->unicast,
            tx_desc->hdr_len);
-    printk("tx_burst=%d, ack_policy=%d, do_rts_cts=%d, reason=%d, payload_offset=%d\n",
+    dev_dbg(sc->dev, "tx_burst=%d, ack_policy=%d, do_rts_cts=%d, reason=%d, payload_offset=%d\n",
            tx_desc->tx_burst, tx_desc->ack_policy, tx_desc->do_rts_cts,
            tx_desc->reason, tx_desc->payload_offset);
-    printk("fcmdidx=%d, wsid=%d, txq_idx=%d\n",
+    dev_dbg(sc->dev, "fcmdidx=%d, wsid=%d, txq_idx=%d\n",
            tx_desc->fCmdIdx, tx_desc->wsid, tx_desc->txq_idx);
-    printk("RTS/CTS Nav=%d, frame_time=%d, crate_idx=%d, drate_idx=%d, dl_len=%d\n",
+    dev_dbg(sc->dev, "RTS/CTS Nav=%d, frame_time=%d, crate_idx=%d, drate_idx=%d, dl_len=%d\n",
            tx_desc->rts_cts_nav, tx_desc->frame_consume_time, tx_desc->crate_idx, tx_desc->drate_idx,
            tx_desc->dl_length);
 }
@@ -657,13 +657,13 @@ static void ssv6xxx_dump_rx_desc(struct sk_buff *skb)
 {
     struct ssv6200_rx_desc *rx_desc;
     rx_desc = (struct ssv6200_rx_desc *)skb->data;
-    printk(">> RX Descriptor:\n");
-    printk("len=%d, c_type=%d, f80211=%d, qos=%d, ht=%d, use_4addr=%d, l3cs_err=%d, l4_cs_err=%d\n",
+    dev_dbg(sc->dev, ">> RX Descriptor:\n");
+    dev_dbg(sc->dev, "len=%d, c_type=%d, f80211=%d, qos=%d, ht=%d, use_4addr=%d, l3cs_err=%d, l4_cs_err=%d\n",
            rx_desc->len, rx_desc->c_type, rx_desc->f80211, rx_desc->qos, rx_desc->ht, rx_desc->use_4addr,
            rx_desc->l3cs_err, rx_desc->l4cs_err);
-    printk("align2=%d, psm=%d, stype_b5b4=%d, extra_info=%d\n",
+    dev_dbg(sc->dev, "align2=%d, psm=%d, stype_b5b4=%d, extra_info=%d\n",
            rx_desc->align2, rx_desc->psm, rx_desc->stype_b5b4, rx_desc->extra_info);
-    printk("hdr_offset=%d, reason=%d, rx_result=%d\n", rx_desc->hdr_offset,
+    dev_dbg(sc->dev, "hdr_offset=%d, reason=%d, rx_result=%d\n", rx_desc->hdr_offset,
            rx_desc->reason, rx_desc->RxResult);
 }
 #endif
@@ -713,7 +713,7 @@ u32 ssv6xxx_non_ht_txtime(u8 phy, int kbps,
                   + (num_symbols * OFDM_SYMBOL_TIME);
         break;
     default:
-        printk("Unknown phy %u\n", phy);
+        printk(KERN_ERR "Unknown phy %u\n", phy);
         BUG_ON(1);
         tx_time = 0;
         break;
@@ -749,7 +749,7 @@ static u32 ssv6xxx_set_frame_duration(struct ieee80211_tx_info *info,
         ctrl_short_preamble = true;
 #endif
 #ifdef FW_RC_RETRY_DEBUG
-    printk("mcs = %d, data rate idx=%d\n",tx_drate->idx, tx_drate[3].count);
+    dev_dbg(sc->dev, "mcs = %d, data rate idx=%d\n",tx_drate->idx, tx_drate[3].count);
 #endif
     for (nRCParams = 0; (nRCParams < SSV62XX_TX_MAX_RATES) ; nRCParams++) {
         if ((rc_params == NULL) || (sc == NULL)) {
@@ -842,7 +842,7 @@ int hw_update_watch_wsid(struct ssv_softc *sc, struct ieee80211_sta *sta,
     struct sk_buff *skb = NULL;
     struct cfg_host_cmd *host_cmd;
     struct ssv6xxx_wsid_params *ptr;
-    printk("cmd=%d for fw wsid list, wsid %d \n", ops, sta_idx);
+    dev_dbg(sc->dev, "cmd=%d for fw wsid list, wsid %d \n", ops, sta_idx);
     skb = ssv_skb_alloc(sc, HOST_CMD_HDR_LEN + sizeof(struct ssv6xxx_wsid_params));
     if(skb == NULL || sta_info == NULL || sc == NULL)
         return -1;
@@ -863,10 +863,10 @@ int hw_update_watch_wsid(struct ssv_softc *sc, struct ieee80211_sta *sta,
     };
     memcpy(&ptr->target_wsid, &sta->addr[0], 6);
     while (((sc->sh->hci.hci_ops->hci_send_cmd(sc->sh->hci.hci_ctrl, skb)) != 0) && (retry_cnt)) {
-        printk(KERN_INFO "WSID cmd=%d retry=%d!!\n", ops, retry_cnt);
+        dev_dbg(sc->dev, KERN_INFO "WSID cmd=%d retry=%d!!\n", ops, retry_cnt);
         retry_cnt--;
     }
-    printk("%s: wsid_idx = %u\n", __FUNCTION__, ptr->wsid_idx);
+    dev_dbg(sc->dev, "%s: wsid_idx = %u\n", __FUNCTION__, ptr->wsid_idx);
     ssv_skb_free(sc, skb);
     if(ops == SSV6XXX_WSID_OPS_ADD)
         sta_info->hw_wsid = sta_idx;
@@ -881,7 +881,7 @@ static void ssv6200_hw_set_pair_type(struct ssv_hw *sh,u8 type)
     temp = (temp & PAIR_SCRT_I_MSK);
     temp |= (type << PAIR_SCRT_SFT);
     SMAC_REG_WRITE(sh,ADR_SCRT_SET, temp);
-    printk("==>%s: write cipher type %d into hw\n",__func__,type);
+    dev_dbg(sc->dev, "==>%s: write cipher type %d into hw\n",__func__,type);
 }
 static u32 ssv6200_hw_get_pair_type(struct ssv_hw *sh)
 {
@@ -890,7 +890,7 @@ static u32 ssv6200_hw_get_pair_type(struct ssv_hw *sh)
     temp &= PAIR_SCRT_MSK;
     temp = (temp >> PAIR_SCRT_SFT);
     SMAC_REG_WRITE(sh,ADR_SCRT_SET, temp);
-    printk("==>%s: read cipher type %d from hw\n",__func__, temp);
+    dev_dbg(sc->dev, "==>%s: read cipher type %d from hw\n",__func__, temp);
     return temp;
 }
 static void ssv6200_hw_set_group_type(struct ssv_hw *sh,u8 type)
@@ -900,7 +900,7 @@ static void ssv6200_hw_set_group_type(struct ssv_hw *sh,u8 type)
     temp = temp & GRP_SCRT_I_MSK;
     temp |= (type << GRP_SCRT_SFT);
     SMAC_REG_WRITE(sh,ADR_SCRT_SET, temp);
-    printk(KERN_ERR "Set group key type %d\n", type);
+    dev_dbg(sc->dev, KERN_ERR "Set group key type %d\n", type);
 }
 void ssv6xxx_reset_sec_module(struct ssv_softc *sc)
 {
@@ -990,7 +990,7 @@ static void ssv6xxx_write_key_to_hw(struct ssv_softc *sc, struct ssv6xxx_hw_sec 
         SMAC_REG_WRITE(sc->sh, address, *(pointer));
         break;
     default:
-        printk(KERN_ERR "invalid key type %d.",key_type);
+        dev_dbg(sc->dev, KERN_ERR "invalid key type %d.",key_type);
         break;
     }
 }
@@ -1042,7 +1042,7 @@ static bool ssv6xxx_pairwise_wpa_use_hw_cipher(struct ssv_softc *sc,
         if (first_sta_priv->sta_idx != sta_priv->sta_idx) {
             tdls_link = true;
         }
-        printk("first sta idx %d, current sta idx %d\n",first_sta_priv->sta_idx,sta_priv->sta_idx);
+        dev_dbg(sc->dev, "first sta idx %d, current sta idx %d\n",first_sta_priv->sta_idx,sta_priv->sta_idx);
     }
     if ((tdls_link) && (vif_priv->pair_cipher != SSV_CIPHER_CCMP)
         && (sc->sh->cfg.use_wpa2_only == false)) {
@@ -1052,7 +1052,7 @@ static bool ssv6xxx_pairwise_wpa_use_hw_cipher(struct ssv_softc *sc,
         if ((another_vif_priv->pair_cipher != SSV_CIPHER_CCMP)
             && (another_vif_priv->pair_cipher != SSV_CIPHER_NONE)) {
             use_non_ccmp = true;
-            printk("another vif use none ccmp\n");
+            dev_dbg(sc->dev, "another vif use none ccmp\n");
         }
     }
     if ((((tdls_link) && (vif_priv->pair_cipher != SSV_CIPHER_CCMP)) || (use_non_ccmp))
@@ -1069,7 +1069,7 @@ static bool ssv6xxx_pairwise_wpa_use_hw_cipher(struct ssv_softc *sc,
     if ((cipher == SSV_CIPHER_TKIP) && (sc->sh->cfg.use_wpa2_only == 1)) {
         tkip_use_sw_cipher = true;
     }
-    printk ("%s==> tkip use sw cipher %d\n",__func__,tkip_use_sw_cipher);
+    dev_dbg(sc->dev, "%s==> tkip use sw cipher %d\n",__func__,tkip_use_sw_cipher);
     if ( ( ((vif_priv->vif_idx == 0) && (tdls_use_sw_cipher == false)
             && (tkip_use_sw_cipher == false)))
          || ( (cipher == SSV_CIPHER_CCMP)
@@ -1115,7 +1115,7 @@ static bool ssv6xxx_chk_if_support_hw_bssid(struct ssv_softc *sc,
 {
     if (!vif_idx)
         return true;
-    printk(" %s: VIF %d doesn't support HW BSSID\n", __func__, vif_idx);
+    dev_dbg(sc->dev, " %s: VIF %d doesn't support HW BSSID\n", __func__, vif_idx);
     return false;
 }
 static void ssv6xxx_chk_dual_vif_chg_rx_flow(struct ssv_softc *sc,
@@ -1137,7 +1137,7 @@ static void ssv6xxx_chk_dual_vif_chg_rx_flow(struct ssv_softc *sc,
                 dev_info(sc->dev, "orginal Rx_Flow %x , modified flow %x \n", val,
                          ((val & 0xf) | (M_ENG_CPU<<4) | (val & 0xfffffff0) <<4));
             } else {
-                printk(" doesn't need to change rx flow\n");
+                dev_dbg(sc->dev, " doesn't need to change rx flow\n");
             }
         }
     }
@@ -1162,14 +1162,14 @@ static void ssv6xxx_set_fw_hwwsid_sec_type(struct ssv_softc *sc, struct ieee8021
                         dev_info(sc->dev, "orginal Rx_Flow %x , modified flow %x \n",
                                  val, ((val & 0xf) | (M_ENG_CPU<<4) | (val & 0xfffffff0) <<4));
                     } else {
-                        printk(" doesn't need to change rx flow\n");
+                        dev_dbg(sc->dev, " doesn't need to change rx flow\n");
                     }
                 }
             }
             if (sta_priv->has_hw_decrypt) {
                 hw_update_watch_wsid(sc, sta, sta_info, sta_idx,
                                      SSV6XXX_WSID_SEC_HW, SSV6XXX_WSID_OPS_HWWSID_PAIRWISE_SET_TYPE);
-                printk("set hw wsid %d cipher mode to HW cipher for pairwise key\n", sta_idx);
+                dev_dbg(sc->dev, "set hw wsid %d cipher mode to HW cipher for pairwise key\n", sta_idx);
             }
         }
     } else {
@@ -1182,7 +1182,7 @@ static void ssv6xxx_set_fw_hwwsid_sec_type(struct ssv_softc *sc, struct ieee8021
                     if (vif_priv->has_hw_decrypt) {
                         hw_update_watch_wsid(sc, sta, sta_info, first_sta_priv->sta_idx,
                                              SSV6XXX_WSID_SEC_HW, SSV6XXX_WSID_OPS_HWWSID_GROUP_SET_TYPE);
-                        printk("set hw wsid %d cipher mode to HW cipher for group  key\n"
+                        dev_dbg(sc->dev, "set hw wsid %d cipher mode to HW cipher for group  key\n"
                                , first_sta_priv->sta_idx);
                     }
                 }
@@ -1219,7 +1219,7 @@ static void ssv6xxx_restore_rx_flow(struct ssv_softc *sc,
 #else
             ssv6xxx_set_rx_flow(sc->sh, RX_DATA_FLOW, RX_CIPHER_HCI);
 #endif
-            printk("redirect Rx flow for disconnect\n");
+            dev_dbg(sc->dev, "redirect Rx flow for disconnect\n");
         }
     } else if (vif_info->if_type == NL80211_IFTYPE_AP) {
         if (sta == NULL) {
@@ -1230,7 +1230,7 @@ static void ssv6xxx_restore_rx_flow(struct ssv_softc *sc,
 #else
                 ssv6xxx_set_rx_flow(sc->sh, RX_DATA_FLOW, RX_CIPHER_HCI);
 #endif
-                printk("redirect Rx flow for disconnect, and clear group key type\n");
+                dev_dbg(sc->dev, "redirect Rx flow for disconnect, and clear group key type\n");
             }
         }
     }
@@ -1587,7 +1587,7 @@ static void ssv6xxx_set_hw_wsid(struct ssv_softc *sc, struct ieee80211_vif *vif,
         if (wsid == (-1))
             return;
         BUG_ON(index == 0);
-        printk("Set CCMP/TKIP group key %d to WSID %d.\n", index, wsid);
+        dev_dbg(sc->dev, "Set CCMP/TKIP group key %d to WSID %d.\n", index, wsid);
         sramKey->sta_key[wsid].group_key_idx = index;
 #ifdef SSV6200_ECO
         if (vif_info->vif_priv != NULL)
@@ -1619,7 +1619,7 @@ static void ssv6xxx_set_hw_wsid(struct ssv_softc *sc, struct ieee80211_vif *vif,
 #if 0
         sta_info->s_flags |= STA_FLAG_ENCRYPT;
 #endif
-        dev_info(sc->dev, "Set STA %d's pair-wise key of %d bytes.\n", wsid, key_len);
+        dev_dbg(sc->dev, "Set STA %d's pair-wise key of %d bytes.\n", wsid, key_len);
         sramKey = &(sc->vif_info[vif_priv->vif_idx].sramKey);
         sramKey->sta_key[wsid].pair_key_idx = 0;
         sramKey->sta_key[wsid].group_key_idx = vif_priv->group_key_idx;
@@ -1648,7 +1648,7 @@ static void ssv6xxx_set_hw_wsid(struct ssv_softc *sc, struct ieee80211_vif *vif,
             dev_err(sc->dev, "Setting group key to NULL VIF\n");
             return -EOPNOTSUPP;
         }
-        dev_info(sc->dev, "Setting VIF %d group key %d of length %d to WSID %d.\n",
+        dev_dbg(sc->dev, "Setting VIF %d group key %d of length %d to WSID %d.\n",
                  vif_priv->vif_idx, index, key_len, wsid);
         sramKey = &(sc->vif_info[vif_priv->vif_idx].sramKey);
         vif_priv->group_key_idx = index;
@@ -1715,7 +1715,7 @@ static void ssv6xxx_set_hw_wsid(struct ssv_softc *sc, struct ieee80211_vif *vif,
             break;
 #ifdef CONFIG_SSV_WAPI
         case WLAN_CIPHER_SUITE_SMS4:
-            printk("[I] %s, algorithm = WLAN_CIPHER_SUITE_SMS4\n", __func__);
+            dev_dbg(sc->dev, "[I] %s, algorithm = WLAN_CIPHER_SUITE_SMS4\n", __func__);
             cipher = SSV_CIPHER_SMS4;
             break;
 #endif
@@ -1755,7 +1755,7 @@ static void ssv6xxx_set_hw_wsid(struct ssv_softc *sc, struct ieee80211_vif *vif,
                       struct ieee80211_key_conf *key) {
         int ret = 0;
         struct ssv_vif_info *vif_info = &sc->vif_info[vif_priv->vif_idx];
-        printk(KERN_ERR "Set WEP %02X %02X %02X %02X %02X %02X %02X %02X... (%d %d)\n",
+        dev_dbg(sc->dev, KERN_ERR "Set WEP %02X %02X %02X %02X %02X %02X %02X %02X... (%d %d)\n",
                key->key[0], key->key[1], key->key[2], key->key[3],
                key->key[4], key->key[5], key->key[6], key->key[7],
                key->keyidx, key->keylen);
@@ -1831,7 +1831,7 @@ static void ssv6xxx_set_hw_wsid(struct ssv_softc *sc, struct ieee80211_vif *vif,
             sta_priv->need_sw_decrypt = false;
             sta_priv->use_mac80211_decrypt = false;
             if (SSV_USE_HW_ENCRYPT(cipher, sc, sta_priv, vif_priv)) {
-                dev_info(sc->dev, "STA %d uses HW encrypter for pairwise.\n", sta_priv->sta_idx);
+                dev_dbg(sc->dev, "STA %d uses HW encrypter for pairwise.\n", sta_priv->sta_idx);
                 sta_priv->has_hw_encrypt = true;
                 sta_priv->need_sw_encrypt = false;
                 sta_priv->use_mac80211_decrypt = false;
@@ -1933,7 +1933,7 @@ static void ssv6xxx_set_hw_wsid(struct ssv_softc *sc, struct ieee80211_vif *vif,
         const char *cipher_name = (cipher == SSV_CIPHER_CCMP) ? "CCMP" : "TKIP";
         vif_priv->group_cipher = cipher;
         if (SSV_GROUP_WPA_USE_HW_CIPHER( sc, vif_priv, cipher)) {
-            dev_info(sc->dev, "VIF %d uses HW %s cipher for group.\n", vif_priv->vif_idx, cipher_name);
+            dev_dbg(sc->dev, "VIF %d uses HW %s cipher for group.\n", vif_priv->vif_idx, cipher_name);
 #ifdef USE_MAC80211_DECRYPT_BROADCAST
             vif_priv->has_hw_decrypt = false;
             ret = -EOPNOTSUPP;
@@ -2145,7 +2145,7 @@ static void ssv6xxx_set_hw_wsid(struct ssv_softc *sc, struct ieee80211_vif *vif,
         }
 #endif
         cipher = _prepare_key(key, sc);
-        dev_err(sc->dev,"Set key VIF %d VIF type %d STA %d algorithm = %d, key->keyidx = %d, cmd = %d\n",
+        dev_dbg(sc->dev,"Set key VIF %d VIF type %d STA %d algorithm = %d, key->keyidx = %d, cmd = %d\n",
                 vif_priv->vif_idx, vif->type, sta_idx, cipher, key->keyidx, cmd);
         if (cipher == SSV_CIPHER_INVALID) {
             dev_warn(sc->dev, "Unsupported cipher type.\n");
@@ -2156,19 +2156,19 @@ static void ssv6xxx_set_hw_wsid(struct ssv_softc *sc, struct ieee80211_vif *vif,
         case SET_KEY: {
 #if 0
             int i;
-            printk("================================SET KEY=======================================\n");
+            dev_dbg(sc->dev, "================================SET KEY=======================================\n");
             if (sta_info == NULL) {
-                printk("NULL STA cmd[%d] alg[%d] keyidx[%d] ", cmd, algorithm, key->keyidx);
+                dev_dbg(sc->dev, "NULL STA cmd[%d] alg[%d] keyidx[%d] ", cmd, algorithm, key->keyidx);
             } else {
-                printk("STA WSID[%d] cmd[%d] alg[%d] keyidx[%d] ", sta_info->hw_wsid, cmd, algorithm, key->keyidx);
+                dev_dbg(sc->dev, "STA WSID[%d] cmd[%d] alg[%d] keyidx[%d] ", sta_info->hw_wsid, cmd, algorithm, key->keyidx);
             }
-            printk("SET_KEY index[%d] flags[0x%x] algorithm[%d] key->keylen[%d]\n",
+            dev_dbg(sc->dev, "SET_KEY index[%d] flags[0x%x] algorithm[%d] key->keylen[%d]\n",
                    key->keyidx, key->flags, algorithm, key->keylen);
             for(i = 0; i < key->keylen; i++) {
-                printk("[%02x]", key->key[i]);
+                dev_dbg(sc->dev, "[%02x]", key->key[i]);
             }
-            printk("\n");
-            printk("===============================================================================\n");
+            dev_dbg(sc->dev, "\n");
+            dev_dbg(sc->dev, "===============================================================================\n");
 #endif
             switch (cipher) {
             case SSV_CIPHER_WEP40:
@@ -2205,14 +2205,14 @@ static void ssv6xxx_set_hw_wsid(struct ssv_softc *sc, struct ieee80211_vif *vif,
             struct ssv_vif_priv_data *another_vif_priv =
                 (struct ssv_vif_priv_data *)sc->vif_info[another_vif_idx].vif_priv;
 #if 0
-            printk("================================DEL KEY=======================================\n");
+            dev_dbg(sc->dev, "================================DEL KEY=======================================\n");
             if(sta_info == NULL) {
-                printk("NULL STA cmd[%d] alg[%d] keyidx[%d] ", cmd, cipher, key->keyidx);
+                dev_dbg(sc->dev, "NULL STA cmd[%d] alg[%d] keyidx[%d] ", cmd, cipher, key->keyidx);
             } else {
-                printk("STA WSID[%d] cmd[%d] alg[%d] keyidx[%d] ", sta_info->hw_wsid, cmd, cipher, key->keyidx);
+                dev_dbg(sc->dev, "STA WSID[%d] cmd[%d] alg[%d] keyidx[%d] ", sta_info->hw_wsid, cmd, cipher, key->keyidx);
             }
-            printk("DISABLE_KEY index[%d]\n",key->keyidx);
-            printk("==============================================================================\n");
+            dev_dbg(sc->dev, "DISABLE_KEY index[%d]\n",key->keyidx);
+            dev_dbg(sc->dev, "==============================================================================\n");
 #endif
 #if 0
             if(key->keyidx == 0) {
@@ -2243,7 +2243,7 @@ static void ssv6xxx_set_hw_wsid(struct ssv_softc *sc, struct ieee80211_vif *vif,
                 vif_priv->wep_cipher = -1;
             }
             if ((cipher == ME_TKIP) || (cipher == ME_CCMP)) {
-                printk(KERN_ERR "Clear key %d VIF %d, STA %d\n",
+                dev_dbg(sc->dev, KERN_ERR "Clear key %d VIF %d, STA %d\n",
                        key->keyidx, (vif != NULL), (sta != NULL));
                 hw_crypto_key_clear(hw, key->keyidx, key, vif_priv, sta_priv);
             }
@@ -2306,12 +2306,12 @@ static void ssv6xxx_set_hw_wsid(struct ssv_softc *sc, struct ieee80211_vif *vif,
             ret = -EINVAL;
         }
         if(sta_priv != NULL) {
-            printk("sta: hw_en:%d, sw_en:%d, hw_de:%d, sw_de:%d,\n",
+            dev_dbg(sc->dev, "sta: hw_en:%d, sw_en:%d, hw_de:%d, sw_de:%d,\n",
                    (sta_priv->has_hw_encrypt==true),(sta_priv->need_sw_encrypt==true),
                    (sta_priv->has_hw_decrypt==true),(sta_priv->need_sw_decrypt==true));
         }
         if(vif_priv) {
-            printk("vif: hw_en:%d, sw_en:%d, hw_de:%d, sw_de:%d, valid:%d\n",
+            dev_dbg(sc->dev, "vif: hw_en:%d, sw_en:%d, hw_de:%d, sw_de:%d, valid:%d\n",
                    (vif_priv->has_hw_encrypt==true),(vif_priv->need_sw_encrypt==true),
                    (vif_priv->has_hw_decrypt==true),(vif_priv->need_sw_decrypt==true), (vif_priv->is_security_valid==true));
         }
@@ -2320,7 +2320,7 @@ static void ssv6xxx_set_hw_wsid(struct ssv_softc *sc, struct ieee80211_vif *vif,
 #endif
 out:
         mutex_unlock(&sc->mutex);
-        printk(KERN_ERR "SET KEY %d\n", ret);
+        dev_dbg(sc->dev, KERN_ERR "SET KEY %d\n", ret);
         HCI_WRITE_HW_CONFIG_OFF(sc->sh);
         return ret;
     }
@@ -2330,7 +2330,7 @@ out:
         while ((skb = skb_dequeue(&sc->tx_done_q))) {
             if (SSV_GET_TX_DESC_CTYPE(sc->sh, skb) > M2_TXREQ) {
                 ssv_skb_free(sc, skb);
-                printk(KERN_INFO "free cmd skb!\n");
+                dev_dbg(sc->dev, KERN_INFO "free cmd skb!\n");
                 continue;
             }
             tx_info = IEEE80211_SKB_CB(skb);
@@ -2364,7 +2364,7 @@ out:
         while ((skb=skb_dequeue(skb_head))) {
             if (SSV_GET_TX_DESC_CTYPE(sc->sh, skb) > M2_TXREQ) {
                 ssv_skb_free(sc, skb);
-                printk(KERN_INFO "free cmd skb!\n");
+                dev_dbg(sc->dev, KERN_INFO "free cmd skb!\n");
                 continue;
             }
             if (SSV_NULLFUN_FRAME_FILTER(sc->sh, skb)) {
@@ -2543,7 +2543,7 @@ out:
                         tx_desc->wsid = hw_wsid;
                     }
 #if 0
-                    printk(KERN_ERR "HW ENC %d %02X:%02X:%02X:%02X:%02X:%02X\n",
+                    dev_dbg(sc->dev, KERN_ERR "HW ENC %d %02X:%02X:%02X:%02X:%02X:%02X\n",
                            tx_desc->wsid,
                            hdr->addr1[0], hdr->addr1[1], hdr->addr1[2],
                            hdr->addr1[3], hdr->addr1[4], hdr->addr1[5]);
@@ -2554,7 +2554,7 @@ out:
                 tx_desc->fCmd = (tx_desc->fCmd << 4) | M_ENG_ENCRYPT;
 #if 0
                 if (dump_count++ < 10) {
-                    printk(KERN_ERR "HW ENC %d %02X:%02X:%02X:%02X:%02X:%02X\n",
+                    dev_dbg(sc->dev, KERN_ERR "HW ENC %d %02X:%02X:%02X:%02X:%02X:%02X\n",
                            tx_desc->wsid,
                            hdr->addr1[0], hdr->addr1[1], hdr->addr1[2],
                            hdr->addr1[3], hdr->addr1[4], hdr->addr1[5]);
@@ -2575,7 +2575,7 @@ out:
 #if 0
             if (ieee80211_is_probe_resp(hdr->frame_control)) {
                 {
-                    printk(KERN_ERR "Probe Resp %d %02X:%02X:%02X:%02X:%02X:%02X\n",
+                    dev_dbg(sc->dev, KERN_ERR "Probe Resp %d %02X:%02X:%02X:%02X:%02X:%02X\n",
                            tx_desc->wsid,
                            hdr->addr1[0], hdr->addr1[1], hdr->addr1[2],
                            hdr->addr1[3], hdr->addr1[4], hdr->addr1[5]);
@@ -2605,13 +2605,13 @@ out:
             nav = ssv6xxx_set_frame_duration(info, &ssv_rate, (skb->len+FCS_LEN), tx_desc, &tx_desc->rc_params[0], sc);
 #ifdef FW_RC_RETRY_DEBUG
             {
-                printk("[FW_RC]:param[0]: drate =%d, count =%d, crate=%d, dl_length =%d, frame_consume_time =%d, rts_cts_nav=%d\n",
+                dev_dbg(sc->dev, "[FW_RC]:param[0]: drate =%d, count =%d, crate=%d, dl_length =%d, frame_consume_time =%d, rts_cts_nav=%d\n",
                        tx_desc->rc_params[0].drate,tx_desc->rc_params[0].count,tx_desc->rc_params[0].crate,
                        tx_desc->rc_params[0].dl_length, tx_desc->rc_params[0].frame_consume_time, tx_desc->rc_params[0].rts_cts_nav);
-                printk("[FW_RC]:param[1]: drate =%d, count =%d, crate=%d, dl_length =%d, frame_consume_time =%d, rts_cts_nav=%d\n",
+                dev_dbg(sc->dev, "[FW_RC]:param[1]: drate =%d, count =%d, crate=%d, dl_length =%d, frame_consume_time =%d, rts_cts_nav=%d\n",
                        tx_desc->rc_params[1].drate,tx_desc->rc_params[1].count,tx_desc->rc_params[1].crate,
                        tx_desc->rc_params[1].dl_length, tx_desc->rc_params[1].frame_consume_time, tx_desc->rc_params[1].rts_cts_nav);
-                printk("[FW_RC]:param[2]: drate =%d, count =%d, crate=%d, dl_length =%d, frame_consume_time =%d, rts_cts_nav=%d\n",
+                dev_dbg(sc->dev, "[FW_RC]:param[2]: drate =%d, count =%d, crate=%d, dl_length =%d, frame_consume_time =%d, rts_cts_nav=%d\n",
                        tx_desc->rc_params[2].drate,tx_desc->rc_params[2].count,tx_desc->rc_params[2].crate,
                        tx_desc->rc_params[2].dl_length, tx_desc->rc_params[2].frame_consume_time, tx_desc->rc_params[2].rts_cts_nav);
             }
@@ -2658,7 +2658,7 @@ out:
             keyidx = hw_key->hw_key_idx;
             if ((cipher == WLAN_CIPHER_SUITE_WEP40) || (cipher == WLAN_CIPHER_SUITE_WEP104)) {
                 if (vif_priv->wep_cipher != cipher) {
-                    printk("Write WEP wlan cipher: 0x%x to HW\n", cipher);
+                    dev_dbg(sc->dev, "Write WEP wlan cipher: 0x%x to HW\n", cipher);
                     down_read(&sc->sta_info_sem);
                     list_for_each_entry(sta_priv_iter, &vif_priv->sta_list, list) {
                         if ((sc->sta_info[sta_priv_iter->sta_idx].s_flags & STA_FLAG_VALID) == 1) {
@@ -2686,8 +2686,8 @@ out:
                     up_read(&sc->sta_info_sem);
                 }
                 if (vif_priv->wep_idx != keyidx) {
-                    printk("Update WEP default key index for HW encryption\n");
-                    printk("Write WEP key index: %d to HW\n", keyidx);
+                    dev_dbg(sc->dev, "Update WEP default key index for HW encryption\n");
+                    dev_dbg(sc->dev, "Write WEP key index: %d to HW\n", keyidx);
                     vif_priv->wep_idx = keyidx;
                     down_read(&sc->sta_info_sem);
                     list_for_each_entry(sta_priv_iter, &vif_priv->sta_list, list) {
@@ -2738,13 +2738,13 @@ out:
                 hdr->seq_ctrl |= cpu_to_le16(sc->tx.seq_no);
             }
             if (sc->dbg_tx_frame) {
-                printk("================================================\n");
+                dev_dbg(sc->dev, "================================================\n");
                 _ssv6xxx_hexdump("TX frame", (const u8 *)skb->data, skb->len);
             }
 #if 0
             if ( (skb->protocol == cpu_to_be16(ETH_P_PAE))
                  && ieee80211_is_data_qos(hdr->frame_control)) {
-                printk(KERN_ERR "EAPOL frame is %d\n", skb_get_queue_mapping(skb));
+                dev_dbg(sc->dev, KERN_ERR "EAPOL frame is %d\n", skb_get_queue_mapping(skb));
             }
 #endif
 #ifdef USE_LOCAL_CRYPTO
@@ -2805,7 +2805,7 @@ tx_mpdu:
                     buffered = ssv6200_bcast_enqueue(sc, &sc->bcast_txq, skb);
                     if (1 == buffered) {
 #ifdef BCAST_DEBUG
-                        printk("ssv6200_tx:ssv6200_bcast_start\n");
+                        dev_dbg(sc->dev, "ssv6200_tx:ssv6200_bcast_start\n");
 #endif
                         ssv6200_bcast_start(sc);
                     }
@@ -2855,10 +2855,10 @@ tx_mpdu:
 #endif
         if(sc->dbg_tx_frame) {
             if(send_hci)
-                printk("Tx frame send to HCI\n");
+                dev_dbg(sc->dev, "Tx frame send to HCI\n");
             else
-                printk("Tx frame queued\n");
-            printk("================================================\n");
+                dev_dbg(sc->dev, "Tx frame queued\n");
+            dev_dbg(sc->dev, "================================================\n");
         }
     }
 #ifdef MULTI_THREAD_ENCRYPT
@@ -3021,7 +3021,7 @@ tx_mpdu:
                 CPUMask = *(cpumask_bits(&current->cpus_allowed));
             }
             if (kthread_should_stop()) {
-                printk("[MT-ENCRYPT]: Quit Encryption task loop ...\n");
+                dev_dbg(sc->dev, "[MT-ENCRYPT]: Quit Encryption task loop ...\n");
                 ta->running = 0;
                 break;
             }
@@ -3195,7 +3195,7 @@ tx_mpdu:
         struct ssv_softc *sc = (struct ssv_softc *)data;
         u32 wait_period = SSV_AMPDU_timer_period / 2;
         txrxboost_init();
-        printk("SSV6XXX TX Task started.\n");
+        dev_dbg(sc->dev, "SSV6XXX TX Task started.\n");
         while (!kthread_should_stop()) {
             u32 before_timeout = (-1);
             before_timeout = wait_event_interruptible_timeout(sc->tx_wait_q,
@@ -3204,7 +3204,7 @@ tx_mpdu:
                                || sc->tx_q_empty),
                              msecs_to_jiffies(wait_period));
             if (kthread_should_stop()) {
-                printk("Quit TX task loop...\n");
+                dev_dbg(sc->dev, "Quit TX task loop...\n");
                 break;
             }
             txrxboost_change((u32)atomic_read(&sc->ampdu_tx_frame),
@@ -3236,9 +3236,9 @@ tx_mpdu:
                             timeout = cal_duration_of_mpdu(skb);
                         if (timeout > SKB_DURATION_TIMEOUT_MS) {
                             HCI_IRQ_STATUS(ssv_dbg_ctrl_hci, &status);
-                            printk("hci int_mask: %08x\n", ssv_dbg_ctrl_hci->int_mask);
-                            printk("sdio status: %08x\n", status);
-                            printk("hwq%d len: %d\n", txqid, skb_queue_len(&hw_txq->qhead));
+                            dev_dbg(sc->dev, "hci int_mask: %08x\n", ssv_dbg_ctrl_hci->int_mask);
+                            dev_dbg(sc->dev, "sdio status: %08x\n", status);
+                            dev_dbg(sc->dev, "hwq%d len: %d\n", txqid, skb_queue_len(&hw_txq->qhead));
                         }
                     }
                 }
@@ -3263,7 +3263,7 @@ tx_mpdu:
         unsigned long last_timeout_check_jiffies = jiffies;
         unsigned long cur_jiffies;
         txrxboost_init();
-        printk("SSV6XXX RX Task started.\n");
+        dev_dbg(sc->dev, "SSV6XXX RX Task started.\n");
         while (!kthread_should_stop()) {
             u32 before_timeout = (-1);
             before_timeout = wait_event_interruptible_timeout(sc->rx_wait_q,
@@ -3272,7 +3272,7 @@ tx_mpdu:
                                || kthread_should_stop()),
                              wait_period);
             if (kthread_should_stop()) {
-                printk("Quit RX task loop...\n");
+                dev_dbg(sc->dev, "Quit RX task loop...\n");
                 break;
             }
             txrxboost_change((u32)atomic_read(&sc->ampdu_tx_frame),
@@ -3315,7 +3315,7 @@ tx_mpdu:
             if ((sc->cci_start) && (sc->sh->cfg.cci & CCI_SMART)) {
                 sc->cci_rx_unavailable_counter ++;
                 if (sc->sh->cfg.cci & CCI_DBG)
-                    printk("cci rx not available count %d\n", sc->cci_rx_unavailable_counter);
+                    dev_dbg(sc->dev, "cci rx not available count %d\n", sc->cci_rx_unavailable_counter);
                 if (sc->cci_rx_unavailable_counter >= 2) {
                     queue_work(sc->house_keeping_wq, &sc->cci_clean_work);
                     sc->cci_rx_unavailable_counter = 0;
@@ -3374,7 +3374,7 @@ tx_mpdu:
         enum nl80211_channel_type channel_type;
         mutex_lock(&sc->mutex);
         if (tu_ssv6xxx_init_mac(sc->sh) != 0) {
-            printk("Initialize ssv6200 mac fail!!\n");
+            dev_dbg(sc->dev, "Initialize ssv6200 mac fail!!\n");
             mutex_unlock(&sc->mutex);
             return -1;
         }
@@ -3388,7 +3388,7 @@ tx_mpdu:
         {
             int ret = SSV_DO_IQ_CALIB(sh, &sh->iqk_cfg);
             if (ret != 0) {
-                printk("IQ Calibration failed (%d)!!\n", ret);
+                dev_dbg(sc->dev, "IQ Calibration failed (%d)!!\n", ret);
                 mutex_unlock(&sc->mutex);
                 return ret;
             }
@@ -3403,7 +3403,7 @@ tx_mpdu:
         channel_type = cfg80211_get_chandef_type(&hw->conf.chandef);
 #endif
         sc->cur_channel = chan;
-        printk("%s(): current channel: %d,sc->ps_status=%d\n", __FUNCTION__, sc->cur_channel->hw_value,sc->ps_status);
+        dev_dbg(sc->dev, "%s(): current channel: %d,sc->ps_status=%d\n", __FUNCTION__, sc->cur_channel->hw_value,sc->ps_status);
         HAL_SET_CHANNEL(sc, chan, channel_type);
         sc->hw_chan = chan->hw_value;
         sc->hw_chan_type = channel_type;
@@ -3421,7 +3421,7 @@ tx_mpdu:
     static void ssv6200_stop(struct ieee80211_hw *hw) {
         struct ssv_softc *sc=hw->priv;
         u32 count=0;
-        printk(KERN_INFO "%s(): sc->ps_status=%d\n", __FUNCTION__,sc->ps_status);
+        dev_dbg(sc->dev, KERN_INFO "%s(): sc->ps_status=%d\n", __FUNCTION__,sc->ps_status);
         mutex_lock(&sc->mutex);
         sc->mac80211_dev_started = false;
         SSV_SEND_TX_POLL_CMD(sc->sh, SSV6XXX_TX_POLL_STOP);
@@ -3433,10 +3433,10 @@ tx_mpdu:
 #else
         while (skb_queue_len(&sc->rx.rxq_head)) {
 #endif
-            printk("sc->rx.rxq_count=%d\n", sc->rx.rxq_count);
+            dev_dbg(sc->dev, "sc->rx.rxq_count=%d\n", sc->rx.rxq_count);
             count ++;
             if (count > 90000000) {
-                printk("ERROR....ERROR......ERROR..........\n");
+                dev_dbg(sc->dev, "ERROR....ERROR......ERROR..........\n");
                 break;
             }
         }
@@ -3450,7 +3450,7 @@ tx_mpdu:
             SSV_SET_RF_ENABLE(sc->sh);
         }
         mutex_unlock(&sc->mutex);
-        printk("%s(): leave\n", __FUNCTION__);
+        dev_dbg(sc->dev, "%s(): leave\n", __FUNCTION__);
     }
     struct ssv_vif_priv_data * ssv6xxx_config_vif_res(struct ssv_softc *sc,
             struct ieee80211_vif *vif) {
@@ -3470,7 +3470,7 @@ tx_mpdu:
             }
         }
         BUG_ON(vif_idx < 0);
-        printk("ssv6xxx_config_vif_res id[%d].\n", vif_idx);
+        dev_dbg(sc->dev, "ssv6xxx_config_vif_res id[%d].\n", vif_idx);
         priv_vif = (struct ssv_vif_priv_data *)vif->drv_priv;
         memset(priv_vif, 0, sizeof(struct ssv_vif_priv_data));
         priv_vif->vif_idx = vif_idx;
@@ -3516,16 +3516,16 @@ tx_mpdu:
 #else
         chan = hw->conf.chandef.chan;
 #endif
-        printk("AP created at ch %d \n", chan->hw_value);
+        dev_dbg(sc->dev, "AP created at ch %d \n", chan->hw_value);
         if ( !vif->p2p
              && (vif_priv->vif_idx == 0)) {
-            printk("Normal AP mode. Config Q4 to DTIM Q.\n");
+            dev_dbg(sc->dev, "Normal AP mode. Config Q4 to DTIM Q.\n");
             SSV_HALT_MNGQ_UNTIL_DTIM(sc->sh);
             sc->bq4_dtim = true;
         }
 #ifdef CONFIG_SSV_SUPPORT_ANDROID
         if(vif->p2p == 0) {
-            printk(KERN_INFO "AP mode init wifi_alive_lock\n");
+            dev_dbg(sc->dev, KERN_INFO "AP mode init wifi_alive_lock\n");
             ssv_wake_lock(sc);
         }
 #endif
@@ -3535,7 +3535,7 @@ tx_mpdu:
         struct ssv_softc *sc=hw->priv;
         int ret=0;
         struct ssv_vif_priv_data *vif_priv = NULL;
-        printk("[I] %s(): \n", __FUNCTION__);
+        dev_dbg(sc->dev, "[I] %s(): \n", __FUNCTION__);
         if ( (sc->nvif >= SSV6200_MAX_VIF)
              || ( ( (vif->type == NL80211_IFTYPE_AP)
                     || (vif->p2p))
@@ -3550,7 +3550,7 @@ tx_mpdu:
         if ((vif->type == NL80211_IFTYPE_AP) || (vif->type == NL80211_IFTYPE_P2P_GO))
             _if_set_apmode(hw, vif);
         sc->nvif++;
-        dev_err(sc->dev, "VIF %02x:%02x:%02x:%02x:%02x:%02x of type %d is added.\n",
+        dev_dbg(sc->dev, "VIF %02x:%02x:%02x:%02x:%02x:%02x of type %d is added.\n",
                 vif->addr[0], vif->addr[1], vif->addr[2],
                 vif->addr[3], vif->addr[4], vif->addr[5], vif->type);
 #ifdef CONFIG_SSV6XXX_DEBUGFS
@@ -3568,7 +3568,7 @@ tx_mpdu:
         struct ssv_vif_priv_data *vif_priv = (struct ssv_vif_priv_data *)vif->drv_priv;
         int vif_idx = vif_priv->vif_idx;
         mutex_lock(&sc->mutex);
-        printk("@@@@@@ change id[%d] type %d to %d, p2p=%d\n", vif_idx, sc->vif_info[vif_idx].if_type, new_type, p2p);
+        dev_dbg(sc->dev, "@@@@@@ change id[%d] type %d to %d, p2p=%d\n", vif_idx, sc->vif_info[vif_idx].if_type, new_type, p2p);
         sc->vif_info[vif_idx].if_type = new_type;
         sc->force_disable_directly_ack_tx = p2p;
         vif->type = new_type;
@@ -3614,14 +3614,14 @@ tx_mpdu:
                 sc->bq4_dtim = false;
                 ssv6200_release_bcast_frame_res(sc, vif);
                 SSV_UNHALT_MNGQ_UNTIL_DTIM(sc->sh);
-                printk("Config Q4 to normal Q \n");
+                dev_dbg(sc->dev, "Config Q4 to normal Q \n");
             }
             ssv6xxx_beacon_release(sc);
             sc->ap_vif = NULL;
 #ifdef CONFIG_SSV_SUPPORT_ANDROID
             if(vif->p2p == 0) {
                 ssv_wake_unlock(sc);
-                printk(KERN_INFO "AP mode destroy wifi_alive_lock\n");
+                dev_dbg(sc->dev, KERN_INFO "AP mode destroy wifi_alive_lock\n");
             }
 #endif
         }
@@ -3637,7 +3637,7 @@ tx_mpdu:
     }
     void ssv6xxx_disable_ps(struct ssv_softc *sc) {
         sc->ps_status = PWRSV_DISABLE;
-        printk(KERN_INFO "PowerSave disabled\n");
+        dev_dbg(sc->dev, KERN_INFO "PowerSave disabled\n");
     }
     static bool ssv6200_not_dual_intf_on_line(struct ssv_softc *sc) {
         struct ieee80211_vif *vif;
@@ -3678,14 +3678,14 @@ tx_mpdu:
         mutex_lock(&sc->mutex);
         if (changed & IEEE80211_CONF_CHANGE_POWER) {
             struct ieee80211_conf *conf = &hw->conf;
-            printk("IEEE80211_CONF_CHANGE_POWER change power level to %d\n", conf->power_level);
+            dev_dbg(sc->dev, "IEEE80211_CONF_CHANGE_POWER change power level to %d\n", conf->power_level);
         }
         if (changed & IEEE80211_CONF_CHANGE_PS) {
             struct ieee80211_conf *conf = &hw->conf;
             if (conf->flags & IEEE80211_CONF_PS) {
-                printk("Enable IEEE80211_CONF_PS ps_aid=%d\n",sc->ps_aid);
+                dev_dbg(sc->dev, "Enable IEEE80211_CONF_PS ps_aid=%d\n",sc->ps_aid);
             } else {
-                printk("Disable IEEE80211_CONF_PS ps_aid=%d\n",sc->ps_aid);
+                dev_dbg(sc->dev, "Disable IEEE80211_CONF_PS ps_aid=%d\n",sc->ps_aid);
             }
         }
 #if LINUX_VERSION_CODE < KERNEL_VERSION(3,0,0)
@@ -3711,7 +3711,7 @@ tx_mpdu:
 #endif
 #if defined (CONFIG_SSV_SMARTLINK) || defined (CONFIG_SMARTLINK)
             if (sc->ssv_smartlink_status) {
-                printk("@@ %d\n",sc->ssv_smartlink_status);
+                dev_dbg(sc->dev, "@@ %d\n",sc->ssv_smartlink_status);
                 goto out;
             }
 #endif
@@ -3728,7 +3728,7 @@ tx_mpdu:
 #endif
 #ifdef CONFIG_P2P_NOA
             if(sc->p2p_noa.active_noa_vif) {
-                printk("NOA operating-active vif[%02x] skip scan\n", sc->p2p_noa.active_noa_vif);
+                dev_dbg(sc->dev, "NOA operating-active vif[%02x] skip scan\n", sc->p2p_noa.active_noa_vif);
                 goto out;
             }
 #endif
@@ -3782,7 +3782,7 @@ out:
         struct ssv_softc *sc = hw->priv;
         u32 cw;
         u8 hw_txqid = sc->tx.hw_txqid[queue];
-        printk("[I] sv6200_conf_tx qos[%d] queue[%d] aifsn[%d] cwmin[%d] cwmax[%d] txop[%d] \n",
+        dev_dbg(sc->dev, "[I] sv6200_conf_tx qos[%d] queue[%d] aifsn[%d] cwmin[%d] cwmax[%d] txop[%d] \n",
                vif->bss_conf.qos, queue, params->aifs, params->cw_min, params->cw_max, params->txop);
         if (queue > NL80211_TXQ_Q_BK)
             return 1;
@@ -3840,14 +3840,14 @@ out:
         HCI_WRITE_HW_CONFIG_ON(sc->sh);
         mutex_lock(&sc->mutex);
         if (changed & BSS_CHANGED_ERP_PREAMBLE) {
-            printk("BSS Changed use_short_preamble[%d]\n", info->use_short_preamble);
+            dev_dbg(sc->dev, "BSS Changed use_short_preamble[%d]\n", info->use_short_preamble);
             if (info->use_short_preamble)
                 sc->sc_flags |= SC_OP_SHORT_PREAMBLE;
             else
                 sc->sc_flags &= ~SC_OP_SHORT_PREAMBLE;
         }
         if (changed & BSS_CHANGED_ERP_CTS_PROT) {
-            printk("BSS Changed use_cts_prot[%d]\n", info->use_cts_prot);
+            dev_dbg(sc->dev, "BSS Changed use_cts_prot[%d]\n", info->use_cts_prot);
             if (info->use_cts_prot)
                 sc->sc_flags |= SC_OP_CTS_PROT;
             else
@@ -3860,7 +3860,7 @@ out:
                 vif_priv = (struct ssv_vif_priv_data *)vif->drv_priv;
 #endif
                 SSV_SET_BSSID(sc->sh, (u8*)info->bssid, priv_vif->vif_idx);
-                printk("BSS_CHANGED_BSSID: %02x:%02x:%02x:%02x:%02x:%02x\n",
+                dev_dbg(sc->dev, "BSS_CHANGED_BSSID: %02x:%02x:%02x:%02x:%02x:%02x\n",
                        info->bssid[0], info->bssid[1], info->bssid[2],
                        info->bssid[3], info->bssid[4], info->bssid[5]);
 #ifdef CONFIG_P2P_NOA
@@ -3871,7 +3871,7 @@ out:
 #endif
             }
             if (changed & BSS_CHANGED_ERP_SLOT) {
-                printk("BSS_CHANGED_ERP_SLOT: use_short_slot[%d]\n", info->use_short_slot);
+                dev_dbg(sc->dev, "BSS_CHANGED_ERP_SLOT: use_short_slot[%d]\n", info->use_short_slot);
                 SSV_SET_DUR_BURST_SIFS_G(sc->sh, 0xa);
                 if (info->use_short_slot) {
                     SSV_SET_DUR_SLOT(sc->sh, 0x9);
@@ -3881,10 +3881,10 @@ out:
             }
         }
         if (changed & BSS_CHANGED_HT) {
-            printk("BSS_CHANGED_HT: Untreated!!\n");
+            dev_dbg(sc->dev, "BSS_CHANGED_HT: Untreated!!\n");
         }
         if (changed & BSS_CHANGED_BASIC_RATES) {
-            printk("ssv6xxx_rc_update_basic_rate!!\n");
+            dev_dbg(sc->dev, "ssv6xxx_rc_update_basic_rate!!\n");
             SSV_RC_UPDATE_BASIC_RATE(sc, info->basic_rates);
         }
         if (vif->type == NL80211_IFTYPE_STATION) {
@@ -3894,7 +3894,7 @@ out:
 #else
             curchan = hw->conf.chandef.chan;
 #endif
-            printk("NL80211_IFTYPE_STATION!!\n");
+            dev_dbg(sc->dev, "NL80211_IFTYPE_STATION!!\n");
             if (changed & BSS_CHANGED_ASSOC) {
                 sc->isAssoc = info->assoc;
                 if(!sc->isAssoc) {
@@ -3905,7 +3905,7 @@ out:
 #endif
                 } else {
                     sc->channel_center_freq = curchan->center_freq;
-                    printk(KERN_INFO "!!info->aid = %d\n",info->aid);
+                    dev_dbg(sc->dev, KERN_INFO "!!info->aid = %d\n",info->aid);
                     sc->ps_aid = info->aid;
 #ifdef SSV_SUPPORT_USB_LPM
                     SSV_SET_USB_LPM(sc, 0);
@@ -3924,12 +3924,12 @@ out:
                             | BSS_CHANGED_BSSID
                             | BSS_CHANGED_BASIC_RATES)) {
 #ifdef BROADCAST_DEBUG
-                printk("[A] ssv6200_bss_info_changed:beacon changed\n");
+                dev_dbg(sc->dev, "[A] ssv6200_bss_info_changed:beacon changed\n");
 #endif
                 queue_work(sc->config_wq, &sc->set_tim_work);
             }
             if (changed & BSS_CHANGED_BEACON_INT) {
-                printk("[A] BSS_CHANGED_BEACON_INT beacon_interval(%d)\n", info->beacon_int);
+                dev_dbg(sc->dev, "[A] BSS_CHANGED_BEACON_INT beacon_interval(%d)\n", info->beacon_int);
                 if (sc->beacon_interval != info->beacon_int) {
                     sc->beacon_interval = info->beacon_int;
                     SSV_SET_BCN_IFNO(sc->sh, sc->beacon_interval, sc->beacon_dtim_cnt);
@@ -3945,7 +3945,7 @@ out:
         }
         mutex_unlock(&sc->mutex);
         HCI_WRITE_HW_CONFIG_OFF(sc->sh);
-        printk("[I] %s(): leave\n", __FUNCTION__);
+        dev_dbg(sc->dev, "[I] %s(): leave\n", __FUNCTION__);
     }
     static int ssv6200_sta_add(struct ieee80211_hw *hw,
                                struct ieee80211_vif *vif,
@@ -3960,7 +3960,7 @@ out:
 #ifndef SSV_SUPPORT_HAL
         bool tdls_use_sw_cipher = false, tdls_link= false;
 #endif
-        printk("[I] %s(): vif[%d] ", __FUNCTION__, vif_priv->vif_idx);
+        dev_dbg(sc->dev, "[I] %s(): vif[%d] ", __FUNCTION__, vif_priv->vif_idx);
         HCI_WRITE_HW_CONFIG_ON(sc->sh);
         mutex_lock(&sc->mutex);
         if (sc->force_triger_reset == true) {
@@ -3971,7 +3971,7 @@ out:
                     sta_info = &sc->sta_info[s];
                     if ((sta_info->s_flags & STA_FLAG_VALID)) {
                         if (sta_info->sta == sta) {
-                            printk("search stat %02x:%02x:%02x:%02x:%02x:%02x to  wsid=%d\n",
+                            dev_dbg(sc->dev, "search stat %02x:%02x:%02x:%02x:%02x:%02x to  wsid=%d\n",
                                    sta->addr[0], sta->addr[1], sta->addr[2],
                                    sta->addr[3], sta->addr[4], sta->addr[5], sta_info->hw_wsid);
                             spin_unlock_irqrestore(&sc->ps_state_lock, flags);
@@ -4086,7 +4086,7 @@ out:
 #ifdef FW_WSID_WATCH_LIST
             SSV_ADD_FW_WSID(sc, vif_priv, sta, sta_info);
 #endif
-            printk("Add %02x:%02x:%02x:%02x:%02x:%02x to VIF %d sw_idx=%d, wsid=%d\n",
+            dev_dbg(sc->dev, "Add %02x:%02x:%02x:%02x:%02x:%02x to VIF %d sw_idx=%d, wsid=%d\n",
                    sta->addr[0], sta->addr[1], sta->addr[2],
                    sta->addr[3], sta->addr[4], sta->addr[5],
                    vif_priv->vif_idx,
@@ -4129,7 +4129,7 @@ out:
                 SMAC_REG_WRITE(sc->sh, ADR_RX_FLOW_DATA, M_ENG_MACRX|(M_ENG_ENCRYPT_SEC<<4)|(M_ENG_HWHCI<<8));
 #endif
 #endif
-                printk("redirect Rx flow for sta %d  disconnect\n",sta_priv_dat->sta_idx);
+                dev_dbg(sc->dev, "redirect Rx flow for sta %d  disconnect\n",sta_priv_dat->sta_idx);
             }
         }
     }
@@ -4224,9 +4224,9 @@ out:
 #endif
 #endif
 #if 0
-        printk("%s(): sw_idx=%d, hw_idx=%d sta_asleep_mask[%08x]\n", __FUNCTION__,
+        dev_dbg(sc->dev, "%s(): sw_idx=%d, hw_idx=%d sta_asleep_mask[%08x]\n", __FUNCTION__,
                sta_priv_dat->sta_idx, sta_info->hw_wsid, sc->sta_asleep_mask);
-        printk("Remove %02x:%02x:%02x:%02x:%02x:%02x to sw_idx=%d, wsid=%d\n",
+        dev_dbg(sc->dev, "Remove %02x:%02x:%02x:%02x:%02x:%02x to sw_idx=%d, wsid=%d\n",
                sta->addr[0], sta->addr[1], sta->addr[2],
                sta->addr[3], sta->addr[4], sta->addr[5], sta_priv_dat->sta_idx, sta_info->hw_wsid);
 #endif
@@ -4257,7 +4257,7 @@ out:
         }
 #endif
         SSV_DEL_HW_WSID(sc, hw_wsid);
-        printk("hw wsid %u is removed.\n", hw_wsid);
+        dev_dbg(sc->dev, "hw wsid %u is removed.\n", hw_wsid);
         up_write(&sc->sta_info_sem);
         mutex_unlock(&sc->mutex);
 #if defined(IRQ_PROC_RX_DATA)
@@ -4293,7 +4293,7 @@ out:
                      && sc->bq4_dtim
                      && !priv_vif->sta_asleep_mask
                      && ssv6200_bcast_queue_len(&sc->bcast_txq)) {
-                    printk("%s(): ssv6200_bcast_start\n", __FUNCTION__);
+                    dev_dbg(sc->dev, "%s(): ssv6200_bcast_start\n", __FUNCTION__);
                     ssv6200_bcast_start(sc);
                 }
                 priv_vif->sta_asleep_mask |= bit;
@@ -4317,7 +4317,6 @@ out:
                                struct ieee80211_vif *vif)
 #endif
     {
-        printk("%s(): \n", __FUNCTION__);
         return 0;
     }
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(3,19,0)
@@ -4346,7 +4345,7 @@ out:
         if (dev_type == SSV_HWIF_INTERFACE_USB)
             sc->sh->cfg.usb_hw_resource |= USB_HW_RESOURCE_CHK_SCAN;
         sc->bScanning = true;
-        printk("--------------%s(): \n", __FUNCTION__);
+        dev_dbg(sc->dev, "--------------%s(): \n", __FUNCTION__);
     }
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(3,19,0)
     static void ssv6200_sw_scan_complete(struct ieee80211_hw *hw,
@@ -4377,7 +4376,7 @@ out:
         if (dev_type == SSV_HWIF_INTERFACE_USB)
             sc->sh->cfg.usb_hw_resource &= (~USB_HW_RESOURCE_CHK_SCAN);
         sc->bScanning = false;
-        printk("==============%s(): \n", __FUNCTION__);
+        dev_dbg(sc->dev, "==============%s(): \n", __FUNCTION__);
     }
     static int ssv6200_set_tim(struct ieee80211_hw *hw, struct ieee80211_sta *sta,
                                bool set) {
@@ -4386,13 +4385,13 @@ out:
         if (sta) {
             sta_info = &sc->sta_info[((struct ssv_sta_priv_data *)sta->drv_priv)->sta_idx];
             if ((sta_info->s_flags & STA_FLAG_VALID) == 0) {
-                printk("%s(): sta_info is gone.\n", __func__);
+                dev_dbg(sc->dev, "%s(): sta_info is gone.\n", __func__);
                 goto out;
             }
         }
         if (sta_info && (sta_info->tim_set^set)) {
 #ifdef BROADCAST_DEBUG
-            printk("[I] [A] ssv6200_set_tim");
+            dev_dbg(sc->dev, "[I] [A] ssv6200_set_tim");
 #endif
             sta_info->tim_set = set;
             queue_work(sc->config_wq, &sc->set_tim_work);
@@ -4413,10 +4412,10 @@ out:
         int ret = 0;
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(3,2,0)
         struct ssv_vif_priv_data *priv_vif = (struct ssv_vif_priv_data *)vif->drv_priv;
-        printk("[I] sv6200_conf_tx vif[%d] qos[%d] queue[%d] aifsn[%d] cwmin[%d] cwmax[%d] txop[%d] \n",
+        dev_dbg(sc->dev, "[I] sv6200_conf_tx vif[%d] qos[%d] queue[%d] aifsn[%d] cwmin[%d] cwmax[%d] txop[%d] \n",
                priv_vif->vif_idx,vif->bss_conf.qos, queue, params->aifs, params->cw_min, params->cw_max, params->txop);
 #else
-        printk("[I] sv6200_conf_tx queue[%d] aifsn[%d] cwmin[%d] cwmax[%d] txop[%d] \n",
+        dev_dbg(sc->dev, "[I] sv6200_conf_tx queue[%d] aifsn[%d] cwmin[%d] cwmax[%d] txop[%d] \n",
                queue, params->aifs, params->cw_min, params->cw_max, params->txop);
 #endif
         HCI_WRITE_HW_CONFIG_ON(sc->sh);
@@ -4537,7 +4536,7 @@ out:
         }
         mutex_lock(&sc->mutex);
         if ((sc->sta_info[((struct ssv_sta_priv_data *)sta->drv_priv)->sta_idx].s_flags & STA_FLAG_VALID) == 0) {
-            printk(KERN_WARNING "%s(): sta_info is gone.\n", __func__);
+            dev_dbg(sc->dev, KERN_WARNING "%s(): sta_info is gone.\n", __func__);
             return -ENODATA;
         }
         switch (action) {
@@ -4561,7 +4560,7 @@ out:
             queue_work(sc->config_wq, &sc->set_ampdu_rx_del_work);
             break;
         case IEEE80211_AMPDU_TX_START:
-            printk(KERN_ERR "AMPDU_TX_START %02X:%02X:%02X:%02X:%02X:%02X %d.\n",
+            dev_dbg(sc->dev, KERN_ERR "AMPDU_TX_START %02X:%02X:%02X:%02X:%02X:%02X %d.\n",
                    sta->addr[0], sta->addr[1], sta->addr[2], sta->addr[3],
                    sta->addr[4], sta->addr[5], tid);
             sta_priv = (struct ssv_sta_priv_data *)sta->drv_priv;
@@ -4576,14 +4575,14 @@ out:
         case IEEE80211_AMPDU_TX_STOP_FLUSH:
         case IEEE80211_AMPDU_TX_STOP_FLUSH_CONT:
 #endif
-            printk(KERN_ERR "AMPDU_TX_STOP %02X:%02X:%02X:%02X:%02X:%02X %d.\n",
+            dev_dbg(sc->dev, KERN_ERR "AMPDU_TX_STOP %02X:%02X:%02X:%02X:%02X:%02X %d.\n",
                    sta->addr[0], sta->addr[1], sta->addr[2], sta->addr[3],
                    sta->addr[4], sta->addr[5], tid);
             ssv6200_ampdu_tx_stop(tid, sta, hw);
             ieee80211_stop_tx_ba_cb_irqsafe(vif, sta->addr, tid);
             break;
         case IEEE80211_AMPDU_TX_OPERATIONAL:
-            printk(KERN_ERR "AMPDU_TX_OPERATIONAL %02X:%02X:%02X:%02X:%02X:%02X %d.\n",
+            dev_dbg(sc->dev, KERN_ERR "AMPDU_TX_OPERATIONAL %02X:%02X:%02X:%02X:%02X:%02X %d.\n",
                    sta->addr[0], sta->addr[1], sta->addr[2], sta->addr[3],
                    sta->addr[4], sta->addr[5], tid);
             ssv6200_ampdu_tx_operation(tid, sta, hw, buf_size);
@@ -4598,7 +4597,7 @@ out:
 #ifdef CONFIG_PM
     int ssv6xxx_suspend (struct ieee80211_hw *hw, struct cfg80211_wowlan *wowlan) {
         struct ssv_softc *sc = hw->priv;
-        printk("ssv6xxx_suspend \n");
+        dev_dbg(sc->dev, "ssv6xxx_suspend \n");
         if (wowlan) {
             mutex_lock(&sc->mutex);
             device_init_wakeup(sc->dev, 1);
@@ -4608,7 +4607,7 @@ out:
         return 0;
     }
     int ssv6xxx_resume (struct ieee80211_hw *hw) {
-        printk("ssv6xxx_resume \n");
+        printk(KERN_INFO "ssv6xxx_resume \n");
         return 0;
     }
 #endif
@@ -4617,7 +4616,7 @@ out:
                                          struct ieee80211_vif *vif, int idx) {
         struct ssv_vif_priv_data *vif_priv = (struct ssv_vif_priv_data *)vif->drv_priv;
         if ((vif_priv->has_hw_encrypt == false) && ((vif_priv->pair_cipher == SSV_CIPHER_WEP40) || (vif_priv->pair_cipher == SSV_CIPHER_WEP104))) {
-            printk("Update WEP default key index %d for SW encryption\n", idx);
+            printk(KERN_DEBUG "Update WEP default key index %d for SW encryption\n", idx);
             vif_priv->wep_idx = idx;
         }
     }
@@ -4658,7 +4657,7 @@ out:
         SMAC_REG_READ(sc->sh, ADR_REASON_TRAP1, &trap1);
         SMAC_REG_WRITE(sc->sh, ADR_REASON_TRAP0, 0x00000000);
         SMAC_REG_WRITE(sc->sh, ADR_REASON_TRAP1, 0x00000000);
-        printk("trap0 %08x, trap1 %08x\n", trap0, trap1);
+        dev_dbg(sc->dev, "trap0 %08x, trap1 %08x\n", trap0, trap1);
         sc->trap_data.reason_trap0 = trap0;
         sc->trap_data.reason_trap1 = trap1;
     }
@@ -4679,7 +4678,7 @@ out:
         SSV_SAVE_CLEAR_TRAP_REASON(sc);
         skb = ssv_skb_alloc(sc, HOST_CMD_HDR_LEN+HOST_CMD_DUMMY_LEN);
         if (!skb) {
-            printk("%s(): Fail to alloc cmd buffer.\n", __FUNCTION__);
+            dev_dbg(sc->dev, "%s(): Fail to alloc cmd buffer.\n", __FUNCTION__);
             return -1;
         }
         skb_put(skb, HOST_CMD_HDR_LEN+HOST_CMD_DUMMY_LEN);
@@ -4698,7 +4697,7 @@ out:
         int retval = 0;
         retval = ssv6xxx_trigger_pmu(sc);
         if (retval)
-            printk("ssv6xxx_trigger_pmu fail!!\n");
+            dev_dbg(sc->dev, "ssv6xxx_trigger_pmu fail!!\n");
         mutex_lock(&sc->mutex);
         ieee80211_stop_queues(sc->hw);
         HCI_STOP(sc->sh);
@@ -4764,14 +4763,14 @@ out:
                 if (rx_aggr_info->jmp_mpdu_len <= (MAX_FRAME_SIZE_DMG + MAX_RX_PKT_RSVD)) {
                     return rx_aggr_info->jmp_mpdu_len;
                 } else {
-                    printk("%s: jmp_mpdu_len %u is too big!\n", __func__, rx_aggr_info->jmp_mpdu_len);
+                    dev_dbg(sc->dev, "%s: jmp_mpdu_len %u is too big!\n", __func__, rx_aggr_info->jmp_mpdu_len);
                     return 0;
                 }
             } else {
                 if (rx_aggr_info->accu_rx_len <= (MAX_HCI_RX_AGGR_SIZE + MAX_RX_PKT_RSVD)) {
                     return rx_aggr_info->accu_rx_len;
                 } else {
-                    printk("%s: accu_rx_len %u is too big!\n", __func__, rx_aggr_info->accu_rx_len);
+                    dev_dbg(sc->dev, "%s: accu_rx_len %u is too big!\n", __func__, rx_aggr_info->accu_rx_len);
                     return 0;
                 }
             }
@@ -4792,13 +4791,6 @@ out:
                 sta_priv_dat = (struct ssv_sta_priv_data *)sta->drv_priv;
                 return &sta_priv_dat->crypto_data;
             } else {
-                printk(KERN_ERR
-                       "Unicast to NULL STA frame. "
-                       "%02X:%02X:%02X:%02X:%02X:%02X -> %02X:%02X:%02X:%02X:%02X:%02X)\n",
-                       hdr->addr1[0], hdr->addr1[1], hdr->addr1[2],
-                       hdr->addr1[3], hdr->addr1[4], hdr->addr1[5],
-                       hdr->addr2[0], hdr->addr2[1], hdr->addr2[2],
-                       hdr->addr2[3], hdr->addr2[4], hdr->addr2[5]);
                 return NULL;
             }
         } else {
@@ -4887,7 +4879,7 @@ out:
         struct ssv_vif_info *vif_info;
         u32 unicast = 0;
         if(sta == NULL) {
-            printk("No sta, fail to get rx cryptops\n");
+            dev_dbg(sc->dev, "No sta, fail to get rx cryptops\n");
             return NULL;
         }
         sta_priv = (struct ssv_sta_priv_data *)sta->drv_priv;
@@ -4898,7 +4890,7 @@ out:
 #endif
         if ((sc->sta_info[sta_priv->sta_idx].s_flags & STA_FLAG_VALID) == 0) {
             up_read(&sc->sta_info_sem);
-            printk("%s(): sta_info is gone.\n", __func__);
+            dev_dbg(sc->dev, "%s(): sta_info is gone.\n", __func__);
             return NULL;
         }
         vif_priv = (struct ssv_vif_priv_data *)sc->sta_info[sta_priv->sta_idx].vif->drv_priv;
@@ -4916,10 +4908,10 @@ out:
             return &vif_priv->crypto_data;
         } else {
             up_read(&sc->sta_info_sem);
-            printk("[Local Crypto]: No useful drv_priv, sta = %p, unicast = %d, vif_priv = %p", sta, unicast, vif_priv);
+            dev_dbg(sc->dev, "[Local Crypto]: No useful drv_priv, sta = %p, unicast = %d, vif_priv = %p", sta, unicast, vif_priv);
             if(sta != NULL)
-                printk(", sta_priv = %p", sta->drv_priv);
-            printk("\n");
+                dev_dbg(sc->dev, ", sta_priv = %p", sta->drv_priv);
+            dev_dbg(sc->dev, "\n");
         }
         return NULL;
     }
@@ -4936,7 +4928,7 @@ out:
             END_READ_CRYPTO_DATA(crypto_data);
             return ret;
         }
-        printk("[Local Crypto]: crytp is null\n");
+        dev_dbg(sc->dev, "[Local Crypto]: crytp is null\n");
         return -1;
     }
 #endif
@@ -4987,7 +4979,7 @@ out:
         struct ieee80211_vif *vif = NULL;
         if (time_after(jiffies, sc->cci_last_jiffies + msecs_to_jiffies(3000))) {
             if (input_level > MAX_CCI_LEVEL) {
-                printk("mitigate_cci input error[%d]!!\n",input_level);
+                dev_dbg(sc->dev, "mitigate_cci input error[%d]!!\n",input_level);
                 return;
             }
 #ifndef IRQ_PROC_RX_DATA
@@ -4997,7 +4989,7 @@ out:
 #endif
             if ((sta_priv->sta_info->s_flags & STA_FLAG_VALID) == 0) {
                 up_read(&sc->sta_info_sem);
-                printk("%s(): sta_info is gone.\n", __func__);
+                dev_dbg(sc->dev, "%s(): sta_info is gone.\n", __func__);
                 return;
             }
             sc->cci_last_jiffies = jiffies;
@@ -5005,12 +4997,12 @@ out:
             vif_priv = (struct ssv_vif_priv_data *)vif->drv_priv;
             if (vif_priv->vif_idx) {
                 up_read(&sc->sta_info_sem);
-                printk("Interface skip CCI[%d]!!\n",vif_priv->vif_idx);
+                dev_dbg(sc->dev, "Interface skip CCI[%d]!!\n",vif_priv->vif_idx);
                 return;
             }
             if (vif->p2p == true) {
                 up_read(&sc->sta_info_sem);
-                printk("Interface skip CCI by P2P!!\n");
+                dev_dbg(sc->dev, "Interface skip CCI by P2P!!\n");
                 return;
             }
             up_read(&sc->sta_info_sem);
@@ -5019,12 +5011,12 @@ out:
                 sc->cci_current_gate = (sizeof(adjust_cci)/sizeof(adjust_cci[0])) - 1;
             }
 #ifdef DEBUG_MITIGATE_CCI
-            printk("jiffies=%lu, input_level=%d\n", jiffies, input_level);
+            dev_dbg(sc->dev, "jiffies=%lu, input_level=%d\n", jiffies, input_level);
 #endif
             if(( input_level >= adjust_cci[sc->cci_current_gate].down_level) && (input_level <= adjust_cci[sc->cci_current_gate].upper_level)) {
                 sc->cci_current_level = input_level;
 #ifdef DEBUG_MITIGATE_CCI
-                printk("Keep the 0xce0020a0[%x] 0xce002008[%x]!!\n"
+                dev_dbg(sc->dev, "Keep the 0xce0020a0[%x] 0xce002008[%x]!!\n"
                        ,adjust_cci[sc->cci_current_gate].adjust_cca_control,adjust_cci[sc->cci_current_gate].adjust_cca_1);
 #endif
             } else {
@@ -5032,7 +5024,7 @@ out:
                     for (i = 0; i < sizeof(adjust_cci)/sizeof(adjust_cci[0]); i++) {
                         if (input_level <= adjust_cci[i].upper_level) {
 #ifdef DEBUG_MITIGATE_CCI
-                            printk("gate=%d, input_level=%d, adjust_cci[%d].upper_level=%d, value=%08x\n",
+                            dev_dbg(sc->dev, "gate=%d, input_level=%d, adjust_cci[%d].upper_level=%d, value=%08x\n",
                                    sc->cci_current_gate, input_level, i, adjust_cci[i].upper_level, adjust_cci[i].adjust_cca_control);
 #endif
                             sc->cci_current_level = input_level;
@@ -5040,7 +5032,7 @@ out:
                             SMAC_REG_WRITE(sc->sh, ADR_RX_11B_CCA_CONTROL, adjust_cci[i].adjust_cca_control);
                             SMAC_REG_WRITE(sc->sh, ADR_RX_11B_CCA_1, adjust_cci[i].adjust_cca_1);
 #ifdef DEBUG_MITIGATE_CCI
-                            printk("##Set to the 0xce0020a0[%x] 0xce002008[%x]##!!\n"
+                            dev_dbg(sc->dev, "##Set to the 0xce0020a0[%x] 0xce002008[%x]##!!\n"
                                    ,adjust_cci[sc->cci_current_gate].adjust_cca_control,adjust_cci[sc->cci_current_gate].adjust_cca_1);
 #endif
                             return;
@@ -5050,7 +5042,7 @@ out:
                     for (i = (sizeof(adjust_cci)/sizeof(adjust_cci[0]) -1); i >= 0; i--) {
                         if (input_level >= adjust_cci[i].down_level) {
 #ifdef DEBUG_MITIGATE_CCI
-                            printk("gate=%d, input_level=%d, adjust_cci[%d].down_level=%d, value=%08x\n",
+                            dev_dbg(sc->dev, "gate=%d, input_level=%d, adjust_cci[%d].down_level=%d, value=%08x\n",
                                    sc->cci_current_gate, input_level, i, adjust_cci[i].down_level, adjust_cci[i].adjust_cca_control);
 #endif
                             sc->cci_current_level = input_level;
@@ -5058,7 +5050,7 @@ out:
                             SMAC_REG_WRITE(sc->sh, ADR_RX_11B_CCA_CONTROL, adjust_cci[i].adjust_cca_control);
                             SMAC_REG_WRITE(sc->sh, ADR_RX_11B_CCA_1, adjust_cci[i].adjust_cca_1);
 #ifdef DEBUG_MITIGATE_CCI
-                            printk("##Set to the 0xce0020a0[%x] 0xce002008[%x]##!!\n"
+                            dev_dbg(sc->dev, "##Set to the 0xce0020a0[%x] 0xce002008[%x]##!!\n"
                                    ,adjust_cci[sc->cci_current_gate].adjust_cca_control,adjust_cci[sc->cci_current_gate].adjust_cca_1);
 #endif
                             return;
@@ -5147,7 +5139,7 @@ out:
             mgmt_tmp = (struct ieee80211_mgmt *)(rx_skb->data + SSV6XXX_RX_DESC_LEN );
 #endif
             mgmt_tmp->u.beacon.timestamp = cpu_to_le64(ssv6200_get_systime_us()+ 10*1000*1000);
-            //printk("beacon timestamp = %lld\n", mgmt_tmp->u.beacon.timestamp);
+            //dev_dbg(sc->dev, "beacon timestamp = %lld\n", mgmt_tmp->u.beacon.timestamp);
         }
 
         if(ieee80211_is_probe_resp(hdr->frame_control)) {
@@ -5159,7 +5151,7 @@ out:
             mgmt_tmp = (struct ieee80211_mgmt *)(rx_skb->data + SSV6XXX_RX_DESC_LEN );
 #endif
             mgmt_tmp->u.probe_resp.timestamp = cpu_to_le64(ssv6200_get_systime_us()+ 10*1000*1000) ;
-            //printk("probe_resp timestamp = %lld\n", mgmt_tmp->u.probe_resp.timestamp);
+            //dev_dbg(sc->dev, "probe_resp timestamp = %lld\n", mgmt_tmp->u.probe_resp.timestamp);
         }
 
 
@@ -5208,7 +5200,7 @@ out:
                 if(sta) {
                     sta_priv = (struct ssv_sta_priv_data *)sta->drv_priv;
 #ifdef SSV_RSSI_DEBUG
-                    printk(KERN_DEBUG "b_beacon %02X:%02X:%02X:%02X:%02X:%02X rssi=%d, snr=%d\n",
+                    dev_dbg(sc->dev, KERN_DEBUG "b_beacon %02X:%02X:%02X:%02X:%02X:%02X rssi=%d, snr=%d\n",
                            hdr->addr2[0], hdr->addr2[1],hdr->addr2[2], hdr->addr2[3],
                            hdr->addr2[4], hdr->addr2[5],rpci, rxphypad->snr);
 #endif
@@ -5219,7 +5211,7 @@ out:
                     } else
                         sta_priv->beacon_rssi = (rpci<< RSSI_DECIMAL_POINT_SHIFT);
 #ifdef SSV_RSSI_DEBUG
-                    printk("Beacon smoothing RSSI %d\n",rpci);
+                    dev_dbg(sc->dev, "Beacon smoothing RSSI %d\n",rpci);
 #endif
 #ifdef CONFIG_SSV_CCI_IMPROVEMENT
                     mitigate_cci(sc, sta_priv, rxphypad->rpci);
@@ -5230,7 +5222,7 @@ out:
                         rpci = sc->sh->cfg.beacon_rssi_minimal;
                 }
 #if 0
-                printk("beacon %02X:%02X:%02X:%02X:%02X:%02X rxphypad-rpci=%d RxResult=%x wsid=%x\n",
+                dev_dbg(sc->dev, "beacon %02X:%02X:%02X:%02X:%02X:%02X rxphypad-rpci=%d RxResult=%x wsid=%x\n",
                        hdr->addr2[0], hdr->addr2[1], hdr->addr2[2],
                        hdr->addr2[3], hdr->addr2[4], hdr->addr2[5], rpci, rxdesc->RxResult, rxdesc->wsid);
 #endif
@@ -5238,10 +5230,10 @@ out:
             rxs->signal = (-rpci);
         } else {
 #ifdef SSV_RSSI_DEBUG
-            printk("########unicast: %d, b_rssi/snr: %d/%d, gn_rssi/snr: %d/%d, rate:%d###############\n",
+            dev_dbg(sc->dev, "########unicast: %d, b_rssi/snr: %d/%d, gn_rssi/snr: %d/%d, rate:%d###############\n",
                    rxdesc->unicast, (-rxphy->rpci), rxphy->snr, (-rxphypad->rpci), rxphypad->snr, rxdesc->rate_idx);
-            printk("RSSI, %d, rate_idx, %d\n", rxs->signal, rxdesc->rate_idx);
-            printk("rxdesc->RxResult = %x,rxdesc->wsid = %d\n",rxdesc->RxResult,rxdesc->wsid);
+            dev_dbg(sc->dev, "RSSI, %d, rate_idx, %d\n", rxs->signal, rxdesc->rate_idx);
+            dev_dbg(sc->dev, "rxdesc->RxResult = %x,rxdesc->wsid = %d\n",rxdesc->RxResult,rxdesc->wsid);
 #endif
             sta = ssv6xxx_find_sta_by_rx_skb(sc, rx_skb);
             if(sta) {
@@ -5249,7 +5241,7 @@ out:
                 rxs->signal = -(sta_priv->beacon_rssi >> RSSI_DECIMAL_POINT_SHIFT);
             }
 #ifdef SSV_RSSI_DEBUG
-            printk("Others signal %d\n",rxs->signal);
+            dev_dbg(sc->dev, "Others signal %d\n",rxs->signal);
 #endif
         }
 #endif
@@ -5297,7 +5289,7 @@ out:
             up_read(&sc->sta_info_sem);
 #if 0
             if (rx_count++ < 20) {
-                printk(KERN_ERR "HW DEC (%d - %d) %d %02X:%02X:%02X:%02X:%02X:%02X\n",
+                dev_dbg(sc->dev, KERN_ERR "HW DEC (%d - %d) %d %02X:%02X:%02X:%02X:%02X:%02X\n",
                        rx_hw_dec, do_sw_dec, rxdesc->wsid,
                        hdr->addr1[0], hdr->addr1[1], hdr->addr1[2],
                        hdr->addr1[3], hdr->addr1[4], hdr->addr1[5]);
@@ -5367,7 +5359,7 @@ out:
                     goto drop_rx;
                 }
             } else {
-                printk("[MT-CRYPTO]: Failed to do pre-decrypt (%d)\n", ret);
+                dev_dbg(sc->dev, "[MT-CRYPTO]: Failed to do pre-decrypt (%d)\n", ret);
                 dev_kfree_skb_any(rx_skb);
                 return;
             }
@@ -5384,14 +5376,14 @@ out:
                 if ((vif_priv->pair_cipher == SSV_CIPHER_TKIP) || (vif_priv->group_cipher == SSV_CIPHER_TKIP)) {
                     if (mic_err) {
                         rxs->flag |= RX_FLAG_MMIC_ERROR;
-                        printk("TKIP MMIC error, set RX_FLAG_MMIC_ERROR flag\n");
+                        dev_dbg(sc->dev, "TKIP MMIC error, set RX_FLAG_MMIC_ERROR flag\n");
                     }
                     if (decode_err) {
                         if (sc->sh->cfg.mic_err_notify) {
                             rxs->flag |= RX_FLAG_MMIC_ERROR;
-                            printk("decode error frame add mic err flag to notify nl80211\n");
+                            dev_dbg(sc->dev, "decode error frame add mic err flag to notify nl80211\n");
                         } else {
-                            printk("Drop decode error frame\n");
+                            dev_dbg(sc->dev, "Drop decode error frame\n");
                             goto drop_rx;
                         }
                     }
@@ -5407,17 +5399,17 @@ out:
 #if 0
             if (ieee80211_is_probe_req(fc)) {
 #if 0
-                printk(KERN_ERR "RX M: 1 %02X:%02X:%02X:%02X:%02X:%02X  (%d - %d - %d)\n",
+                dev_dbg(sc->dev, KERN_ERR "RX M: 1 %02X:%02X:%02X:%02X:%02X:%02X  (%d - %d - %d)\n",
                        hdr->addr1[0], hdr->addr1[1], hdr->addr1[2],
                        hdr->addr1[3], hdr->addr1[4], hdr->addr1[5],
                        (le16_to_cpu(hdr->seq_ctrl) >> 4),
                        rxdesc->wsid, ieee80211_has_protected(fc));
 #endif
-                printk(KERN_ERR "Probe Req: 2 %02X:%02X:%02X:%02X:%02X:%02X\n",
+                dev_dbg(sc->dev, KERN_ERR "Probe Req: 2 %02X:%02X:%02X:%02X:%02X:%02X\n",
                        hdr->addr2[0], hdr->addr2[1], hdr->addr2[2],
                        hdr->addr2[3], hdr->addr2[4], hdr->addr2[5]);
 #if 0
-                printk(KERN_ERR "RX M: 3 %02X:%02X:%02X:%02X:%02X:%02X\n",
+                dev_dbg(sc->dev, KERN_ERR "RX M: 3 %02X:%02X:%02X:%02X:%02X:%02X\n",
                        hdr->addr3[0], hdr->addr3[1], hdr->addr3[2],
                        hdr->addr3[3], hdr->addr3[4], hdr->addr3[5]);
 #endif
@@ -5500,7 +5492,7 @@ drop_rx:
             goto out;
         vif_priv = (struct ssv_vif_priv_data *)sc->vif_info[i].vif->drv_priv;
         if (list_empty(&vif_priv->sta_list)) {
-            printk("%s(): sta_list is empty.\n", __func__);
+            dev_dbg(sc->dev, "%s(): sta_list is empty.\n", __func__);
             goto out;
         }
         list_for_each_entry(sta_priv_iter, &vif_priv->sta_list, list) {
@@ -5592,7 +5584,7 @@ out:
             break;
         case SOC_EVT_SDIO_TEST_COMMAND:
             if (h_evt->evt_seq_no == 0) {
-                printk("SOC_EVT_SDIO_TEST_COMMAND\n");
+                dev_dbg(sc->dev, "SOC_EVT_SDIO_TEST_COMMAND\n");
                 sc->sdio_rx_evt_size = h_evt->len;
                 sc->sdio_throughput_timestamp = jiffies;
             } else {
@@ -5600,7 +5592,7 @@ out:
                 if (time_after(jiffies,
                                ( sc->sdio_throughput_timestamp
                                  + msecs_to_jiffies(1000)))) {
-                    printk("data[%ld] SDIO RX throughput %ld Kbps\n",
+                    dev_dbg(sc->dev, "data[%ld] SDIO RX throughput %ld Kbps\n",
                            sc->sdio_rx_evt_size,
                            ( (sc->sdio_rx_evt_size << 3)
                              / jiffies_to_msecs( jiffies
@@ -5626,15 +5618,15 @@ out:
             break;
 #endif
         case SOC_EVT_SDIO_TXTPUT_RESULT:
-            printk("data SDIO TX throughput %d Kbps\n", h_evt->evt_seq_no);
+            dev_dbg(sc->dev, "data SDIO TX throughput %d Kbps\n", h_evt->evt_seq_no);
             dev_kfree_skb_any(skb);
             break;
         case SOC_EVT_TXLOOPBK_RESULT:
             if (h_evt->evt_seq_no == SSV6XXX_STATE_OK) {
-                printk("FW TX LOOPBACK OK\n");
+                dev_dbg(sc->dev, "FW TX LOOPBACK OK\n");
                 sc->iq_cali_done = IQ_CALI_OK;
             } else {
-                printk(KERN_ERR "FW TX LOOPBACK FAILED\n");
+                dev_dbg(sc->dev, KERN_ERR "FW TX LOOPBACK FAILED\n");
                 sc->iq_cali_done = IQ_CALI_FAILED;
             }
             dev_kfree_skb_any(skb);
@@ -5656,11 +5648,11 @@ out:
                 SSV_BEACON_LOSS_ENABLE(sc->sh);
             break;
         case SOC_EVT_TX_STUCK_RESP:
-            printk("receive event tx_stuck!!\n");
+            dev_dbg(sc->dev, "receive event tx_stuck!!\n");
             dev_kfree_skb_any(skb);
             break;
         case SOC_EVT_SW_BEACON_RESP:
-            printk("soft-beacon start!!\n");
+            dev_dbg(sc->dev, "soft-beacon start!!\n");
             dev_kfree_skb_any(skb);
             break;
         default:
@@ -5984,13 +5976,13 @@ out:
                 report_data = (struct firmware_rate_control_report_data *)&host_event->dat[0];
                 hw_wsid = report_data->wsid;
             } else {
-                printk("RC work get garbage!!\n");
+                dev_dbg(sc->dev, "RC work get garbage!!\n");
                 dev_kfree_skb_any(skb);
                 continue;
             }
             if((hw_wsid >= SSV_RC_MAX_HARDWARE_SUPPORT) && (host_event->h_event == SOC_EVT_RC_MPDU_REPORT)) {
 #ifdef RATE_CONTROL_DEBUG
-                printk("[RC]rc_sta is NULL pointer Check-0!!\n");
+                dev_dbg(sc->dev, "[RC]rc_sta is NULL pointer Check-0!!\n");
 #endif
                 dev_kfree_skb_any(skb);
                 continue;
@@ -6026,14 +6018,14 @@ out:
             }
 #if 0
             if(rc_sta->rc_wsid != hw_wsid) {
-                printk("[RC] wsid mapping [ERROR] feedback wsid[%d] rc_wsid[%d]...><\n",hw_wsid,rc_sta->rc_wsid);
+                dev_dbg(sc->dev, "[RC] wsid mapping [ERROR] feedback wsid[%d] rc_wsid[%d]...><\n",hw_wsid,rc_sta->rc_wsid);
 #if 1
                 for(i=0; i<SSV_RC_MAX_STA; i++) {
                     rc_sta = &ssv_rc->sta_rc_info[i];
                     if(rc_sta == NULL)
                         break;
                     if(hw_wsid == rc_sta->rc_wsid) {
-                        printk("[RC] Get new mapping-%d-%d...@o@\n",hw_wsid, i);
+                        dev_dbg(sc->dev, "[RC] Get new mapping-%d-%d...@o@\n",hw_wsid, i);
                         break;
                     }
                 }
@@ -6044,7 +6036,7 @@ out:
 #endif
             if(rc_sta == NULL) {
 #ifdef RATE_CONTROL_DEBUG
-                printk("[RC]rc_sta is NULL pointer Check-2!!\n");
+                dev_dbg(sc->dev, "[RC]rc_sta is NULL pointer Check-2!!\n");
 #endif
                 dev_kfree_skb_any(skb);
                 continue;

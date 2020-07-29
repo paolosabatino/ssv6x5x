@@ -1490,7 +1490,7 @@ static int ssv6xxx_sdio_power_on(struct ssv6xxx_platform_data * pdata, struct sd
     int ret = 0;
     if (pdata->is_enabled == true)
         return 0;
-    printk("ssv6xxx_sdio_power_on\n");
+
     sdio_claim_host(func);
     ret = sdio_enable_func(func);
     sdio_release_host(func);
@@ -1703,14 +1703,12 @@ int tu_ssv6xxx_sdio_probe(struct sdio_func *func,
     struct ssv6xxx_platform_data *pwlan_data;
     struct ssv6xxx_sdio_glue *glue;
     int ret = -ENOMEM;
-    printk(KERN_INFO "=======================================\n");
-    printk(KERN_INFO "==           RUN SDIO                ==\n");
-    printk(KERN_INFO "=======================================\n");
+    dev_info(&func->dev, "Probing SDIO bus");
     if (func->num != 0x01)
         return -ENODEV;
     glue = kzalloc(sizeof(*glue), GFP_KERNEL);
     if (!glue) {
-        dev_err(&func->dev, "can't allocate glue\n");
+        dev_err(&func->dev, "can't allocate glue");
         goto out;
     }
 #if (defined(CONFIG_SSV_SDIO_INPUT_DELAY) && defined(CONFIG_SSV_SDIO_OUTPUT_DELAY))
@@ -1729,7 +1727,7 @@ int tu_ssv6xxx_sdio_probe(struct sdio_func *func,
     glue->dev_ready = true;
     pwlan_data->vendor = func->vendor;
     pwlan_data->device = func->device;
-    dev_err(glue->dev, "vendor = 0x%x device = 0x%x\n",
+    dev_info(glue->dev, "vendor = 0x%x device = 0x%x",
             pwlan_data->vendor, pwlan_data->device);
 #ifdef CONFIG_PCIEASPM
     cabrio_sdio_pm_check(func);
