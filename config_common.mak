@@ -1,17 +1,16 @@
 
 CONFIG_SSV6X5X=m
 #ccflags-y += -DCONFIG_SSV6200_CORE
-CONFIG_MAC80211_LEDS=y
-CONFIG_MAC80211_DEBUGFS=y
-CONFIG_MAC80211_MESH=y
-CONFIG_PM=y
-CONFIG_MAC80211_RC_MINSTREL=y
-CONFIG_MAC80211_RC_MINSTREL_HT=y
+#CONFIG_MAC80211_LEDS=y
+#CONFIG_MAC80211_DEBUGFS=y
+#CONFIG_MAC80211_MESH=y
+#CONFIG_PM=y
+#CONFIG_MAC80211_RC_MINSTREL=y
+#CONFIG_MAC80211_RC_MINSTREL_HT=y
 
-//ccflags-y += -D_ICOMM_MAC80211_
+#ccflags-y += -D_ICOMM_MAC80211_
 
 ccflags-y += -D__CHECK_ENDIAN__
-#ccflags-y += -DDEBUG
 ###########################################################################
 # Compiler options                                                        #
 ###########################################################################
@@ -19,7 +18,8 @@ ccflags-y += -Werror
 
 # Enable -g to help debug. Deassembly from .o to .S would help to track to 
 # the problomatic line from call stack dump.
-ccflags-y += -g
+#ccflags-y += -DDEBUG -g
+ccflags-y += -Os
 
 #########################################################
 # option enable shal

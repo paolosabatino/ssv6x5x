@@ -35,7 +35,7 @@
 #include "sec.h"
 #include "p2p.h"
 #include <linux/kthread.h>
-#define SSV_DRVER_NAME "TU SSV WLAN driver"
+#define SSV_DRVER_NAME "ssv6x5x"
 #define RF_MODE_SHUTDOWN 0
 #define RF_MODE_STANDBY 1
 #define RF_MODE_TRX_EN 2
