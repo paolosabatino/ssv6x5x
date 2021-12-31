@@ -1,36 +1,38 @@
 /*
- * Copyright (c) 2015 iComm-semi Ltd.
+ * Copyright (c) 2015 South Silicon Valley Microelectronics Inc.
+ * Copyright (c) 2015 iComm Corporation
  *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
+ * This program is free software: you can redistribute it and/or modify 
+ * it under the terms of the GNU General Public License as published by 
+ * the Free Software Foundation, either version 3 of the License, or 
  * (at your option) any later version.
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * This program is distributed in the hope that it will be useful, but 
+ * WITHOUT ANY WARRANTY; without even the implied warranty of 
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
  * See the GNU General Public License for more details.
- * You should have received a copy of the GNU General Public License
+ * You should have received a copy of the GNU General Public License 
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
 #ifndef __TX_SDK_COMMON_DEF_H__
-#define __TX_SDK_COMMON_DEF_H__
+#define __TX_SDK_COMMON_DEF_H__ 
 #define SDK_API __attribute__((visibility("default")))
 #ifndef __cplusplus
 #define bool _Bool
 #define true 1
 #define false 0
-#define CXX_EXTERN_BEGIN
-#define CXX_EXTERN_END
+#define CXX_EXTERN_BEGIN 
+#define CXX_EXTERN_END 
 #define C_EXTERN extern
 #else
 #define _Bool bool
 #define CXX_EXTERN_BEGIN extern "C" {
 #define CXX_EXTERN_END }
-#define C_EXTERN
+#define C_EXTERN 
 #endif
 CXX_EXTERN_BEGIN
-enum error_code {
+enum error_code
+{
     err_null = 0x00000000,
     err_failed = 0x00000001,
     err_unknown = 0x00000002,

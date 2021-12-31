@@ -1,27 +1,24 @@
 /*
- * Copyright (c) 2015 iComm-semi Ltd.
+ * Copyright (c) 2015 South Silicon Valley Microelectronics Inc.
+ * Copyright (c) 2015 iComm Corporation
  *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
+ * This program is free software: you can redistribute it and/or modify 
+ * it under the terms of the GNU General Public License as published by 
+ * the Free Software Foundation, either version 3 of the License, or 
  * (at your option) any later version.
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * This program is distributed in the hope that it will be useful, but 
+ * WITHOUT ANY WARRANTY; without even the implied warranty of 
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
  * See the GNU General Public License for more details.
- * You should have received a copy of the GNU General Public License
+ * You should have received a copy of the GNU General Public License 
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
 #ifndef _SSV6XXX_H_
-#define _SSV6XXX_H_
+#define _SSV6XXX_H_ 
 #include <linux/device.h>
 #include <linux/interrupt.h>
-#ifdef SSV_MAC80211
-#include "ssv_mac80211.h"
-#else
 #include <net/mac80211.h>
-#endif
 #ifdef ECLIPSE
 #include <ssv_mod_conf.h>
 #endif
@@ -99,5 +96,5 @@ struct txResourceControl {
     u32 edca2:5;
     u32 edca3:5;
 };
-#include "ssv_cfg.h"
+#include <ssv_cfg.h>
 #endif

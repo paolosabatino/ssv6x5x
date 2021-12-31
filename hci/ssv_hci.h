@@ -1,20 +1,21 @@
 /*
- * Copyright (c) 2015 iComm-semi Ltd.
+ * Copyright (c) 2015 South Silicon Valley Microelectronics Inc.
+ * Copyright (c) 2015 iComm Corporation
  *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
+ * This program is free software: you can redistribute it and/or modify 
+ * it under the terms of the GNU General Public License as published by 
+ * the Free Software Foundation, either version 3 of the License, or 
  * (at your option) any later version.
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * This program is distributed in the hope that it will be useful, but 
+ * WITHOUT ANY WARRANTY; without even the implied warranty of 
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
  * See the GNU General Public License for more details.
- * You should have received a copy of the GNU General Public License
+ * You should have received a copy of the GNU General Public License 
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
 #ifndef _SSV_HCI_H_
-#define _SSV_HCI_H_
+#define _SSV_HCI_H_ 
 #define SSV_SC(_ctrl_hci) (_ctrl_hci->shi->sc)
 #define TX_PAGE_NOT_LIMITED 255
 #define SSV_HW_TXQ_NUM 5
@@ -90,12 +91,11 @@ struct ssv6xxx_hci_info {
     struct ssv6xxx_hci_ctrl *hci_ctrl;
     struct ssv_softc *sc;
     struct ssv_hw *sh;
-#if !defined(USE_THREAD_RX) || defined(USE_BATCH_RX)
+    #if !defined(USE_THREAD_RX) || defined(USE_BATCH_RX)
     int (*hci_rx_cb)(struct sk_buff_head *, void *);
-#else
+    #else
     int (*hci_rx_cb)(struct sk_buff *, void *);
-#endif
-    int (*hci_is_rx_q_full)(void *);
+    #endif
     void (*hci_pre_tx_cb)(struct sk_buff *, void *);
     void (*hci_post_tx_cb)(struct sk_buff_head *, void *);
     int (*hci_tx_flow_ctrl_cb)(void *, int, bool, int debug);
@@ -104,16 +104,16 @@ struct ssv6xxx_hci_info {
     void (*hci_tx_q_empty_cb)(u32 txq_no, void *);
     int (*hci_rx_mode_cb)(void *);
     int (*hci_peek_next_pkt_len_cb)(struct sk_buff *, void *);
-    void (*dbgprint)(void *, u32 log_id, const char *fmt,...);
+ void (*dbgprint)(void *, u32 log_id, const char *fmt,...);
     struct sk_buff *(*skb_alloc) (void *app_param, s32 len);
     void (*skb_free) (void *app_param, struct sk_buff *skb);
     void (*write_hw_config_cb)(void *param, u32 addr, u32 value);
 };
-int tu_ssv6xxx_hci_deregister(struct ssv6xxx_hci_info *);
-int tu_ssv6xxx_hci_register(struct ssv6xxx_hci_info *);
+int ssv6xxx_hci_deregister(struct ssv6xxx_hci_info *);
+int ssv6xxx_hci_register(struct ssv6xxx_hci_info *);
 #if (defined(CONFIG_SSV_SUPPORT_ANDROID)||defined(CONFIG_SSV_BUILD_AS_ONE_KO))
-int tu_ssv6xxx_hci_init(void);
-void tu_ssv6xxx_hci_exit(void);
+int ssv6xxx_hci_init(void);
+void ssv6xxx_hci_exit(void);
 #endif
 #ifdef SSV_SUPPORT_HAL
 #define SSV_READRG_HCI_INQ_INFO(_hci_ctrl,_used_id,_tx_use_page) \
@@ -141,7 +141,7 @@ void ssv6xxx_hci_load_fw_post_config_device(struct ssv6xxx_hci_ctrl *ctrl_hci);
 #define SSV_LOAD_FW_SET_STATUS(_hci_ctrl,_status) ssv6xxx_hci_load_fw_set_status((_hci_ctrl), (_status))
 #define SSV_LOAD_FW_GET_STATUS(_hci_ctrl,_status) ssv6xxx_hci_load_fw_get_status((_hci_ctrl), (_status))
 #define SSV_RESET_CPU(_hci_ctrl) ssv6xxx_hci_reset_cpu((_hci_ctrl))
-#define SSV_SET_SRAM_MODE(_hci_ctrl,_mode)
+#define SSV_SET_SRAM_MODE(_hci_ctrl,_mode) 
 #define SSV_LOAD_FW_PRE_CONFIG_DEVICE(_hci_ctrl) ssv6xxx_hci_load_fw_pre_config_device(_hci_ctrl)
 #define SSV_LOAD_FW_POST_CONFIG_DEVICE(_hci_ctrl) ssv6xxx_hci_load_fw_post_config_device(_hci_ctrl)
 #endif

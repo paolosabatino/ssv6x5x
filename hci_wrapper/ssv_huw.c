@@ -1,15 +1,16 @@
 /*
- * Copyright (c) 2015 iComm-semi Ltd.
+ * Copyright (c) 2015 South Silicon Valley Microelectronics Inc.
+ * Copyright (c) 2015 iComm Corporation
  *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
+ * This program is free software: you can redistribute it and/or modify 
+ * it under the terms of the GNU General Public License as published by 
+ * the Free Software Foundation, either version 3 of the License, or 
  * (at your option) any later version.
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * This program is distributed in the hope that it will be useful, but 
+ * WITHOUT ANY WARRANTY; without even the implied warranty of 
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
  * See the GNU General Public License for more details.
- * You should have received a copy of the GNU General Public License
+ * You should have received a copy of the GNU General Public License 
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
@@ -71,9 +72,10 @@ struct ssv_huw_dev {
     wait_queue_head_t read_wq;
     spinlock_t rxlock;
     void *bufaddr;
-    struct sk_buff_head rx_skb_q;
+ struct sk_buff_head rx_skb_q;
 };
-struct ssv_rxbuf {
+struct ssv_rxbuf
+{
     struct list_head list;
     u32 rxsize;
     u8 rxdata[RXBUFLENGTH];
@@ -119,31 +121,41 @@ unsigned int skb_queue_len_bhsafe(struct sk_buff_head *head, spinlock_t *plock)
 static long ssv_huw_ioctl_readReg(struct ssv_huw_dev *phuw_dev,unsigned int cmd, struct ssv_huw_cmd *pcmd_data,struct ssv_huw_cmd *pucmd_data,bool isCompat)
 {
     long retval =0;
-    if ( pcmd_data->in_data_len < 4 || pcmd_data->out_data_len < 4) {
+    if ( pcmd_data->in_data_len < 4 || pcmd_data->out_data_len < 4)
+    {
         retval = -1;
-    } else {
+    }
+    else
+    {
         u32 tmpdata;
         u32 regval;
         int ret = 0;
 #ifdef CONFIG_COMPAT
-        if ( isCompat ) {
+        if ( isCompat )
+        {
             CHECK_RET(copy_from_user(&tmpdata,(int __user *)compat_ptr((unsigned long)pucmd_data->in_data),sizeof(tmpdata)));
-        } else
+        }
+        else
 #endif
         {
             CHECK_RET(copy_from_user(&tmpdata,(int __user *)pucmd_data->in_data,sizeof(tmpdata)));
         }
         ret = SMAC_REG_READ(phuw_dev, tmpdata, &regval);
-        if ( !ret ) {
+        if ( !ret )
+        {
 #ifdef CONFIG_COMPAT
-            if ( isCompat ) {
+            if ( isCompat )
+            {
                 CHECK_RET(copy_to_user((int __user *)compat_ptr((unsigned long)pucmd_data->out_data),&regval,sizeof(regval)));
-            } else
+            }
+            else
 #endif
             {
                 CHECK_RET(copy_to_user((int __user *)pucmd_data->out_data,&regval,sizeof(regval)));
             }
-        } else {
+        }
+        else
+        {
             dev_err(phuw_dev->dev,"%s: error : %d",__FUNCTION__,ret);
             retval = -1;
         }
@@ -153,21 +165,27 @@ static long ssv_huw_ioctl_readReg(struct ssv_huw_dev *phuw_dev,unsigned int cmd,
 static long ssv_huw_ioctl_writeReg(struct ssv_huw_dev *phuw_dev,unsigned int cmd, struct ssv_huw_cmd *pcmd_data,struct ssv_huw_cmd *pucmd_data,bool isCompat)
 {
     long retval =0;
-    if ( pcmd_data->in_data_len < 8) {
+    if ( pcmd_data->in_data_len < 8)
+    {
         retval = -1;
-    } else {
+    }
+    else
+    {
         u32 tmpdata[2];
         int ret = 0;
 #ifdef CONFIG_COMPAT
-        if ( isCompat ) {
+        if ( isCompat )
+        {
             CHECK_RET(copy_from_user(&tmpdata,(int __user *)compat_ptr((unsigned long)pucmd_data->in_data),sizeof(tmpdata)));
-        } else
+        }
+        else
 #endif
         {
             CHECK_RET(copy_from_user(&tmpdata,(int __user *)pucmd_data->in_data,sizeof(tmpdata)));
         }
         SMAC_REG_WRITE(phuw_dev, tmpdata[0], tmpdata[1]);
-        if ( ret ) {
+        if ( ret )
+        {
             dev_err(phuw_dev->dev,"%s: error : %d",__FUNCTION__,ret);
             retval = -1;
         }
@@ -179,25 +197,31 @@ static long ssv_huw_ioctl_writeSram(struct ssv_huw_dev *phuw_dev,unsigned int cm
     long retval =0;
     unsigned char *ptr = NULL;
     unsigned int addr;
-    if (( pcmd_data->in_data_len != 4) || ( pcmd_data->out_data_len <= 0)) {
+    if (( pcmd_data->in_data_len != 4) || ( pcmd_data->out_data_len <= 0))
+    {
         retval = -1;
-    } else {
+    }
+    else
+    {
         int ret = 0;
         ptr = kzalloc(pcmd_data->out_data_len, GFP_KERNEL);
         if(ptr == NULL)
             return -ENOMEM;
 #ifdef CONFIG_COMPAT
-        if ( isCompat ) {
+        if ( isCompat )
+        {
             CHECK_RET(copy_from_user(&addr, (int __user *)compat_ptr((unsigned long)pucmd_data->in_data), sizeof(addr)));
             CHECK_RET(copy_from_user(ptr, (int __user *)compat_ptr((unsigned long)pucmd_data->out_data), pcmd_data->out_data_len));
-        } else
+        }
+        else
 #endif
         {
             CHECK_RET(copy_from_user(&addr, (int __user *)pucmd_data->in_data, sizeof(addr)));
             CHECK_RET(copy_from_user(ptr, (int __user *)pucmd_data->out_data, pcmd_data->out_data_len));
         }
         SMAC_SRAM_WRITE(phuw_dev, addr, ptr, pcmd_data->out_data_len);
-        if ( ret ) {
+        if ( ret )
+        {
             dev_err(phuw_dev->dev,"%s: error : %d",__FUNCTION__,ret);
             retval = -1;
         }
@@ -209,29 +233,33 @@ static long ssv_huw_ioctl_process(struct ssv_huw_dev *glue, unsigned int cmd, st
 {
     struct ssv_huw_cmd cmd_data;
     long retval=0;
-    if ( isCompat ) {
-        CHECK_RET(copy_from_user(&cmd_data,(int __user *)pucmd_data,sizeof(*pucmd_data)));
-    } else {
+    if ( isCompat )
+    {
         CHECK_RET(copy_from_user(&cmd_data,(int __user *)pucmd_data,sizeof(*pucmd_data)));
     }
-    switch (cmd) {
-    case IOCTL_SSVSDIO_READ_REG:
-        retval = ssv_huw_ioctl_readReg(glue,cmd,&cmd_data,pucmd_data,isCompat);
-        break;
-    case IOCTL_SSVSDIO_WRITE_REG:
-        retval = ssv_huw_ioctl_writeReg(glue,cmd,&cmd_data,pucmd_data,isCompat);
-        break;
-    case IOCTL_SSVSDIO_WRITE_SRAM:
-        retval = ssv_huw_ioctl_writeSram(glue,cmd,&cmd_data,pucmd_data,isCompat);
-        break;
-    case IOCTL_SSVSDIO_START:
-        retval = HCI_START(glue);
-        break;
-    case IOCTL_SSVSDIO_STOP:
-        retval = HCI_STOP(glue);
-        break;
-    default:
-        return -EINVAL;
+    else
+    {
+        CHECK_RET(copy_from_user(&cmd_data,(int __user *)pucmd_data,sizeof(*pucmd_data)));
+    }
+    switch (cmd)
+    {
+        case IOCTL_SSVSDIO_READ_REG:
+            retval = ssv_huw_ioctl_readReg(glue,cmd,&cmd_data,pucmd_data,isCompat);
+            break;
+        case IOCTL_SSVSDIO_WRITE_REG:
+            retval = ssv_huw_ioctl_writeReg(glue,cmd,&cmd_data,pucmd_data,isCompat);
+            break;
+        case IOCTL_SSVSDIO_WRITE_SRAM:
+            retval = ssv_huw_ioctl_writeSram(glue,cmd,&cmd_data,pucmd_data,isCompat);
+            break;
+        case IOCTL_SSVSDIO_START:
+            retval = HCI_START(glue);
+            break;
+        case IOCTL_SSVSDIO_STOP:
+            retval = HCI_STOP(glue);
+            break;
+        default:
+            return -EINVAL;
     }
     return retval;
 }
@@ -261,7 +289,8 @@ static int ssv_huw_open(struct inode *inode, struct file *fp)
 static int ssv_huw_release(struct inode *inode, struct file *fp)
 {
     struct sk_buff *skb = NULL;
-    while((skb = skb_dequeue(&(g_huw_dev.rx_skb_q))) != NULL) {
+    while((skb = skb_dequeue(&(g_huw_dev.rx_skb_q))) != NULL)
+    {
         dev_kfree_skb_any(skb);
         skb = NULL;
     }
@@ -271,7 +300,8 @@ static ssize_t ssv_huw_read(struct file *fp, char __user * buf, size_t length, l
 {
     int ret = 0, copy_length = 0;
     struct sk_buff *skb = NULL;
-    if (skb_queue_len_bhsafe(&(g_huw_dev.rx_skb_q), &(g_huw_dev.rxlock)) == 0) {
+    if (skb_queue_len_bhsafe(&(g_huw_dev.rx_skb_q), &(g_huw_dev.rxlock)) == 0)
+    {
         ret = wait_event_interruptible((g_huw_dev.read_wq), (skb_queue_len_bhsafe(&(g_huw_dev.rx_skb_q), &(g_huw_dev.rxlock)) != 0));
         if (ret != 0)
             return -1;
@@ -280,7 +310,8 @@ static ssize_t ssv_huw_read(struct file *fp, char __user * buf, size_t length, l
     if (skb_queue_len(&(g_huw_dev.rx_skb_q)) > 0)
         skb = skb_dequeue(&(g_huw_dev.rx_skb_q));
     spin_unlock_bh(&(g_huw_dev.rxlock));
-    if (skb != NULL) {
+    if (skb != NULL)
+    {
         copy_length = min(skb->len,(u32)length);
         CHECK_RET(copy_to_user((int __user *)buf, skb->data, copy_length));
         dev_kfree_skb_any(skb);
@@ -293,7 +324,8 @@ static ssize_t ssv_huw_write(struct file *fp, const char __user * buf, size_t le
     unsigned int len = (unsigned int)length;
     len = (len & 0x1f)?(((len>>5) + 1)<<5):len;
     skb = __dev_alloc_skb(len, GFP_KERNEL);
-    if (skb == NULL) {
+    if (skb == NULL)
+    {
         dev_err(g_huw_dev.dev,"%s: error : alloc buf error size:%d",__FUNCTION__,(u32)len);
         return -ENOMEM;
     }
@@ -305,7 +337,8 @@ static ssize_t ssv_huw_write(struct file *fp, const char __user * buf, size_t le
 void ssv_huw_tx_cb(struct sk_buff_head *skb_head, void *args)
 {
     struct sk_buff *skb = NULL;
-    while ((skb=skb_dequeue(skb_head))) {
+    while ((skb=skb_dequeue(skb_head)))
+    {
         dev_kfree_skb_any(skb);
         skb = NULL;
     }
@@ -330,7 +363,8 @@ int ssv_huw_read_hci_info(struct ssv_huw_dev *phuw_dev)
     pinfo->if_ops = phuw_dev->priv->ops;
     return 0;
 }
-struct file_operations s_huw_ops = {
+struct file_operations s_huw_ops =
+{
     .read = ssv_huw_read,
     .write = ssv_huw_write,
     .unlocked_ioctl = ssv_huw_ioctl,
@@ -371,7 +405,7 @@ int ssv_huw_probe(struct platform_device *pdev)
     g_huw_dev.priv = (pdev->dev.platform_data);
     g_huw_dev.dev = &(pdev->dev);
     ssv_huw_read_hci_info(&g_huw_dev);
-    tu_ssv6xxx_hci_register(&(g_huw_dev.hci));
+    ssv6xxx_hci_register(&(g_huw_dev.hci));
     dev = MKDEV(ssv_sdiobridge_ioctl_major, 0);
     alloc_ret = alloc_chrdev_region(&dev, 0, num_of_dev, FILE_DEVICE_SSVSDIO_NAME);
     if (alloc_ret)
@@ -398,8 +432,8 @@ int ssv_huw_remove(struct platform_device *pdev)
 {
     dev_t dev;
     int ret = 0;
-    tu_ssv6xxx_hci_deregister();
-    memset(&g_huw_dev, 0, sizeof(g_huw_dev));
+    ssv6xxx_hci_deregister();
+    memset(&g_huw_dev, 0 , sizeof(g_huw_dev));
     dev = MKDEV(ssv_sdiobridge_ioctl_major, 0);
     device_destroy(fc,dev);
     class_destroy(fc);
@@ -416,7 +450,8 @@ static const struct platform_device_id huw_id_table[] = {
     {},
 };
 MODULE_DEVICE_TABLE(platform, huw_id_table);
-static struct platform_driver ssv_huw_driver = {
+static struct platform_driver ssv_huw_driver =
+{
     .probe = ssv_huw_probe,
 #if LINUX_VERSION_CODE < KERNEL_VERSION(3,7,0)
     .remove = __devexit_p(ssv_huw_remove),
@@ -425,7 +460,7 @@ static struct platform_driver ssv_huw_driver = {
 #endif
     .id_table = huw_id_table,
     .driver = {
-        .name = "TU SSV WLAN driver",
+        .name = "SSV WLAN driver",
         .owner = THIS_MODULE,
     }
 };
@@ -436,9 +471,10 @@ static int __init ssv_huw_init(void)
 #endif
 {
     int ret;
-    memset(&g_huw_dev, 0, sizeof(g_huw_dev));
+    memset(&g_huw_dev, 0 , sizeof(g_huw_dev));
     ret = platform_driver_register(&ssv_huw_driver);
-    if (ret < 0) {
+    if (ret < 0)
+    {
         printk(KERN_ALERT "[HCI user-space wrapper]: Fail to register huw\n");
     }
     return ret;

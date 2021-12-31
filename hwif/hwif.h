@@ -1,20 +1,22 @@
 /*
- * Copyright (c) 2015 iComm-semi Ltd.
+ * Copyright (c) 2015 South Silicon Valley Microelectronics Inc.
+ * Copyright (c) 2015 iComm Corporation
  *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
+ * This program is free software: you can redistribute it and/or modify 
+ * it under the terms of the GNU General Public License as published by 
+ * the Free Software Foundation, either version 3 of the License, or 
  * (at your option) any later version.
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * This program is distributed in the hope that it will be useful, but 
+ * WITHOUT ANY WARRANTY; without even the implied warranty of 
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
  * See the GNU General Public License for more details.
- * You should have received a copy of the GNU General Public License
+ * You should have received a copy of the GNU General Public License 
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
 #ifndef __HWIF_H__
-#define __HWIF_H__
+#define __HWIF_H__ 
+#include <linux/interrupt.h>
 #include <linux/mmc/host.h>
 #include <ssv6xxx_common.h>
 #define SYS_REG_BASE 0xc0000000
@@ -82,7 +84,7 @@ struct ssv6xxx_hwif_ops {
     void (*irq_enable)(struct device *child);
     void (*irq_disable)(struct device *child,bool iswaitirq);
     int (*irq_getstatus)(struct device *child,int *status);
-    void (*irq_request)(struct device *child,irq_handler_t irq_handler,void *irq_dev);
+    void (*irq_request)(struct device *child, irq_handler_t irq_handler,void *irq_dev);
     void (*irq_trigger)(struct device *child);
     void (*pmu_wakeup)(struct device *child);
     int __must_check (*load_fw)(struct device *child, u32 start_addr, u8 *data, int data_length);
@@ -101,9 +103,9 @@ struct ssv6xxx_hwif_ops {
     int (*property)(struct device *child);
     void (*sysplf_reset)(struct device *child, u32 addr, u32 value);
 #if !defined(USE_THREAD_RX) || defined(USE_BATCH_RX)
-    void (*hwif_rx_task)(struct device *child, int (*rx_cb)(struct sk_buff_head *rxq, void *args), int (*is_rx_q_full)(void *args), void *args, u32 *pkt);
+    void (*hwif_rx_task)(struct device *child, int (*rx_cb)(struct sk_buff_head *rxq, void *args), void *args, u32 *pkt);
 #else
-    void (*hwif_rx_task)(struct device *child, int (*rx_cb)(struct sk_buff *rx_skb, void *args), int (*is_rx_q_full)(void *args), void *args, u32 *pkt);
+    void (*hwif_rx_task)(struct device *child, int (*rx_cb)(struct sk_buff *rx_skb, void *args), void *args, u32 *pkt);
 #endif
 };
 struct ssv6xxx_platform_data {
@@ -114,14 +116,14 @@ struct ssv6xxx_platform_data {
     unsigned short vendor;
     unsigned short device;
     struct ssv6xxx_hwif_ops *ops;
-    bool dbg_control;
+ bool dbg_control;
     struct sk_buff *(*skb_alloc) (void *param, s32 len, gfp_t gfp_mask);
     void (*skb_free) (void *param, struct sk_buff *skb);
     void *skb_param;
 #ifdef CONFIG_PM
-    void (*suspend)(void *param);
-    void (*resume)(void *param);
-    void *pm_param;
+ void (*suspend)(void *param);
+ void (*resume)(void *param);
+ void *pm_param;
 #endif
     void (*enable_usb_acc)(void *param, u8 epnum);
     void (*disable_usb_acc)(void *param, u8 epnum);

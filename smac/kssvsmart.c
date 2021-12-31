@@ -1,24 +1,21 @@
 /*
- * Copyright (c) 2015 iComm-semi Ltd.
+ * Copyright (c) 2015 South Silicon Valley Microelectronics Inc.
+ * Copyright (c) 2015 iComm Corporation
  *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
+ * This program is free software: you can redistribute it and/or modify 
+ * it under the terms of the GNU General Public License as published by 
+ * the Free Software Foundation, either version 3 of the License, or 
  * (at your option) any later version.
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * This program is distributed in the hope that it will be useful, but 
+ * WITHOUT ANY WARRANTY; without even the implied warranty of 
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
  * See the GNU General Public License for more details.
- * You should have received a copy of the GNU General Public License
+ * You should have received a copy of the GNU General Public License 
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
 #include <ssv6200.h>
-#ifdef SSV_MAC80211
-#include "ssv_mac80211.h"
-#else
 #include <net/mac80211.h>
-#endif
 #include <linux/module.h>
 #include <smac/dev.h>
 #include "kssvsmart.h"
@@ -33,10 +30,10 @@
 struct ssv6xxx_si_cfg si_cfg;
 int si_st;
 char si_status_st[][16] = {
-    "NG",
-    "OK",
-    "PROCESSING",
-    "MAX"
+ "NG",
+ "OK",
+ "PROCESSING",
+ "MAX"
 };
 inline void set_si_status(u32 st)
 {
@@ -75,9 +72,10 @@ void ssv6xxx_process_si_event(struct ssv_softc *sc, struct sk_buff *skb)
         set_si_status(SI_ST_OK);
         printk("SSID: %s, LEN: %d\n", si_cfg.ssid, si_cfg.ssid_len);
         printk("PASS: %s, LEN: %d\n", si_cfg.password, si_cfg.password_len);
-    } else {
+    }
+    else {
         printk("!!! Oops, got invalid value of ssid_len:%d or password_len:%d !!!\n",
-               p_si_cfg->ssid_len, p_si_cfg->password_len);
+                p_si_cfg->ssid_len, p_si_cfg->password_len);
         set_si_status(SI_ST_NG);
         memcpy(&si_cfg.ssid, INVALID, sizeof(INVALID));
         memcpy(&si_cfg.password, INVALID, sizeof(INVALID));
@@ -93,8 +91,9 @@ int ssv6xxx_send_si_cmd(u32 smart_icomm_cmd)
     int ret;
     struct ssv_softc *ssv_dbg_sc;
     struct ssv_hw *sh;
-    ssv_dbg_sc = ssv6xxx_driver_attach(SSV_DRVER_NAME);
-    if(ssv_dbg_sc == NULL) {
+    ssv_dbg_sc = ssv6xxx_driver_attach(CABRIO_DRVER_NAME);
+    if(ssv_dbg_sc == NULL)
+    {
         printk("Get ssv_dbg_sc fail!!!\n");
         return -1;
     }
@@ -106,7 +105,8 @@ int ssv6xxx_send_si_cmd(u32 smart_icomm_cmd)
     memset(&si_cfg, 0, sizeof(si_cfg));
     total_ch_cfg_size = sh->ch_cfg_size * sizeof(struct ssv6xxx_ch_cfg);
     skb = ssv_skb_alloc(sh->sc, HOST_CMD_HDR_LEN + sizeof(u32) + sizeof(u32) + total_ch_cfg_size);
-    if(skb == NULL) {
+    if(skb == NULL)
+    {
         printk("ssv command ssvdevice_skb_alloc fail!!!\n");
         set_si_status(SI_ST_NG);
         return -1;

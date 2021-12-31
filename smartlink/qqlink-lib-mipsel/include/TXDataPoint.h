@@ -1,30 +1,33 @@
 /*
- * Copyright (c) 2015 iComm-semi Ltd.
+ * Copyright (c) 2015 South Silicon Valley Microelectronics Inc.
+ * Copyright (c) 2015 iComm Corporation
  *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
+ * This program is free software: you can redistribute it and/or modify 
+ * it under the terms of the GNU General Public License as published by 
+ * the Free Software Foundation, either version 3 of the License, or 
  * (at your option) any later version.
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * This program is distributed in the hope that it will be useful, but 
+ * WITHOUT ANY WARRANTY; without even the implied warranty of 
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
  * See the GNU General Public License for more details.
- * You should have received a copy of the GNU General Public License
+ * You should have received a copy of the GNU General Public License 
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
 #ifndef __TX_DATA_POINT_H__
-#define __TX_DATA_POINT_H__
+#define __TX_DATA_POINT_H__ 
 #include "TXSDKCommonDef.h"
 #include "TXMsg.h"
 CXX_EXTERN_BEGIN
-typedef struct tag_tx_data_point {
+typedef struct tag_tx_data_point
+{
     unsigned int id;
     char * value;
     unsigned int seq;
     unsigned int ret_code;
-} tx_data_point;
-typedef struct tag_tx_data_point_notify {
+}tx_data_point;
+typedef struct tag_tx_data_point_notify
+{
     void (*on_receive_data_point)(unsigned long long from_client, tx_data_point * data_points, int data_points_count);
 } tx_data_point_notify;
 SDK_API int tx_init_data_point(const tx_data_point_notify *notify);

@@ -1,25 +1,22 @@
 /*
- * Copyright (c) 2015 iComm-semi Ltd.
+ * Copyright (c) 2015 South Silicon Valley Microelectronics Inc.
+ * Copyright (c) 2015 iComm Corporation
  *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
+ * This program is free software: you can redistribute it and/or modify 
+ * it under the terms of the GNU General Public License as published by 
+ * the Free Software Foundation, either version 3 of the License, or 
  * (at your option) any later version.
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * This program is distributed in the hope that it will be useful, but 
+ * WITHOUT ANY WARRANTY; without even the implied warranty of 
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
  * See the GNU General Public License for more details.
- * You should have received a copy of the GNU General Public License
+ * You should have received a copy of the GNU General Public License 
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
 #ifndef _P2P_H_
-#define _P2P_H_
-#ifdef SSV_MAC80211
-#include "ssv_mac80211.h"
-#else
+#define _P2P_H_ 
 #include <net/mac80211.h>
-#endif
 #include <ssv6xxx_common.h>
 #include "drv_comm.h"
 #ifdef CONFIG_P2P_NOA
@@ -36,18 +33,18 @@ struct ssv_p2p_noa {
     u8 active_noa_vif;
     u8 monitor_noa_vif;
 };
-enum ssv_cmd_state {
+enum ssv_cmd_state{
     SSC_CMD_STATE_IDLE,
     SSC_CMD_STATE_WAIT_RSP,
 };
-struct ssv_cmd_Info {
+struct ssv_cmd_Info{
     struct sk_buff_head cmd_que;
     struct sk_buff_head evt_que;
     enum ssv_cmd_state state;
 };
 enum ssv6xxx_noa_conf {
-    MONITOR_NOA_CONF_ADD,
-    MONITOR_NOA_CONF_REMOVE,
+ MONITOR_NOA_CONF_ADD,
+ MONITOR_NOA_CONF_REMOVE,
 };
 struct ssv_softc;
 void ssv6xxx_process_noa_event(struct ssv_softc *sc, struct sk_buff *skb);

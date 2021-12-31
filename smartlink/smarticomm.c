@@ -1,15 +1,16 @@
 /*
- * Copyright (c) 2015 iComm-semi Ltd.
+ * Copyright (c) 2015 South Silicon Valley Microelectronics Inc.
+ * Copyright (c) 2015 iComm Corporation
  *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
+ * This program is free software: you can redistribute it and/or modify 
+ * it under the terms of the GNU General Public License as published by 
+ * the Free Software Foundation, either version 3 of the License, or 
  * (at your option) any later version.
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * This program is distributed in the hope that it will be useful, but 
+ * WITHOUT ANY WARRANTY; without even the implied warranty of 
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
  * See the GNU General Public License for more details.
- * You should have received a copy of the GNU General Public License
+ * You should have received a copy of the GNU General Public License 
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
@@ -34,24 +35,26 @@ void main(void)
     char pass[128];
     printf("%s\n", ssv_smartlink_version());
     ret = smaricomm_start();
-    if (ret < 0) {
+    if (ret < 0)
+    {
         printf("smaricomm_start fail\n");
         return;
     }
     printf("smarticomm_set_si_cmd\n");
     status = START_SMART_ICOMM;
     smarticomm_set_si_cmd(status);
-    do {
+    do
+    {
         sleep(2);
         memset(status_str,0x00,128);
         printf("smarticomm_get_si_status\n");
         smarticomm_get_si_status(status_str);
         printf("status string = %s\n",status_str);
         timeout++;
-    } while(strcmp(status_str,"OK"));
+    }while(strcmp(status_str,"OK"));
     smarticomm_get_si_ssid(ssid);
     printf("ssid = %s\n",ssid);
     smarticomm_get_si_pass(pass);
     printf("pass = %s\n",pass);
-    smarticomm_stop();
+   smarticomm_stop();
 }

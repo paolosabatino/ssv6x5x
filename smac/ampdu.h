@@ -1,20 +1,21 @@
 /*
- * Copyright (c) 2015 iComm-semi Ltd.
+ * Copyright (c) 2015 South Silicon Valley Microelectronics Inc.
+ * Copyright (c) 2015 iComm Corporation
  *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
+ * This program is free software: you can redistribute it and/or modify 
+ * it under the terms of the GNU General Public License as published by 
+ * the Free Software Foundation, either version 3 of the License, or 
  * (at your option) any later version.
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * This program is distributed in the hope that it will be useful, but 
+ * WITHOUT ANY WARRANTY; without even the implied warranty of 
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
  * See the GNU General Public License for more details.
- * You should have received a copy of the GNU General Public License
+ * You should have received a copy of the GNU General Public License 
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
 #ifndef _AMPDU_H_
-#define _AMPDU_H_
+#define _AMPDU_H_ 
 #include <linux/version.h>
 #if LINUX_VERSION_CODE < KERNEL_VERSION(3,0,0)
 #include "linux_2_6_35.h"
@@ -25,10 +26,10 @@
 #define Enable_AMPDU_Rx (1)
 #define Enable_AMPDU_Tx (1)
 #define Enable_AMPDU_delay_work (1)
-#define USE_FLUSH_RETRY
-#define USE_AMPDU_TX_STATUS_ARRAY
-#define SSV_AMPDU_FLOW_CONTROL
-#define AMPDU_CHECK_SKB_SEQNO
+#define USE_FLUSH_RETRY 
+#define USE_AMPDU_TX_STATUS_ARRAY 
+#define SSV_AMPDU_FLOW_CONTROL 
+#define AMPDU_CHECK_SKB_SEQNO 
 #ifdef PLATFORM_FORCE_DISABLE_AMPDU_FLOW_CONTROL
 #undef SSV_AMPDU_FLOW_CONTROL
 #endif
@@ -39,8 +40,7 @@
 #define SSV_AMPDU_MAX_SSN (4096)
 #define SSV_AMPDU_BA_WINDOW_SIZE (64)
 #define SSV_AMPDU_WINDOW_SIZE (64)
-#define SSV_AMPDU_SIZE_1_2(sh) (((sh)->tx_page_available /2) << HW_MMU_PAGE_SHIFT)
-#define SSV_AMPDU_SIZE_3_7(sh) (((sh)->tx_page_available *3 /7) << HW_MMU_PAGE_SHIFT)
+#define SSV_GET_MAX_AMPDU_SIZE(sh) (((sh)->tx_page_available/(sh)->ampdu_divider) << HW_MMU_PAGE_SHIFT)
 #define SSV_AMPDU_FLOW_CONTROL_UPPER_BOUND (256)
 #define SSV_AMPDU_FLOW_CONTROL_LOWER_BOUND (48)
 #define SSV_AMPDU_timer_period (50)
@@ -73,13 +73,13 @@
 #define AMPDU_STATE_START BIT(0)
 #define AMPDU_STATE_OPERATION BIT(1)
 #define AMPDU_STATE_STOP BIT(2)
-typedef enum {
+typedef enum{
     AMPDU_REKEY_PAUSE_STOP=0,
     AMPDU_REKEY_PAUSE_START,
     AMPDU_REKEY_PAUSE_ONGOING,
     AMPDU_REKEY_PAUSE_DEFER,
     AMPDU_REKEY_PAUSE_HWKEY_SYNC,
-} AMPDU_REKEY_PAUSE_STATE;
+}AMPDU_REKEY_PAUSE_STATE;
 #define SSV_a_minus_b_in_c(a,b,c) \
         ({ \
             typeof(a) _a = (a); \
@@ -104,15 +104,16 @@ typedef enum {
             __sh->hci.hci_ops->hci_txq_empty(__sh->hci.hci_ctrl, (_q)); \
         })
 enum AMPDU_TX_STATUS_E {
-    AMPDU_ST_NON_AMPDU,
-    AMPDU_ST_AGGREGATED,
-    AMPDU_ST_SENT,
-    AMPDU_ST_RETRY,
-    AMPDU_ST_RETRY_Q,
-    AMPDU_ST_DROPPED,
-    AMPDU_ST_DONE,
+ AMPDU_ST_NON_AMPDU,
+ AMPDU_ST_AGGREGATED,
+ AMPDU_ST_SENT,
+ AMPDU_ST_RETRY,
+ AMPDU_ST_RETRY_Q,
+ AMPDU_ST_DROPPED,
+ AMPDU_ST_DONE,
 };
-typedef struct AMPDU_MIB_st {
+typedef struct AMPDU_MIB_st
+{
     u32 ampdu_mib_mpdu_counter;
     u32 ampdu_mib_retry_counter;
     u32 ampdu_mib_ampdu_counter;
@@ -124,7 +125,8 @@ typedef struct AMPDU_MIB_st {
     u32 ampdu_mib_pass_counter;
     u32 ampdu_mib_dist[SSV_AMPDU_aggr_num_max + 1];
 } AMPDU_MIB;
-typedef struct AMPDU_TID_st {
+typedef struct AMPDU_TID_st
+{
     struct list_head list;
     volatile unsigned long timestamp;
     u32 tidno;
@@ -144,11 +146,11 @@ typedef struct AMPDU_TID_st {
     volatile u32 aggr_pkt_num;
     volatile u16 ssv_baw_head;
     spinlock_t pkt_array_lock;
-#ifdef ENABLE_AGGREGATE_IN_TIME
+    #ifdef ENABLE_AGGREGATE_IN_TIME
     struct sk_buff *cur_ampdu_pkt;
     struct sk_buff_head early_aggr_ampdu_q;
     u32 early_aggr_skb_num;
-#endif
+    #endif
     struct sk_buff_head ampdu_skb_wait_encry_queue;
     u32 ampdu_mib_reset;
     struct AMPDU_MIB_st mib;
@@ -157,17 +159,19 @@ typedef struct AMPDU_TID_st {
     struct sk_buff_head ba_q;
 #endif
 } AMPDU_TID, *p_AMPDU_TID;
-typedef struct AMPDU_DELIMITER_st {
+typedef struct AMPDU_DELIMITER_st
+{
     u16 reserved:4;
     u16 length:12;
     u8 crc;
     u8 signature;
 } AMPDU_DELIMITER, *p_AMPDU_DELIMITER;
-typedef struct AMPDU_BLOCKACK_st {
-    u16 frame_control;
-    u16 duration;
-    u8 ra_addr[ETH_ALEN];
-    u8 ta_addr[ETH_ALEN];
+typedef struct AMPDU_BLOCKACK_st
+{
+ u16 frame_control;
+ u16 duration;
+ u8 ra_addr[ETH_ALEN];
+ u8 ta_addr[ETH_ALEN];
     u16 BA_ack_ploicy:1;
     u16 multi_tid:1;
     u16 compress_bitmap:1;
@@ -178,19 +182,19 @@ typedef struct AMPDU_BLOCKACK_st {
     u32 BA_sn_bit_map[2];
 } AMPDU_BLOCKACK, *p_AMPDU_BLOCKACK;
 struct ssv_bar {
-    unsigned short frame_control;
-    unsigned short duration;
-    unsigned char ra[6];
-    unsigned char ta[6];
-    unsigned short control;
-    unsigned short start_seq_num;
-} __attribute__ ((packed));
+ unsigned short frame_control;
+ unsigned short duration;
+ unsigned char ra[6];
+ unsigned char ta[6];
+ unsigned short control;
+ unsigned short start_seq_num;
+}__attribute__ ((packed));
 #if Enable_ampdu_debug_log
-#define ampdu_db_log(format, args...) printk("~~~ampdu [%s:%d] "format, __FUNCTION__, __LINE__, ##args)
-#define ampdu_db_log_simple(format, args...) printk(format, ##args)
+    #define ampdu_db_log(format, args...) printk("~~~ampdu [%s:%d] "format, __FUNCTION__, __LINE__, ##args)
+    #define ampdu_db_log_simple(format, args...) printk(format, ##args)
 #else
-#define ampdu_db_log(...) do {} while (0)
-#define ampdu_db_log_simple(...) do {} while (0)
+    #define ampdu_db_log(...) do {} while (0)
+    #define ampdu_db_log_simple(...) do {} while (0)
 #endif
 #if Enable_AMPDU_delay_work
 void ssv6200_ampdu_delayed_work_callback_func(struct work_struct *work);
@@ -201,7 +205,7 @@ void ssv6200_ampdu_init(struct ieee80211_hw *hw);
 void ssv6200_ampdu_deinit(struct ieee80211_hw *hw);
 void ssv6200_ampdu_release_skb(struct sk_buff *skb, struct ieee80211_hw *hw);
 int ssv6200_ampdu_rx_start(struct ieee80211_hw *hw, struct ieee80211_vif *vif, struct ieee80211_sta *sta,
-                           u16 tid, u16 *ssn, u8 buf_size);
+        u16 tid, u16 *ssn, u8 buf_size);
 void ssv6200_ampdu_tx_start(u16 tid, struct ieee80211_sta *sta, struct ieee80211_hw *hw, u16 *ssn);
 void ssv6200_ampdu_tx_operation(u16 tid, struct ieee80211_sta *sta, struct ieee80211_hw *hw, u8 buffer_size);
 void ssv6200_ampdu_tx_stop(u16 tid, struct ieee80211_sta *sta, struct ieee80211_hw *hw);
@@ -247,7 +251,7 @@ void sync_hw_key_work(struct work_struct *work);
 #else
 #define SSV_AMPDU_AUTO_CRC_EN(_sh) \
             SMAC_REG_SET_BITS(_sh, ADR_MTX_MISC_EN, (0x1 << MTX_AMPDU_CRC_AUTO_SFT), MTX_AMPDU_CRC_AUTO_MSK)
-#define SSV_UPDATE_AMPDU_TXINFO(_sc,_ampdu_skb)
+#define SSV_UPDATE_AMPDU_TXINFO(_sc,_ampdu_skb) 
 #define SSV_ADD_AMPDU_TXINFO(_sc,_ampdu_skb) _add_ampdu_txinfo(_sc, _ampdu_skb)
 #define SSV_UPDATE_TXINFO(_sc,_ampdu_retry_skb) \
             ssv6xxx_update_txinfo(_sc, _ampdu_retry_skb)

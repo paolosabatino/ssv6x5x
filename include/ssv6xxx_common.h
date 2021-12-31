@@ -1,21 +1,21 @@
 /*
- * Copyright (c) 2015 iComm-semi Ltd.
+ * Copyright (c) 2015 South Silicon Valley Microelectronics Inc.
+ * Copyright (c) 2015 iComm Corporation
  *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
+ * This program is free software: you can redistribute it and/or modify 
+ * it under the terms of the GNU General Public License as published by 
+ * the Free Software Foundation, either version 3 of the License, or 
  * (at your option) any later version.
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * This program is distributed in the hope that it will be useful, but 
+ * WITHOUT ANY WARRANTY; without even the implied warranty of 
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
  * See the GNU General Public License for more details.
- * You should have received a copy of the GNU General Public License
+ * You should have received a copy of the GNU General Public License 
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
 #ifndef __SSV6XXX_COMMON_H__
-#define __SSV6XXX_COMMON_H__
-#include <ssv_chip_id.h>
+#define __SSV6XXX_COMMON_H__ 
 #define SSV_RC_MAX_HARDWARE_SUPPORT 1
 #define RC_FIRMWARE_REPORT_FLAG 0x80
 #define FIRWARE_NOT_MATCH_CODE 0xF1F1F1F1
@@ -45,8 +45,6 @@
 #define LOG_HCI 0x0200
 #define LOG_HWIF 0x0400
 #define LOG_HAL 0x0800
-#define LOG_REGW 0x1000
-#define LOG_FLASH_BIN 0x2000
 #define MAX_AGGR_NUM (24)
 #define SSV62XX_TX_MAX_RATES 3
 struct fw_rc_retry_params {
@@ -61,7 +59,7 @@ struct fw_rc_retry_params {
 #define TXPB_OFFSET 80
 #define RXPB_OFFSET 80
 #define SSV6XXX_CHIP_ID_LENGTH (24)
-#define SSV6XXX_CHIP_ID_SHORT_LENGTH (8)
+#define SSV6XXX_CHIP_ID_SHORT_LENGTH (9)
 #define M0_TXREQ 0
 #define M1_TXREQ 1
 #define M2_TXREQ 2
@@ -93,17 +91,17 @@ typedef struct cfg_host_cmd {
     u32 h_cmd:8;
     u32 cmd_seq_no;
     union {
-        u32 dummy;
-        u8 dat8[0];
-        u16 dat16[0];
-        u32 dat32[0];
+    u32 dummy;
+    u8 dat8[0];
+    u16 dat16[0];
+    u32 dat32[0];
     };
 } HDR_HostCmd;
 #define HOST_CMD_HDR_LEN ((size_t)(((HDR_HostCmd *)100)->dat8)-100U)
 #define HOST_CMD_DUMMY_LEN 4
 struct sdio_rxtput_cfg {
     u32 size_per_frame;
-    u32 total_frames;
+ u32 total_frames;
 };
 typedef enum {
     SSV6XXX_HOST_CMD_START = 0,
@@ -116,9 +114,7 @@ typedef enum {
     SSV6XXX_HOST_CMD_WSID_OP = 7,
     SSV6XXX_HOST_CMD_SET_NOA = 8,
     SSV6XXX_HOST_CMD_TX_POLL = 9,
-    SSV6XXX_HOST_CMD_SOFT_BEACON = 10,
-    SSV6XXX_HOST_CMD_MRX_MODE = 11,
-    SSV6XXX_HOST_SOC_CMD_MAXID = 12,
+    SSV6XXX_HOST_SOC_CMD_MAXID = 10,
 } ssv6xxx_host_cmd_id;
 typedef struct cfg_host_event {
     u32 len :16;
@@ -128,7 +124,7 @@ typedef struct cfg_host_event {
     u32 evt_seq_no;
     u8 dat[0];
 } HDR_HostEvent;
-typedef enum {
+typedef enum{
     SOC_EVT_CMD_RESP = 0,
     SOC_EVT_SCAN_RESULT = 1,
     SOC_EVT_DEAUTH = 2,
@@ -146,31 +142,33 @@ typedef enum {
     SOC_EVT_SMART_ICOMM = 14,
     SOC_EVT_BEACON_LOSS = 15,
     SOC_EVT_TX_STUCK_RESP = 16,
-    SOC_EVT_SW_BEACON_RESP = 17,
-    SOC_EVT_MAXID = 18,
+    SOC_EVT_MAXID = 17,
 } ssv6xxx_soc_event;
 #ifdef CONFIG_P2P_NOA
 typedef enum {
-    SSV6XXX_NOA_START = 0,
-    SSV6XXX_NOA_STOP,
+    SSV6XXX_NOA_START = 0 ,
+    SSV6XXX_NOA_STOP ,
 } ssv6xxx_host_noa_event;
 struct ssv62xx_noa_evt {
     u8 evt_id;
     u8 vif;
 } __attribute__((packed));
 #endif
-enum SSV6XXX_WSID_SEC {
+enum SSV6XXX_WSID_SEC
+{
     SSV6XXX_WSID_SEC_NONE = 0,
     SSV6XXX_WSID_SEC_PAIRWISE = 1<<0,
     SSV6XXX_WSID_SEC_GROUP = 1<<1,
 };
-enum SSV6XXX_RETURN_STATE {
+enum SSV6XXX_RETURN_STATE
+{
     SSV6XXX_STATE_OK,
     SSV6XXX_STATE_NG,
     SSV6XXX_STATE_MAX
 };
 #ifdef FW_WSID_WATCH_LIST
-enum SSV6XXX_WSID_OPS {
+enum SSV6XXX_WSID_OPS
+{
     SSV6XXX_WSID_OPS_ADD,
     SSV6XXX_WSID_OPS_DEL,
     SSV6XXX_WSID_OPS_RESETALL,
@@ -180,30 +178,25 @@ enum SSV6XXX_WSID_OPS {
     SSV6XXX_WSID_OPS_HWWSID_GROUP_SET_TYPE,
     SSV6XXX_WSID_OPS_MAX
 };
-enum SSV6XXX_WSID_SEC_TYPE {
+enum SSV6XXX_WSID_SEC_TYPE
+{
     SSV6XXX_WSID_SEC_SW,
     SSV6XXX_WSID_SEC_HW,
     SSV6XXX_WSID_SEC_TYPE_MAX
 };
-struct ssv6xxx_wsid_params {
+struct ssv6xxx_wsid_params
+{
     u8 cmd;
     u8 wsid_idx;
     u8 target_wsid[6];
     u8 hw_security;
 };
 #endif
-enum SSV6XXX_TX_POLL_TYPE {
+enum SSV6XXX_TX_POLL_TYPE
+{
     SSV6XXX_TX_POLL_START = 0,
     SSV6XXX_TX_POLL_RESET = 1,
     SSV6XXX_TX_POLL_STOP = 2
-};
-enum SSV6XXX_SOFT_BEACON_TYPE {
-    SSV6XXX_SOFT_BEACON_START = 0,
-    SSV6XXX_SOFT_BEACON_STOP = 1
-};
-enum SSV6XXX_MRX_MODE_TYPE {
-    SSV6XXX_MRX_NORMAL = 0,
-    SSV6XXX_MRX_PROMISCUOUS = 1
 };
 struct ssv6xxx_iqk_cfg {
     u32 cfg_xtal :8;
@@ -226,9 +219,9 @@ struct ssv6xxx_iqk_cfg {
 };
 #define PHY_SETTING_SIZE sizeof(phy_setting)
 struct ssv6xxx_ch_cfg {
-    u32 reg_addr;
-    u32 ch1_12_value;
-    u32 ch13_14_value;
+ u32 reg_addr;
+ u32 ch1_12_value;
+ u32 ch13_14_value;
 };
 #define IQK_CFG_LEN (sizeof(struct ssv6xxx_iqk_cfg))
 #define RF_SETTING_SIZE (sizeof(asic_rf_setting))
@@ -236,7 +229,7 @@ struct ssv6xxx_ch_cfg {
 #define MAX_RF_SETTING_TABLE_SIZE 512
 typedef enum {
     SSV6XXX_VOLT_DCDC_CONVERT = 0,
-    SSV6XXX_VOLT_LDO_CONVERT = 1,
+    SSV6XXX_VOLT_LDO_CONVERT,
 } ssv6xxx_cfg_volt;
 typedef enum {
     SSV6XXX_VOLT_33V = 0,
@@ -283,7 +276,8 @@ typedef struct ssv_cabrio_reg_st {
     u32 data;
 } ssv_cabrio_reg;
 #ifdef MULTI_THREAD_ENCRYPT
-enum ssv_pkt_crypt_status {
+enum ssv_pkt_crypt_status
+{
     PKT_CRYPT_ST_DEC_PRE,
     PKT_CRYPT_ST_ENC_PRE,
     PKT_CRYPT_ST_DEC_DONE,
@@ -294,18 +288,28 @@ enum ssv_pkt_crypt_status {
 #endif
 #ifdef CONFIG_DEBUG_SKB_TIMESTAMP
 #define SKB_DURATION_TIMEOUT_MS 100
-enum ssv_debug_skb_timestamp {
-    SKB_DURATION_STAGE_TX_ENQ,
-    SKB_DURATION_STAGE_TO_SDIO,
-    SKB_DURATION_STAGE_IN_HWQ,
-    SKB_DURATION_STAGE_END
+enum ssv_debug_skb_timestamp
+{
+ SKB_DURATION_STAGE_TX_ENQ,
+ SKB_DURATION_STAGE_TO_SDIO,
+ SKB_DURATION_STAGE_IN_HWQ,
+ SKB_DURATION_STAGE_END
 };
 #endif
-
+#define SSV6051_CHIP "SSV6200A0"
+#define SSV6051_CHIP_ECO3 "RSV6200A0"
+#define SSV6006 "SSV6006A0"
+#define SSV6006MP "SSV6006C0"
+#define SSV6051Q_P1 0x00000000
+#define SSV6051Q_P2 0x70000000
+#define SSV6051Z 0x71000000
+#define SSV6051Q 0x73000000
+#define SSV6051P 0x75000000
 #define SSV_FIRMWARE_PATH_MAX 256
 #define SSV_FIRMWARE_MAX 32
 #ifdef CONFIG_SSV_SMARTLINK
-enum ssv_smart_icomm_cmd {
+enum ssv_smart_icomm_cmd
+{
     STOP_SMART_ICOMM,
     START_SMART_ICOMM,
     RESET_SMART_ICOMM,
@@ -342,20 +346,20 @@ struct hci_rx_aggr_info {
     u32 RSVD1:4;
 } __attribute__((packed));
 struct ssv6xxx_tx_hw_info {
-    u32 tx_id_threshold;
-    u32 tx_page_threshold;
-    u32 tx_lowthreshold_page_trigger;
-    u32 tx_lowthreshold_id_trigger;
-    u32 bk_txq_size;
-    u32 be_txq_size;
-    u32 vi_txq_size;
-    u32 vo_txq_size;
-    u32 manage_txq_size;
+ u32 tx_id_threshold;
+ u32 tx_page_threshold;
+ u32 tx_lowthreshold_page_trigger;
+ u32 tx_lowthreshold_id_trigger;
+ u32 bk_txq_size;
+ u32 be_txq_size;
+ u32 vi_txq_size;
+ u32 vo_txq_size;
+ u32 manage_txq_size;
 };
 struct ssv6xxx_rx_hw_info {
-    u32 rx_id_threshold;
-    u32 rx_page_threshold;
-    u32 rx_ba_ma_sessions;
+ u32 rx_id_threshold;
+ u32 rx_page_threshold;
+ u32 rx_ba_ma_sessions;
 };
 #define ENABLE_FW_SELF_CHECK 1
 #define FW_START_SRAM_ADDR 0x00000000
@@ -363,7 +367,7 @@ struct ssv6xxx_rx_hw_info {
 #define CHECKSUM_BLOCK_SIZE 1024
 #define FW_CHECKSUM_INIT (0x12345678)
 #define FW_STATUS_MASK (0x00FF0000)
-enum SSV_SRAM_MODE {
+enum SSV_SRAM_MODE{
     SRAM_MODE_ILM_64K_DLM_128K = 0,
     SRAM_MODE_ILM_160K_DLM_32K,
 };

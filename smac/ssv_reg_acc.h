@@ -1,25 +1,24 @@
 /*
- * Copyright (c) 2015 iComm-semi Ltd.
+ * Copyright (c) 2015 South Silicon Valley Microelectronics Inc.
+ * Copyright (c) 2015 iComm Corporation
  *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
+ * This program is free software: you can redistribute it and/or modify 
+ * it under the terms of the GNU General Public License as published by 
+ * the Free Software Foundation, either version 3 of the License, or 
  * (at your option) any later version.
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * This program is distributed in the hope that it will be useful, but 
+ * WITHOUT ANY WARRANTY; without even the implied warranty of 
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
  * See the GNU General Public License for more details.
- * You should have received a copy of the GNU General Public License
+ * You should have received a copy of the GNU General Public License 
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
 #ifndef _SSV_REG_ACC_H_
-#define _SSV_REG_ACC_H_
+#define _SSV_REG_ACC_H_ 
 #define SMAC_REG_WRITE(_s,_r,_v) \
         ({ \
             typeof(_s) __s = _s; \
-            if ( _s->sc->log_ctrl & LOG_REGW) \
-                printk("w a:0x%x d:0x%x\n", _r ,_v); \
             __s->hci.hci_ops->hci_write_word(__s->hci.hci_ctrl, _r,_v); \
         })
 #define SMAC_REG_READ(_s,_r,_v) \

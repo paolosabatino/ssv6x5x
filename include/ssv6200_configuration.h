@@ -1,20 +1,21 @@
 /*
- * Copyright (c) 2015 iComm-semi Ltd.
+ * Copyright (c) 2015 South Silicon Valley Microelectronics Inc.
+ * Copyright (c) 2015 iComm Corporation
  *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
+ * This program is free software: you can redistribute it and/or modify 
+ * it under the terms of the GNU General Public License as published by 
+ * the Free Software Foundation, either version 3 of the License, or 
  * (at your option) any later version.
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * This program is distributed in the hope that it will be useful, but 
+ * WITHOUT ANY WARRANTY; without even the implied warranty of 
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
  * See the GNU General Public License for more details.
- * You should have received a copy of the GNU General Public License
+ * You should have received a copy of the GNU General Public License 
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
 #ifndef SSV_SUPPORT_HAL
-ssv_cabrio_reg phy_setting[]= {
+ssv_cabrio_reg phy_setting[]={
     {0xce0071bc, 0x565B565B},
     {0xce000008, 0x0000006a},
     {0xce00000c, 0x00000064},
@@ -245,7 +246,7 @@ ssv_cabrio_reg phy_setting[]= {
     {0xce000000, 0x0000001e},
 #endif
 };
-static const u32 wifi_tx_gain[]= {
+static const u32 wifi_tx_gain[]={
     0x79807980,
     0x72797279,
     0x6C726C72,
@@ -263,7 +264,7 @@ static const u32 wifi_tx_gain[]= {
     0x36393639,
 };
 #ifndef CONFIG_SSV_CABRIO_A
-static ssv_cabrio_reg asic_rf_setting[]= {
+static ssv_cabrio_reg asic_rf_setting[]={
     {0xCE010038, 0x0003E07C},
     {0xCE010060, 0x00406000},
     {0xCE01009C, 0x00000024},
@@ -323,52 +324,53 @@ static ssv_cabrio_reg asic_rf_setting[]= {
 };
 #endif
 #ifdef CONFIG_SSV_CABRIO_A
-static ssv_cabrio_reg fpga_rf_setting[]= {
-    {0xcb110000,0x5F00EFCE},
-    {0xcb110004,0x00001FC0},
-    {0xcb110008,0x1C96CA3A},
-    {0xcb11000c,0x15155A74},
-    {0xcb110010,0x01011A88},
-    {0xcb110014,0x3CBF703C},
-    {0xcb110018,0x00057579},
-    {0xcb11001c,0x000103A7},
-    {0xcb110020,0x000103A6},
-    {0xcb110024,0x00012001},
-    {0xcb110028,0x00036000},
-    {0xcb11002c,0x00000CA8},
-    {0xcb110030,0x002A0224},
-    {0xcb110034,0x00001E55},
-    {0xcb110038,0x00006C7C},
-    {0xcb11003c,0x55666666},
-    {0xcb110040,0x005508F8},
-    {0xcb110044,0x07C08BFF},
-    {0xcb110048,0xF1111A27},
-    {0xcb11004c,0x2773F53C},
-    {0xcb110050,0x00000A7C},
-    {0xcb110054,0x00087FF8},
-    {0xcb110058,0x00103014},
-    {0xcb11005c,0x0000848A},
-    {0xcb110060,0x00406030},
-    {0xcb110064,0x00820820},
-    {0xcb110068,0x00820820},
-    {0xcb11006c,0x00820820},
-    {0xcb110070,0x00820820},
-    {0xcb110074,0x00820820},
-    {0xcb110078,0x00820820},
-    {0xcb11007c,0x00820820},
-    {0xcb110080,0x00820820},
-    {0xcb110084,0x00004080},
-    {0xcb110088,0x00003EAA},
-    {0xcb11008c,0x5E00FFEB},
-    {0xcb110090,0xAAAAAAAA},
-    {0xcb110094,0x0000243F},
-    {0xcb110098,0x00018B10},
-    {0xcb120080,0x00000000},
-    {0xcb120084,0x00000000},
-    {0xcb120088,0x00000000},
-    {0xcb120090,0x00000813},
-    {0xcb120094,0x00000000},
-    {0xcb1203f8,0xFF000000},
+static ssv_cabrio_reg fpga_rf_setting[]=
+{
+ {0xcb110000,0x5F00EFCE},
+ {0xcb110004,0x00001FC0},
+ {0xcb110008,0x1C96CA3A},
+ {0xcb11000c,0x15155A74},
+ {0xcb110010,0x01011A88},
+ {0xcb110014,0x3CBF703C},
+ {0xcb110018,0x00057579},
+ {0xcb11001c,0x000103A7},
+ {0xcb110020,0x000103A6},
+ {0xcb110024,0x00012001},
+ {0xcb110028,0x00036000},
+ {0xcb11002c,0x00000CA8},
+ {0xcb110030,0x002A0224},
+ {0xcb110034,0x00001E55},
+ {0xcb110038,0x00006C7C},
+ {0xcb11003c,0x55666666},
+ {0xcb110040,0x005508F8},
+ {0xcb110044,0x07C08BFF},
+ {0xcb110048,0xF1111A27},
+ {0xcb11004c,0x2773F53C},
+ {0xcb110050,0x00000A7C},
+ {0xcb110054,0x00087FF8},
+ {0xcb110058,0x00103014},
+ {0xcb11005c,0x0000848A},
+ {0xcb110060,0x00406030},
+ {0xcb110064,0x00820820},
+ {0xcb110068,0x00820820},
+ {0xcb11006c,0x00820820},
+ {0xcb110070,0x00820820},
+ {0xcb110074,0x00820820},
+ {0xcb110078,0x00820820},
+ {0xcb11007c,0x00820820},
+ {0xcb110080,0x00820820},
+ {0xcb110084,0x00004080},
+ {0xcb110088,0x00003EAA},
+ {0xcb11008c,0x5E00FFEB},
+ {0xcb110090,0xAAAAAAAA},
+ {0xcb110094,0x0000243F},
+ {0xcb110098,0x00018B10},
+ {0xcb120080,0x00000000},
+ {0xcb120084,0x00000000},
+ {0xcb120088,0x00000000},
+ {0xcb120090,0x00000813},
+ {0xcb120094,0x00000000},
+ {0xcb1203f8,0xFF000000},
 };
 #endif
 #endif

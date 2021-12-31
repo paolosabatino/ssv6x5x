@@ -1,15 +1,16 @@
 /*
- * Copyright (c) 2015 iComm-semi Ltd.
+ * Copyright (c) 2015 South Silicon Valley Microelectronics Inc.
+ * Copyright (c) 2015 iComm Corporation
  *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
+ * This program is free software: you can redistribute it and/or modify 
+ * it under the terms of the GNU General Public License as published by 
+ * the Free Software Foundation, either version 3 of the License, or 
  * (at your option) any later version.
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * This program is distributed in the hope that it will be useful, but 
+ * WITHOUT ANY WARRANTY; without even the implied warranty of 
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
  * See the GNU General Public License for more details.
- * You should have received a copy of the GNU General Public License
+ * You should have received a copy of the GNU General Public License 
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
@@ -39,7 +40,8 @@
 #define BLOCKSIZE 0x40
 #define RXBUFLENGTH 1024*3
 #define RXBUFSIZE 512
-enum ssvcabrio_int {
+enum ssvcabrio_int
+{
     SSVCABRIO_INT_RX = 0x00000001,
     SSVCABRIO_INT_TX = 0x00000002,
     SSVCABRIO_INT_GPIO = 0x00000004,
@@ -55,12 +57,14 @@ static unsigned int num_of_dev = 1;
 static struct cdev ssv_sdiobridge_ioctl_cdev;
 static struct class *fc;
 static struct ssv_sdiobridge_glue *glue;
-struct ssv_rxbuf {
+struct ssv_rxbuf
+{
     struct list_head list;
     u32 rxsize;
     u8 rxdata[RXBUFLENGTH];
 };
-static const struct sdio_device_id ssv_sdiobridge_devices[] = {
+static const struct sdio_device_id ssv_sdiobridge_devices[] =
+{
     {SDIO_DEVICE(MANUFACTURER_SSV_CODE, (MANUFACTURER_ID_CABRIO_BASE | 0x0))},
     {}
 };
@@ -68,13 +72,19 @@ MODULE_DEVICE_TABLE(sdio, ssv_sdiobridge_devices);
 static long ssv_sdiobridge_ioctl_getFuncfocus(struct ssv_sdiobridge_glue *glue,unsigned int cmd, struct ssv_sdiobridge_cmd *pcmd_data,struct ssv_sdiobridge_cmd *pucmd_data,bool isCompat)
 {
     long retval =0;
-    if ( pcmd_data->out_data_len < 1) {
+    if ( pcmd_data->out_data_len < 1)
+    {
         retval = -1;
-    } else {
+    }
+    else
+    {
         u8 out_data = glue->funcFocus;
-        if ( isCompat ) {
+        if ( isCompat )
+        {
             CHECK_RET(copy_to_user((int __user *)compat_ptr((unsigned long)pucmd_data->out_data),&out_data,sizeof(out_data)));
-        } else {
+        }
+        else
+        {
             CHECK_RET(copy_to_user((int __user *)pucmd_data->out_data, &out_data, sizeof(out_data)));
         }
     }
@@ -83,13 +93,19 @@ static long ssv_sdiobridge_ioctl_getFuncfocus(struct ssv_sdiobridge_glue *glue,u
 static long ssv_sdiobridge_ioctl_setFuncfocus(struct ssv_sdiobridge_glue *glue,unsigned int cmd, struct ssv_sdiobridge_cmd *pcmd_data,struct ssv_sdiobridge_cmd *pucmd_data,bool isCompat)
 {
     int retval =0;
-    if ( pcmd_data->out_data_len < 0) {
+    if ( pcmd_data->out_data_len < 0)
+    {
         retval = -EFAULT;
         dev_err(glue->dev, "%s : input length must < 0",__FUNCTION__);
-    } else {
-        if ( isCompat ) {
+    }
+    else
+    {
+        if ( isCompat )
+        {
             CHECK_RET(copy_from_user(&glue->funcFocus,(int __user *)compat_ptr((unsigned long)pcmd_data->in_data),sizeof(glue->funcFocus)));
-        } else {
+        }
+        else
+        {
             CHECK_RET(copy_from_user(&glue->funcFocus,(int __user *)pcmd_data->in_data,sizeof(glue->funcFocus)));
         }
     }
@@ -99,16 +115,23 @@ static long ssv_sdiobridge_ioctl_getBusWidth(struct ssv_sdiobridge_glue *glue,un
 {
     struct sdio_func *func = dev_to_sdio_func(glue->dev);
     long retval =0;
-    if ( pcmd_data->out_data_len < 1) {
+    if ( pcmd_data->out_data_len < 1)
+    {
         retval = -1;
-    } else {
+    }
+    else
+    {
         u8 out_data = 1;
-        if ( func->card->host->ios.bus_width != MMC_BUS_WIDTH_1 ) {
+        if ( func->card->host->ios.bus_width != MMC_BUS_WIDTH_1 )
+        {
             out_data = 4;
         }
-        if ( isCompat ) {
+        if ( isCompat )
+        {
             CHECK_RET(copy_to_user((int __user *)compat_ptr((unsigned long)pucmd_data->out_data),&out_data,sizeof(out_data)));
-        } else {
+        }
+        else
+        {
             CHECK_RET(copy_to_user((int __user *)pucmd_data->out_data,&out_data,sizeof(out_data)));
         }
     }
@@ -122,17 +145,25 @@ static long ssv_sdiobridge_ioctl_setBusWidth(struct ssv_sdiobridge_glue *glue,un
     struct ssv_sdiobridge_cmd *pData;
     u8 inData[1];
     copy_from_user(pData,(int __user *)arg,sizeof(*pData));
-    if ( isCompat ) {
+    if ( isCompat )
+    {
         copy_from_user(&cmd_data,(int __user *)compat_ptr((unsigned long)pucmd_data),sizeof(*pucmd_data));
-    } else {
+    }
+    else
+    {
         copy_from_user(&cmd_data,(int __user *)pucmd_data,sizeof(*pucmd_data));
     }
-    if ( pData->in_data_len < 0) {
+    if ( pData->in_data_len < 0)
+    {
         retval = -EFAULT;
         dev_err(glue->dev, "%s : input length must > 1",__FUNCTION__);
-    } else {
-        if ( pData->in_data == 1 ) {
-            if ( (func->card->host->caps & MMC_CAP_4_BIT_DATA) && !(func->card->cccr.low_speed && !func->card->cccr.wide_bus) ) {
+    }
+    else
+    {
+        if ( pData->in_data == 1 )
+        {
+            if ( (func->card->host->caps & MMC_CAP_4_BIT_DATA) && !(func->card->cccr.low_speed && !func->card->cccr.wide_bus) )
+            {
                 u8 ctrl = sdio_f0_readb(func,SDIO_CCCR_IF,&retval);
                 if (retval)
                     return retval;
@@ -145,8 +176,11 @@ static long ssv_sdiobridge_ioctl_setBusWidth(struct ssv_sdiobridge_glue *glue,un
                     return retval;
                 mmc_set_bus_width(func->card->host, MMC_BUS_WIDTH_1);
             }
-        } else {
-            if ( func->card->host->ios.bus_width != MMC_BUS_WIDTH_4 ) {
+        }
+        else
+        {
+            if ( func->card->host->ios.bus_width != MMC_BUS_WIDTH_4 )
+            {
             }
         }
     }
@@ -155,12 +189,18 @@ static long ssv_sdiobridge_ioctl_setBusWidth(struct ssv_sdiobridge_glue *glue,un
 static long ssv_sdiobridge_ioctl_getBlockMode(struct ssv_sdiobridge_glue *glue,unsigned int cmd, struct ssv_sdiobridge_cmd *pcmd_data,struct ssv_sdiobridge_cmd *pucmd_data,bool isCompat)
 {
     long retval =0;
-    if ( pcmd_data->out_data_len < 1) {
+    if ( pcmd_data->out_data_len < 1)
+    {
         retval = -1;
-    } else {
-        if ( isCompat ) {
+    }
+    else
+    {
+        if ( isCompat )
+        {
             copy_to_user((int __user *)compat_ptr((unsigned long)pucmd_data->out_data),&out_data,sizeof(out_data));
-        } else {
+        }
+        else
+        {
             copy_to_user((int __user *)pucmd_data->out_data,&out_data,sizeof(out_data));
         }
     }
@@ -169,10 +209,14 @@ static long ssv_sdiobridge_ioctl_getBlockMode(struct ssv_sdiobridge_glue *glue,u
 static long ssv_sdiobridge_ioctl_setBlockMode(struct ssv_sdiobridge_glue *glue,unsigned int cmd, struct ssv_sdiobridge_cmd *pcmd_data,struct ssv_sdiobridge_cmd *pucmd_data,bool isCompat)
 {
     long retval =0;
-    if ( pcmd_data->in_data_len < 1) {
+    if ( pcmd_data->in_data_len < 1)
+    {
         retval = -1;
-    } else {
-        if ( isCompat ) {
+    }
+    else
+    {
+        if ( isCompat )
+        {
             copy_from_user(&glue->blockMode,(int __user *)pucmd_data->in_data,sizeof(glue->blockMode));
         }
     }
@@ -182,12 +226,18 @@ static long ssv_sdiobridge_ioctl_setBlockMode(struct ssv_sdiobridge_glue *glue,u
 static long ssv_sdiobridge_ioctl_getBlockSize(struct ssv_sdiobridge_glue *glue,unsigned int cmd, struct ssv_sdiobridge_cmd *pcmd_data,struct ssv_sdiobridge_cmd *pucmd_data,bool isCompat)
 {
     long retval =0;
-    if ( pcmd_data->out_data_len < 2) {
+    if ( pcmd_data->out_data_len < 2)
+    {
         retval = -1;
-    } else {
-        if ( isCompat ) {
+    }
+    else
+    {
+        if ( isCompat )
+        {
             CHECK_RET(copy_to_user((int __user *)compat_ptr((unsigned long)pucmd_data->out_data),&glue->blockSize,sizeof(glue->blockSize)));
-        } else {
+        }
+        else
+        {
             CHECK_RET(copy_to_user((int __user *)pucmd_data->out_data,&glue->blockSize,sizeof(glue->blockSize)));
         }
     }
@@ -197,12 +247,18 @@ static long ssv_sdiobridge_ioctl_setBlockSize(struct ssv_sdiobridge_glue *glue,u
 {
     struct sdio_func *func = dev_to_sdio_func(glue->dev);
     long retval =0;
-    if ( pcmd_data->in_data_len < 2) {
+    if ( pcmd_data->in_data_len < 2)
+    {
         retval = -1;
-    } else {
-        if ( isCompat ) {
+    }
+    else
+    {
+        if ( isCompat )
+        {
             CHECK_RET(copy_from_user(&glue->blockSize,(int __user *)compat_ptr((unsigned long)pucmd_data->in_data),sizeof(glue->blockSize)));
-        } else {
+        }
+        else
+        {
             CHECK_RET(copy_from_user(&glue->blockSize,(int __user *)pucmd_data->in_data,sizeof(glue->blockSize)));
         }
         dev_err(glue->dev,"%s: blockSize [%d]\n",__FUNCTION__,glue->blockSize);
@@ -216,32 +272,47 @@ static long ssv_sdiobridge_ioctl_readByte(struct ssv_sdiobridge_glue *glue,unsig
 {
     struct sdio_func *func = dev_to_sdio_func(glue->dev);
     long retval =0;
-    if ( pcmd_data->out_data_len < 4) {
+    if ( pcmd_data->out_data_len < 4)
+    {
         retval = -1;
-    } else {
+    }
+    else
+    {
         u32 address;
         u8 out_data;
         int ret = 0;
-        if ( isCompat ) {
+        if ( isCompat )
+        {
             CHECK_RET(copy_from_user(&address,(int __user *)compat_ptr((unsigned long)pucmd_data->in_data),sizeof(address)));
-        } else {
+        }
+        else
+        {
             CHECK_RET(copy_from_user(&address,(int __user *)pucmd_data->in_data,sizeof(address)));
         }
         sdio_claim_host(func);
-        if ( glue->funcFocus == 0 ) {
+        if ( glue->funcFocus == 0 )
+        {
             out_data = sdio_f0_readb(func, address, &ret);
-        } else {
+        }
+        else
+        {
             out_data = sdio_readb(func, address, &ret);
         }
         sdio_release_host(func);
         dev_err(glue->dev,"%s: [%X] [%02X] ret:[%d]\n",__FUNCTION__,address,out_data,ret);
-        if ( !ret ) {
-            if ( isCompat ) {
+        if ( !ret )
+        {
+            if ( isCompat )
+            {
                 CHECK_RET(copy_to_user((void *)compat_ptr((unsigned long)pucmd_data->out_data),&out_data,sizeof(out_data)));
-            } else {
+            }
+            else
+            {
                 CHECK_RET(copy_to_user((int __user *)pucmd_data->out_data,&out_data,sizeof(out_data)));
             }
-        } else {
+        }
+        else
+        {
             dev_err(glue->dev,"%s: error : %d",__FUNCTION__,ret);
             retval = -1;
         }
@@ -252,28 +323,38 @@ static long ssv_sdiobridge_ioctl_writeByte(struct ssv_sdiobridge_glue *glue,unsi
 {
     struct sdio_func *func = dev_to_sdio_func(glue->dev);
     long retval =0;
-    if ( pcmd_data->in_data_len < 5) {
+    if ( pcmd_data->in_data_len < 5)
+    {
         retval = -1;
-    } else {
+    }
+    else
+    {
         u8 tmp[5];
         u32 address;
         u8 data;
         int ret = 0;
-        if ( isCompat ) {
+        if ( isCompat )
+        {
             CHECK_RET(copy_from_user(tmp,(int __user *)compat_ptr((unsigned long)pucmd_data->in_data),sizeof(tmp)));
-        } else {
+        }
+        else
+        {
             CHECK_RET(copy_from_user(tmp,(int __user *)pucmd_data->in_data,sizeof(tmp)));
         }
         address = *((u32 *)tmp);
         data = tmp[4];
         sdio_claim_host(func);
-        if ( glue->funcFocus == 0 ) {
+        if ( glue->funcFocus == 0 )
+        {
             sdio_f0_writeb(func,data, address, &ret);
-        } else {
+        }
+        else
+        {
             sdio_writeb(func,data, address, &ret);
         }
         sdio_release_host(func);
-        if ( ret ) {
+        if ( ret )
+        {
             dev_err(glue->dev,"%s: error : %d",__FUNCTION__,ret);
             retval = -1;
         }
@@ -283,12 +364,18 @@ static long ssv_sdiobridge_ioctl_writeByte(struct ssv_sdiobridge_glue *glue,unsi
 static long ssv_sdiobridge_ioctl_getMultiByteIOPort(struct ssv_sdiobridge_glue *glue,unsigned int cmd, struct ssv_sdiobridge_cmd *pcmd_data,struct ssv_sdiobridge_cmd *pucmd_data,bool isCompat)
 {
     long retval =0;
-    if ( pcmd_data->out_data_len < 4) {
+    if ( pcmd_data->out_data_len < 4)
+    {
         retval = -1;
-    } else {
-        if ( isCompat ) {
+    }
+    else
+    {
+        if ( isCompat )
+        {
             CHECK_RET(copy_to_user((int __user *)compat_ptr((unsigned long)pucmd_data->out_data),&glue->dataIOPort,sizeof(glue->dataIOPort)));
-        } else {
+        }
+        else
+        {
             CHECK_RET(copy_to_user((int __user *)pucmd_data->out_data,&glue->dataIOPort,sizeof(glue->dataIOPort)));
         }
     }
@@ -297,12 +384,18 @@ static long ssv_sdiobridge_ioctl_getMultiByteIOPort(struct ssv_sdiobridge_glue *
 static long ssv_sdiobridge_ioctl_setMultiByteIOPort(struct ssv_sdiobridge_glue *glue,unsigned int cmd, struct ssv_sdiobridge_cmd *pcmd_data,struct ssv_sdiobridge_cmd *pucmd_data,bool isCompat)
 {
     long retval =0;
-    if ( pcmd_data->in_data_len < 4) {
+    if ( pcmd_data->in_data_len < 4)
+    {
         retval = -1;
-    } else {
-        if ( isCompat ) {
+    }
+    else
+    {
+        if ( isCompat )
+        {
             CHECK_RET(copy_from_user(&glue->dataIOPort,(int __user *)compat_ptr((unsigned long)pucmd_data->in_data),sizeof(glue->dataIOPort)));
-        } else {
+        }
+        else
+        {
             CHECK_RET(copy_from_user(&glue->dataIOPort,(int __user *)pucmd_data->in_data,sizeof(glue->dataIOPort)));
         }
     }
@@ -316,7 +409,8 @@ static long ssv_sdiobridge_ioctl_readMultiByte(struct ssv_sdiobridge_glue *glue,
     int ret;
     int readsize;
     tmpdata = kzalloc(pcmd_data->out_data_len, GFP_KERNEL);
-    if ( tmpdata == NULL ) {
+    if ( tmpdata == NULL )
+    {
         dev_err(glue->dev,"%s: error : alloc buf error size:%d",__FUNCTION__,pcmd_data->out_data_len);
         return -1;
     }
@@ -324,19 +418,26 @@ static long ssv_sdiobridge_ioctl_readMultiByte(struct ssv_sdiobridge_glue *glue,
     sdio_claim_host(func);
     ret = sdio_memcpy_fromio(func, tmpdata,glue->dataIOPort, readsize );
     sdio_release_host(func);
-    if (unlikely(glue->dump)) {
+    if (unlikely(glue->dump))
+    {
         printk(KERN_DEBUG "%s: READ data address[%08x] len[%d] readsize[%d]\n",__FUNCTION__,glue->dataIOPort,(int)pcmd_data->out_data_len,readsize);
         print_hex_dump(KERN_DEBUG, "ssv_sdio: READ ",
                        DUMP_PREFIX_OFFSET, 16, 1,
                        tmpdata, pcmd_data->out_data_len, false);
     }
-    if ( !ret ) {
-        if ( isCompat ) {
+    if ( !ret )
+    {
+        if ( isCompat )
+        {
             CHECK_RET(copy_to_user((int __user *)compat_ptr((unsigned long)pucmd_data->out_data),tmpdata,pcmd_data->out_data_len));
-        } else {
+        }
+        else
+        {
             CHECK_RET(copy_to_user((int __user *)pucmd_data->out_data,tmpdata,pcmd_data->out_data_len));
         }
-    } else {
+    }
+    else
+    {
         dev_err(glue->dev,"%s: error : %d",__FUNCTION__,ret);
         retval = -1;
     }
@@ -352,17 +453,22 @@ static long ssv_sdiobridge_ioctl_writeMultiByte(struct ssv_sdiobridge_glue *glue
     int ret;
     int readsize ;
     tmpdata = kzalloc(pcmd_data->in_data_len, GFP_KERNEL);
-    if ( tmpdata == NULL ) {
+    if ( tmpdata == NULL )
+    {
         dev_err(glue->dev,"%s: error : alloc buf error size:%d",__FUNCTION__,pcmd_data->out_data_len);
         return -1;
     }
-    if ( isCompat ) {
+    if ( isCompat )
+    {
         CHECK_RET(copy_from_user(tmpdata,(int __user *)compat_ptr((unsigned long)pucmd_data->in_data),pcmd_data->in_data_len));
-    } else {
+    }
+    else
+    {
         CHECK_RET(copy_from_user(tmpdata,(int __user *)pucmd_data->in_data,pcmd_data->in_data_len));
     }
     readsize = sdio_align_size(func,pcmd_data->in_data_len);
-    if (unlikely(glue->dump)) {
+    if (unlikely(glue->dump))
+    {
         printk(KERN_DEBUG "%s: READ data address[%08x] len[%d] readsize[%d]\n",__FUNCTION__,glue->dataIOPort,(int)pcmd_data->in_data_len,readsize);
         print_hex_dump(KERN_DEBUG, "ssv_sdio: WRITE ",
                        DUMP_PREFIX_OFFSET, 16, 1,
@@ -371,7 +477,8 @@ static long ssv_sdiobridge_ioctl_writeMultiByte(struct ssv_sdiobridge_glue *glue
     sdio_claim_host(func);
     ret = sdio_memcpy_toio(func, glue->dataIOPort,tmpdata, readsize);
     sdio_release_host(func);
-    if ( ret ) {
+    if ( ret )
+    {
         dev_err(glue->dev,"%s: error : %d",__FUNCTION__,ret);
         retval = -1;
     }
@@ -381,12 +488,18 @@ static long ssv_sdiobridge_ioctl_writeMultiByte(struct ssv_sdiobridge_glue *glue
 static long ssv_sdiobridge_ioctl_getMultiByteRegIOPort(struct ssv_sdiobridge_glue *glue,unsigned int cmd, struct ssv_sdiobridge_cmd *pcmd_data,struct ssv_sdiobridge_cmd *pucmd_data,bool isCompat)
 {
     long retval =0;
-    if ( pcmd_data->out_data_len < 4) {
+    if ( pcmd_data->out_data_len < 4)
+    {
         retval = -1;
-    } else {
-        if ( isCompat ) {
+    }
+    else
+    {
+        if ( isCompat )
+        {
             CHECK_RET(copy_to_user((int __user *)compat_ptr((unsigned long)pucmd_data->out_data),&glue->regIOPort,sizeof(glue->regIOPort)));
-        } else {
+        }
+        else
+        {
             CHECK_RET(copy_to_user((int __user *)pucmd_data->out_data,&glue->regIOPort,sizeof(glue->regIOPort)));
         }
     }
@@ -395,12 +508,18 @@ static long ssv_sdiobridge_ioctl_getMultiByteRegIOPort(struct ssv_sdiobridge_glu
 static long ssv_sdiobridge_ioctl_setMultiByteRegIOPort(struct ssv_sdiobridge_glue *glue,unsigned int cmd, struct ssv_sdiobridge_cmd *pcmd_data,struct ssv_sdiobridge_cmd *pucmd_data,bool isCompat)
 {
     long retval =0;
-    if ( pcmd_data->in_data_len < 4) {
+    if ( pcmd_data->in_data_len < 4)
+    {
         retval = -1;
-    } else {
-        if ( isCompat ) {
+    }
+    else
+    {
+        if ( isCompat )
+        {
             CHECK_RET(copy_from_user(&glue->regIOPort,(int __user *)compat_ptr((unsigned long)pucmd_data->in_data),sizeof(glue->regIOPort)));
-        } else {
+        }
+        else
+        {
             CHECK_RET(copy_from_user(&glue->regIOPort,(int __user *)pucmd_data->in_data,sizeof(glue->regIOPort)));
         }
     }
@@ -410,14 +529,20 @@ static long ssv_sdiobridge_ioctl_readReg(struct ssv_sdiobridge_glue *glue,unsign
 {
     struct sdio_func *func = dev_to_sdio_func(glue->dev);
     long retval =0;
-    if ( pcmd_data->in_data_len < 4 || pcmd_data->out_data_len < 4) {
+    if ( pcmd_data->in_data_len < 4 || pcmd_data->out_data_len < 4)
+    {
         retval = -1;
-    } else {
+    }
+    else
+    {
         u8 tmpdata[4];
         int ret = 0;
-        if ( isCompat ) {
+        if ( isCompat )
+        {
             CHECK_RET(copy_from_user(tmpdata,(int __user *)compat_ptr((unsigned long)pucmd_data->in_data),sizeof(tmpdata)));
-        } else {
+        }
+        else
+        {
             CHECK_RET(copy_from_user(tmpdata,(int __user *)pucmd_data->in_data,sizeof(tmpdata)));
         }
         sdio_claim_host(func);
@@ -426,13 +551,19 @@ static long ssv_sdiobridge_ioctl_readReg(struct ssv_sdiobridge_glue *glue,unsign
         ret = sdio_memcpy_fromio(func, tmpdata, glue->regIOPort, 4);
         sdio_release_host(func);
         dev_err(glue->dev,"%s: read reg 2 [%02X][%02X][%02X][%02X] ret:%d\n",__FUNCTION__,tmpdata[0],tmpdata[1],tmpdata[2],tmpdata[3],ret);
-        if ( !ret ) {
-            if ( isCompat ) {
+        if ( !ret )
+        {
+            if ( isCompat )
+            {
                 CHECK_RET(copy_to_user((int __user *)compat_ptr((unsigned long)pucmd_data->out_data),tmpdata,sizeof(tmpdata)));
-            } else {
+            }
+            else
+            {
                 CHECK_RET(copy_to_user((int __user *)pucmd_data->out_data,tmpdata,sizeof(tmpdata)));
             }
-        } else {
+        }
+        else
+        {
             dev_err(glue->dev,"%s: error : %d",__FUNCTION__,ret);
             retval = -1;
         }
@@ -443,22 +574,29 @@ static long ssv_sdiobridge_ioctl_writeReg(struct ssv_sdiobridge_glue *glue,unsig
 {
     struct sdio_func *func = dev_to_sdio_func(glue->dev);
     long retval =0;
-    if ( pcmd_data->in_data_len < 8) {
+    if ( pcmd_data->in_data_len < 8)
+    {
         retval = -1;
-    } else {
+    }
+    else
+    {
         u8 tmpdata[8];
         int ret = 0;
-        if ( isCompat ) {
+        if ( isCompat )
+        {
             CHECK_RET(copy_from_user(tmpdata,(int __user *)compat_ptr((unsigned long)pucmd_data->in_data),sizeof(tmpdata)));
-        } else {
+        }
+        else
+        {
             CHECK_RET(copy_from_user(tmpdata,(int __user *)pucmd_data->in_data,sizeof(tmpdata)));
         }
         dev_err(glue->dev,"%s: write reg ADR[%02X%02X%02X%02X] [%02X][%02X][%02X][%02X]\n",__FUNCTION__,tmpdata[3],tmpdata[2],tmpdata[1],tmpdata[0],
-                tmpdata[7], tmpdata[6], tmpdata[5], tmpdata[4]);
+            tmpdata[7], tmpdata[6], tmpdata[5], tmpdata[4]);
         sdio_claim_host(func);
         ret = sdio_memcpy_toio(func, glue->regIOPort, tmpdata, 8);
         sdio_release_host(func);
-        if ( ret ) {
+        if ( ret )
+        {
             dev_err(glue->dev,"%s: error : %d",__FUNCTION__,ret);
             retval = -1;
         }
@@ -480,9 +618,12 @@ static long ssv_sdiobridge_device_ioctl_process(struct ssv_sdiobridge_glue *glue
 {
     struct ssv_sdiobridge_cmd cmd_data;
     long retval=0;
-    if ( isCompat ) {
+    if ( isCompat )
+    {
         CHECK_RET(copy_from_user(&cmd_data,(int __user *)pucmd_data,sizeof(*pucmd_data)));
-    } else {
+    }
+    else
+    {
         CHECK_RET(copy_from_user(&cmd_data,(int __user *)pucmd_data,sizeof(*pucmd_data)));
     }
 #if 0
@@ -492,67 +633,68 @@ static long ssv_sdiobridge_device_ioctl_process(struct ssv_sdiobridge_glue *glue
     dev_err(glue->dev,"%s: isCompat[%d] [%X] [%X] [%X] \n",__FUNCTION__,isCompat,IOCTL_SSVSDIO_GET_FUNCTION_FOCUS,IOCTL_SSVSDIO_READ_DATA,cmd);
 #endif
 #endif
-    switch (cmd) {
-    case IOCTL_SSVSDIO_GET_FUNCTION_FOCUS:
-        retval = ssv_sdiobridge_ioctl_getFuncfocus(glue,cmd,&cmd_data,pucmd_data,isCompat);
-        break;
-    case IOCTL_SSVSDIO_SET_FUNCTION_FOCUS:
-        retval = ssv_sdiobridge_ioctl_setFuncfocus(glue,cmd,&cmd_data,pucmd_data,isCompat);
-        break;
-    case IOCTL_SSVSDIO_GET_BUS_WIDTH:
-        retval = ssv_sdiobridge_ioctl_getBusWidth(glue,cmd,&cmd_data,pucmd_data,isCompat);
-        break;
+    switch (cmd)
+    {
+        case IOCTL_SSVSDIO_GET_FUNCTION_FOCUS:
+            retval = ssv_sdiobridge_ioctl_getFuncfocus(glue,cmd,&cmd_data,pucmd_data,isCompat);
+            break;
+        case IOCTL_SSVSDIO_SET_FUNCTION_FOCUS:
+            retval = ssv_sdiobridge_ioctl_setFuncfocus(glue,cmd,&cmd_data,pucmd_data,isCompat);
+            break;
+        case IOCTL_SSVSDIO_GET_BUS_WIDTH:
+            retval = ssv_sdiobridge_ioctl_getBusWidth(glue,cmd,&cmd_data,pucmd_data,isCompat);
+            break;
 #if 0
-    case IOCTL_SSVSDIO_SET_BUS_WIDTH:
-        retval = ssv_sdiobridge_ioctl_setBusWidth(glue,cmd,&cmd_data,pucmd_data,isCompat);
-        break;
-    case IOCTL_SSVSDIO_GET_BUS_CLOCK:
-        break;
-    case IOCTL_SSVSDIO_SET_BUS_CLOCK:
-        break;
-    case IOCTL_SSVSDIO_GET_BLOCK_MODE:
-        retval = ssv_sdiobridge_ioctl_getBlockMode(glue,cmd,&cmd_data,pucmd_data,isCompat);
-        break;
-    case IOCTL_SSVSDIO_SET_BLOCK_MODE:
-        retval = ssv_sdiobridge_ioctl_setBlockMode(glue,cmd,&cmd_data,pucmd_data,isCompat);
-        break;
+        case IOCTL_SSVSDIO_SET_BUS_WIDTH:
+            retval = ssv_sdiobridge_ioctl_setBusWidth(glue,cmd,&cmd_data,pucmd_data,isCompat);
+            break;
+        case IOCTL_SSVSDIO_GET_BUS_CLOCK:
+            break;
+        case IOCTL_SSVSDIO_SET_BUS_CLOCK:
+            break;
+        case IOCTL_SSVSDIO_GET_BLOCK_MODE:
+            retval = ssv_sdiobridge_ioctl_getBlockMode(glue,cmd,&cmd_data,pucmd_data,isCompat);
+            break;
+        case IOCTL_SSVSDIO_SET_BLOCK_MODE:
+            retval = ssv_sdiobridge_ioctl_setBlockMode(glue,cmd,&cmd_data,pucmd_data,isCompat);
+            break;
 #endif
-    case IOCTL_SSVSDIO_GET_BLOCKLEN:
-        retval = ssv_sdiobridge_ioctl_getBlockSize(glue,cmd,&cmd_data,pucmd_data,isCompat);
-        break;
-    case IOCTL_SSVSDIO_SET_BLOCKLEN:
-        retval = ssv_sdiobridge_ioctl_setBlockSize(glue,cmd,&cmd_data,pucmd_data,isCompat);
-        break;
-    case IOCTL_SSVSDIO_READ_BYTE:
-        retval = ssv_sdiobridge_ioctl_readByte(glue,cmd,&cmd_data,pucmd_data,isCompat);
-        break;
-    case IOCTL_SSVSDIO_WRITE_BYTE:
-        retval = ssv_sdiobridge_ioctl_writeByte(glue,cmd,&cmd_data,pucmd_data,isCompat);
-        break;
-    case IOCTL_SSVSDIO_GET_MULTI_BYTE_IO_PORT:
-        retval = ssv_sdiobridge_ioctl_getMultiByteIOPort(glue,cmd,&cmd_data,pucmd_data,isCompat);
-        break;
-    case IOCTL_SSVSDIO_SET_MULTI_BYTE_IO_PORT:
-        retval = ssv_sdiobridge_ioctl_setMultiByteIOPort(glue,cmd,&cmd_data,pucmd_data,isCompat);
-        break;
-    case IOCTL_SSVSDIO_READ_MULTI_BYTE:
-        retval = ssv_sdiobridge_ioctl_readMultiByte(glue,cmd,&cmd_data,pucmd_data,isCompat);
-        break;
-    case IOCTL_SSVSDIO_WRITE_MULTI_BYTE:
-        retval = ssv_sdiobridge_ioctl_writeMultiByte(glue,cmd,&cmd_data,pucmd_data,isCompat);
-        break;
-    case IOCTL_SSVSDIO_GET_MULTI_BYTE_REG_IO_PORT:
-        retval = ssv_sdiobridge_ioctl_getMultiByteRegIOPort(glue,cmd,&cmd_data,pucmd_data,isCompat);
-        break;
-    case IOCTL_SSVSDIO_SET_MULTI_BYTE_REG_IO_PORT:
-        retval = ssv_sdiobridge_ioctl_setMultiByteRegIOPort(glue,cmd,&cmd_data,pucmd_data,isCompat);
-        break;
-    case IOCTL_SSVSDIO_READ_REG:
-        retval = ssv_sdiobridge_ioctl_readReg(glue,cmd,&cmd_data,pucmd_data,isCompat);
-        break;
-    case IOCTL_SSVSDIO_WRITE_REG:
-        retval = ssv_sdiobridge_ioctl_writeReg(glue,cmd,&cmd_data,pucmd_data,isCompat);
-        break;
+        case IOCTL_SSVSDIO_GET_BLOCKLEN:
+            retval = ssv_sdiobridge_ioctl_getBlockSize(glue,cmd,&cmd_data,pucmd_data,isCompat);
+            break;
+        case IOCTL_SSVSDIO_SET_BLOCKLEN:
+            retval = ssv_sdiobridge_ioctl_setBlockSize(glue,cmd,&cmd_data,pucmd_data,isCompat);
+            break;
+        case IOCTL_SSVSDIO_READ_BYTE:
+            retval = ssv_sdiobridge_ioctl_readByte(glue,cmd,&cmd_data,pucmd_data,isCompat);
+            break;
+        case IOCTL_SSVSDIO_WRITE_BYTE:
+            retval = ssv_sdiobridge_ioctl_writeByte(glue,cmd,&cmd_data,pucmd_data,isCompat);
+            break;
+        case IOCTL_SSVSDIO_GET_MULTI_BYTE_IO_PORT:
+            retval = ssv_sdiobridge_ioctl_getMultiByteIOPort(glue,cmd,&cmd_data,pucmd_data,isCompat);
+            break;
+        case IOCTL_SSVSDIO_SET_MULTI_BYTE_IO_PORT:
+            retval = ssv_sdiobridge_ioctl_setMultiByteIOPort(glue,cmd,&cmd_data,pucmd_data,isCompat);
+            break;
+        case IOCTL_SSVSDIO_READ_MULTI_BYTE:
+            retval = ssv_sdiobridge_ioctl_readMultiByte(glue,cmd,&cmd_data,pucmd_data,isCompat);
+            break;
+        case IOCTL_SSVSDIO_WRITE_MULTI_BYTE:
+            retval = ssv_sdiobridge_ioctl_writeMultiByte(glue,cmd,&cmd_data,pucmd_data,isCompat);
+            break;
+        case IOCTL_SSVSDIO_GET_MULTI_BYTE_REG_IO_PORT:
+            retval = ssv_sdiobridge_ioctl_getMultiByteRegIOPort(glue,cmd,&cmd_data,pucmd_data,isCompat);
+            break;
+        case IOCTL_SSVSDIO_SET_MULTI_BYTE_REG_IO_PORT:
+            retval = ssv_sdiobridge_ioctl_setMultiByteRegIOPort(glue,cmd,&cmd_data,pucmd_data,isCompat);
+            break;
+        case IOCTL_SSVSDIO_READ_REG:
+            retval = ssv_sdiobridge_ioctl_readReg(glue,cmd,&cmd_data,pucmd_data,isCompat);
+            break;
+        case IOCTL_SSVSDIO_WRITE_REG:
+            retval = ssv_sdiobridge_ioctl_writeReg(glue,cmd,&cmd_data,pucmd_data,isCompat);
+            break;
     }
     return retval;
 }
@@ -589,11 +731,13 @@ static ssize_t ssv_sdiobridge_device_read(struct file *filp,
     int copylength;
     dev_err(glue->dev,"%s():\n", __FUNCTION__);
     spin_lock_bh(&glue->rxbuflock);
-    if (list_empty(&glue->rxreadybuf)) {
+    if (list_empty(&glue->rxreadybuf))
+    {
         spin_unlock_bh(&glue->rxbuflock);
         dev_err(glue->dev,"%s():no data for read \n", __FUNCTION__);
 #if 1
-        if ( wait_event_interruptible(glue->read_wq, ssv_sdiobridge_have_data(glue))!=0) {
+        if ( wait_event_interruptible(glue->read_wq, ssv_sdiobridge_have_data(glue))!=0)
+        {
             dev_err(glue->dev,"%s():not get data ?? \n", __FUNCTION__);
             return -1;
         }
@@ -601,7 +745,8 @@ static ssize_t ssv_sdiobridge_device_read(struct file *filp,
         wait_event(glue->read_wq,ssv_sdiobridge_have_data(glue));
 #endif
         spin_lock_bh(&glue->rxbuflock);
-        if (list_empty(&glue->rxreadybuf)) {
+        if (list_empty(&glue->rxreadybuf))
+        {
             spin_unlock_bh(&glue->rxbuflock);
             dev_err(glue->dev,"%s():stop ?? \n", __FUNCTION__);
             return -1;
@@ -629,12 +774,14 @@ static ssize_t ssv_sdiobridge_device_write(struct file *filp,
     int ret;
     dev_err(glue->dev,"%s():\n", __FUNCTION__);
     tmpdata = kzalloc(len, GFP_KERNEL);
-    if ( tmpdata == NULL ) {
+    if ( tmpdata == NULL )
+    {
         dev_err(glue->dev,"%s: error : alloc buf error size:%d",__FUNCTION__,(u32)len);
         return -1;
     }
     CHECK_RET(copy_from_user(tmpdata,(int __user *)buff,len));
-    if (unlikely(glue->dump)) {
+    if (unlikely(glue->dump))
+    {
         printk(KERN_DEBUG "%s: WRITE data address[%08x] len[%d] readsize[%d]\n",__FUNCTION__,glue->dataIOPort,(int)len,sdio_align_size(func,len));
         print_hex_dump(KERN_DEBUG, "ssv_sdio: WRITE ",
                        DUMP_PREFIX_OFFSET, 16, 1,
@@ -644,13 +791,15 @@ static ssize_t ssv_sdiobridge_device_write(struct file *filp,
     ret = sdio_memcpy_toio(func, glue->dataIOPort,tmpdata, sdio_align_size(func,len));
     sdio_release_host(func);
     kfree(tmpdata);
-    if ( ret ) {
+    if ( ret )
+    {
         dev_err(glue->dev,"%s: error : %d",__FUNCTION__,ret);
         return -1;
     }
     return len;
 }
-struct file_operations fops = {
+struct file_operations fops =
+{
     .owner = THIS_MODULE,
     .read = ssv_sdiobridge_device_read,
     .write = ssv_sdiobridge_device_write,
@@ -666,16 +815,20 @@ static void ssv_sdiobridge_irq_process(struct sdio_func *func,
     u8 status;
     sdio_claim_host(func);
     status = sdio_readb(func, REG_INT_STATUS, &err_ret);
-    if ( status & SSVCABRIO_INT_RX ) {
+    if ( status & SSVCABRIO_INT_RX )
+    {
         struct ssv_rxbuf *bf;
         int readsize;
         spin_lock_bh(&glue->rxbuflock);
-        if (list_empty(&glue->rxbuf)) {
+        if (list_empty(&glue->rxbuf))
+        {
             spin_unlock_bh(&glue->rxbuflock);
             sdio_release_host(func);
             dev_err(glue->dev, "ssv_sdiobridge_irq_process no avaible rx buf list??\n");
             return;
-        } else {
+        }
+        else
+        {
             bf = list_first_entry(&glue->rxbuf, struct ssv_rxbuf, list);
             list_del(&bf->list);
         }
@@ -688,24 +841,30 @@ static void ssv_sdiobridge_irq_process(struct sdio_func *func,
         err_ret = sdio_memcpy_fromio(func, bf->rxdata, glue->dataIOPort, readsize);
         sdio_release_host(func);
         dev_err(glue->dev, "ssv_sdiobridge_irq_process read 53, %d bytes  ret:[%d]\n", readsize,err_ret );
-        if (unlikely(glue->dump)) {
+        if (unlikely(glue->dump))
+        {
             printk(KERN_DEBUG "ssv_sdiobridge_irq_process: READ data address[%08x] len[%d] readsize[%d]\n",glue->dataIOPort,(int)bf->rxsize,readsize);
             print_hex_dump(KERN_DEBUG, "ssv_sdio: READ ",
                            DUMP_PREFIX_OFFSET, 16, 1,
                            bf->rxdata, bf->rxsize, false);
         }
-        if (WARN_ON(err_ret)) {
+        if (WARN_ON(err_ret))
+        {
             dev_err(glue->dev, "ssv_sdiobridge_irq_process read failed (%d)\n", err_ret);
             spin_lock_bh(&glue->rxbuflock);
             list_add_tail(&bf->list, &glue->rxbuf);
             spin_unlock_bh(&glue->rxbuflock);
-        } else {
+        }
+        else
+        {
             spin_lock_bh(&glue->rxbuflock);
             list_add_tail(&bf->list, &glue->rxreadybuf);
             wake_up(&glue->read_wq);
             spin_unlock_bh(&glue->rxbuflock);
         }
-    } else {
+    }
+    else
+    {
         sdio_release_host(func);
     }
 }
@@ -714,7 +873,8 @@ static void ssv_sdiobridge_irq_handler(struct sdio_func *func)
     struct ssv_sdiobridge_glue *glue = sdio_get_drvdata(func);
     dev_err(&func->dev, "ssv_sdiobridge_irq_handler\n");
     WARN_ON(glue == NULL);
-    if ( glue != NULL ) {
+    if ( glue != NULL )
+    {
         atomic_set(&glue->irq_handling, 1);
         ssv_sdiobridge_irq_process(func,glue);
         atomic_set(&glue->irq_handling, 0);
@@ -742,11 +902,13 @@ static void ssv_sdiobridge_irq_disable(struct ssv_sdiobridge_glue *glue,bool isw
     struct sdio_func *func;
     int ret;
     dev_err(glue->dev, "ssv_sdiobridge_irq_disable1\n");
-    if ( glue != NULL ) {
+    if ( glue != NULL )
+    {
         func = dev_to_sdio_func(glue->dev);
         sdio_claim_host(func);
         dev_err(glue->dev, "ssv_sdiobridge_irq_disable2 [%d]\n",atomic_read(&glue->irq_handling));
-        if (atomic_read(&glue->irq_handling)&&iswaitirq) {
+        if (atomic_read(&glue->irq_handling)&&iswaitirq)
+        {
             dev_err(glue->dev, "ssv_sdiobridge_irq_disable3\n");
             sdio_release_host(func);
             ret = wait_event_interruptible(glue->irq_wq,
@@ -770,10 +932,12 @@ static void ssv_sdiobridge_irq_sync(struct device *child)
     struct ssv_sdiobridge_glue *glue = dev_get_drvdata(child->parent);
     struct sdio_func *func;
     int ret;
-    if ( glue != NULL ) {
+    if ( glue != NULL )
+    {
         func = dev_to_sdio_func(glue->dev);
         sdio_claim_host(func);
-        if (atomic_read(&glue->irq_handling)) {
+        if (atomic_read(&glue->irq_handling))
+        {
             sdio_release_host(func);
             ret = wait_event_interruptible(glue->irq_wq,
                                            ssv_sdiobridge_is_on_irq(glue));
@@ -813,12 +977,14 @@ static int ssv_sdiobridge_init_buf(struct ssv_sdiobridge_glue *glue)
     INIT_LIST_HEAD(&glue->rxreadybuf);
     bsize = sizeof(struct ssv_rxbuf) * RXBUFSIZE;
     glue->bufaddr = kzalloc(bsize, GFP_KERNEL);
-    if (glue->bufaddr == NULL) {
+    if (glue->bufaddr == NULL)
+    {
         error = -ENOMEM;
         goto fail;
     }
     bf = glue->bufaddr;
-    for (i = 0; i < RXBUFSIZE; i++, bf++) {
+    for (i = 0; i < RXBUFSIZE; i++, bf++)
+    {
         list_add_tail(&bf->list, &glue->rxbuf);
     }
     return 0;
@@ -857,7 +1023,8 @@ static int __devinit ssv_sdiobridge_probe(struct sdio_func *func,
     if (func->num != 0x01)
         return -ENODEV;
     glue = kzalloc(sizeof(*glue), GFP_KERNEL);
-    if (!glue) {
+    if (!glue)
+    {
         dev_err(&func->dev, "can't allocate glue\n");
         goto out;
     }
@@ -926,9 +1093,11 @@ static void __devexit ssv_sdiobridge_remove(struct sdio_func *func)
     cdev_del(&ssv_sdiobridge_ioctl_cdev);
     unregister_chrdev_region(dev, num_of_dev);
     pm_runtime_get_noresume(&func->dev);
-    if ( glue ) {
+    if ( glue )
+    {
         dev_err(glue->dev, "ssv_sdiobridge_remove");
-        if (glue->bufaddr) {
+        if (glue->bufaddr)
+        {
             kfree(glue->bufaddr);
         }
         kfree(glue);
@@ -947,12 +1116,14 @@ static int ssv_sdiobridge_resume(struct device *dev)
     dev_dbg(dev, "ssvcabrio resume\n");
     return 0;
 }
-static const struct dev_pm_ops ssv_sdiobridge_pm_ops = {
+static const struct dev_pm_ops ssv_sdiobridge_pm_ops =
+{
     .suspend = ssv_sdiobridge_suspend,
     .resume = ssv_sdiobridge_resume,
 };
 #endif
-static struct sdio_driver ssv_sdio_bridge_driver = {
+static struct sdio_driver ssv_sdio_bridge_driver =
+{
     .name = "ssv_sdio_bridge",
     .id_table = ssv_sdiobridge_devices,
     .probe = ssv_sdiobridge_probe,
@@ -979,4 +1150,4 @@ module_init(ssv_sdiobridge_init);
 module_exit(ssv_sdiobridge_exit);
 #endif
 MODULE_LICENSE("GPL");
-MODULE_AUTHOR("iComm-semi, Ltd");
+MODULE_AUTHOR("iComm Semiconductor Co., Ltd");

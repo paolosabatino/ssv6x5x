@@ -1,15 +1,16 @@
 /*
- * Copyright (c) 2015 iComm-semi Ltd.
+ * Copyright (c) 2015 South Silicon Valley Microelectronics Inc.
+ * Copyright (c) 2015 iComm Corporation
  *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
+ * This program is free software: you can redistribute it and/or modify 
+ * it under the terms of the GNU General Public License as published by 
+ * the Free Software Foundation, either version 3 of the License, or 
  * (at your option) any later version.
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * This program is distributed in the hope that it will be useful, but 
+ * WITHOUT ANY WARRANTY; without even the implied warranty of 
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
  * See the GNU General Public License for more details.
- * You should have received a copy of the GNU General Public License
+ * You should have received a copy of the GNU General Public License 
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
@@ -17,7 +18,6 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
-#include <unistd.h>
 #include <sys/socket.h>
 #include <sys/errno.h>
 #include <linux/genetlink.h>
@@ -89,7 +89,8 @@ static int _ssv_trigger_smartlink(unsigned int enable)
     nladdr.nl_family = AF_NETLINK;
     retval = sendto(gnl_fd, (char *)&msg, msg.n.nlmsg_len, 0,
                     (struct sockaddr *) &nladdr, sizeof(nladdr));
-    if (retval < 0) {
+    if (retval < 0)
+    {
         printf("Fail to send message to kernel\n");
         return retval;
     }
@@ -120,7 +121,8 @@ static int _ssv_set_channel(unsigned int ch)
     nladdr.nl_family = AF_NETLINK;
     retval = sendto(gnl_fd, (char *)&msg, msg.n.nlmsg_len, 0,
                     (struct sockaddr *) &nladdr, sizeof(nladdr));
-    if (retval < 0) {
+    if (retval < 0)
+    {
         printf("Fail to send message to kernel\n");
         return retval;
     }
@@ -128,9 +130,12 @@ static int _ssv_set_channel(unsigned int ch)
 }
 int ssv_smartlink_set_channel(unsigned int ch)
 {
-    if (gnl_fd < 0) {
+    if (gnl_fd < 0)
+    {
         return SSV_ERR_START_SMARTLINK;
-    } else {
+    }
+    else
+    {
         return _ssv_set_channel(ch);
     }
 }
@@ -159,25 +164,30 @@ static int _ssv_get_channel(unsigned int *pch)
     nladdr.nl_family = AF_NETLINK;
     retval = sendto(gnl_fd, (char *)&msg, msg.n.nlmsg_len, 0,
                     (struct sockaddr *) &nladdr, sizeof(nladdr));
-    if (retval < 0) {
+    if (retval < 0)
+    {
         printf("Fail to send message to kernel\n");
         return retval;
     }
     len = recv(gnl_fd, &msg, sizeof(msg), 0);
-    if (len > 0) {
-        if (msg.n.nlmsg_type == NLMSG_ERROR) {
+    if (len > 0)
+    {
+        if (msg.n.nlmsg_type == NLMSG_ERROR)
+        {
             printf("Error, receive NACK\n");
             return -1;
         }
-        if (!NLMSG_OK((&msg.n), len)) {
-            printf("Invalid reply message received via Netlink\n");
-            return -1;
+        if (!NLMSG_OK((&msg.n), len))
+        {
+             printf("Invalid reply message received via Netlink\n");
+             return -1;
         }
 #ifdef SSV_SMARTLINK_DEBUG
         printf("Receive CMD GET CHANNEL\n");
 #endif
         na = (struct nlattr *) GENLMSG_DATA(&msg);
-        if (na->nla_type != KSMARTLINK_ATTR_CHANNEL) {
+        if (na->nla_type != KSMARTLINK_ATTR_CHANNEL)
+        {
             printf("%s Receive nla_type ERROR\n",__FUNCTION__);
             return -1;
         }
@@ -187,9 +197,12 @@ static int _ssv_get_channel(unsigned int *pch)
 }
 int ssv_smartlink_get_channel(unsigned int *pch)
 {
-    if (gnl_fd < 0) {
+    if (gnl_fd < 0)
+    {
         return SSV_ERR_START_SMARTLINK;
-    } else {
+    }
+    else
+    {
         return _ssv_get_channel(pch);
     }
 }
@@ -218,7 +231,8 @@ static int _ssv_set_promisc(unsigned int promisc)
     nladdr.nl_family = AF_NETLINK;
     retval = sendto(gnl_fd, (char *)&msg, msg.n.nlmsg_len, 0,
                     (struct sockaddr *) &nladdr, sizeof(nladdr));
-    if (retval < 0) {
+    if (retval < 0)
+    {
         printf("Fail to send message to kernel\n");
         return retval;
     }
@@ -226,9 +240,12 @@ static int _ssv_set_promisc(unsigned int promisc)
 }
 int ssv_smartlink_set_promisc(unsigned int promisc)
 {
-    if (gnl_fd < 0) {
+    if (gnl_fd < 0)
+    {
         return SSV_ERR_START_SMARTLINK;
-    } else {
+    }
+    else
+    {
         return _ssv_set_promisc(promisc);
     }
 }
@@ -257,25 +274,30 @@ static int _ssv_get_promisc(int sock_fd, unsigned int *promisc)
     nladdr.nl_family = AF_NETLINK;
     retval = sendto(gnl_fd, (char *)&msg, msg.n.nlmsg_len, 0,
                     (struct sockaddr *) &nladdr, sizeof(nladdr));
-    if (retval < 0) {
+    if (retval < 0)
+    {
         printf("Fail to send message to kernel\n");
         return retval;
     }
     len = recv(gnl_fd, &msg, sizeof(msg), 0);
-    if (len > 0) {
-        if (msg.n.nlmsg_type == NLMSG_ERROR) {
+    if (len > 0)
+    {
+        if (msg.n.nlmsg_type == NLMSG_ERROR)
+        {
             printf("Error, receive NACK\n");
             return -1;
         }
-        if (!NLMSG_OK((&msg.n), len)) {
-            printf("Invalid reply message received via Netlink\n");
-            return -1;
+        if (!NLMSG_OK((&msg.n), len))
+        {
+             printf("Invalid reply message received via Netlink\n");
+             return -1;
         }
 #ifdef SSV_SMARTLINK_DEBUG
         printf("Receive CMD GET PROMISC\n");
 #endif
         na = (struct nlattr *) GENLMSG_DATA(&msg);
-        if (na->nla_type != KSMARTLINK_ATTR_PROMISC) {
+        if (na->nla_type != KSMARTLINK_ATTR_PROMISC)
+        {
             printf("%s Receive nla_type ERROR\n",__FUNCTION__);
             return -1;
         }
@@ -285,9 +307,12 @@ static int _ssv_get_promisc(int sock_fd, unsigned int *promisc)
 }
 int ssv_smartlink_get_promisc(unsigned int *paccept)
 {
-    if (gnl_fd < 0) {
+    if (gnl_fd < 0)
+    {
         return SSV_ERR_START_SMARTLINK;
-    } else {
+    }
+    else
+    {
         return _ssv_get_promisc(gnl_fd, paccept);
     }
 }
@@ -316,17 +341,21 @@ static int _ssv_set_si_cmd(int sock_fd, unsigned int command)
     nladdr.nl_family = AF_NETLINK;
     retval = sendto(gnl_fd, (char *)&msg, msg.n.nlmsg_len, 0,
                     (struct sockaddr *) &nladdr, sizeof(nladdr));
-    if (retval < 0) {
+    if (retval < 0)
+    {
         printf("Fail to send message to kernel\n");
         return retval;
     }
-    return retval;
+     return retval;
 }
 int smarticomm_set_si_cmd(unsigned int command)
 {
-    if (gnl_fd < 0) {
+    if (gnl_fd < 0)
+    {
         return SSV_ERR_SET_SI_CMD;
-    } else {
+    }
+    else
+    {
         return _ssv_set_si_cmd(gnl_fd, command);
     }
 }
@@ -355,26 +384,31 @@ static int _ssv_get_si_status(uint8_t *status)
     nladdr.nl_family = AF_NETLINK;
     retval = sendto(gnl_fd, (char *)&msg, msg.n.nlmsg_len, 0,
                     (struct sockaddr *) &nladdr, sizeof(nladdr));
-    if (retval < 0) {
+    if (retval < 0)
+    {
         printf("Fail to send message to kernel\n");
         return retval;
     }
     memset((void *)&msg,0x00,sizeof(struct netlink_msg));
     len = recv(gnl_fd, &msg, sizeof(msg), 0);
-    if (len > 0) {
-        if (msg.n.nlmsg_type == NLMSG_ERROR) {
+    if (len > 0)
+    {
+        if (msg.n.nlmsg_type == NLMSG_ERROR)
+        {
             printf("Error, receive NACK\n");
             return -1;
         }
-        if (!NLMSG_OK((&msg.n), len)) {
-            printf("Invalid reply message received via Netlink\n");
-            return -1;
+        if (!NLMSG_OK((&msg.n), len))
+        {
+             printf("Invalid reply message received via Netlink\n");
+             return -1;
         }
 #ifdef SSV_SMARTLINK_DEBUG
         printf("Receive CMD SET SI_STATUS\n");
 #endif
         na = (struct nlattr *) GENLMSG_DATA(&msg);
-        if (na->nla_type != KSMARTLINK_ATTR_SI_STATUS) {
+        if (na->nla_type != KSMARTLINK_ATTR_SI_STATUS)
+        {
             printf("%s Receive nla_type ERROR\n",__FUNCTION__);
             return -1;
         }
@@ -384,9 +418,12 @@ static int _ssv_get_si_status(uint8_t *status)
 }
 int smarticomm_get_si_status(uint8_t *status)
 {
-    if (gnl_fd < 0) {
+    if (gnl_fd < 0)
+    {
         return SSV_ERR_GET_SI_STATUS;
-    } else {
+    }
+    else
+    {
         return _ssv_get_si_status(status);
     }
 }
@@ -415,25 +452,30 @@ static int _ssv_get_si_ssid(uint8_t *ssid)
     nladdr.nl_family = AF_NETLINK;
     retval = sendto(gnl_fd, (char *)&msg, msg.n.nlmsg_len, 0,
                     (struct sockaddr *) &nladdr, sizeof(nladdr));
-    if (retval < 0) {
+    if (retval < 0)
+    {
         printf("Fail to send message to kernel\n");
         return retval;
     }
     len = recv(gnl_fd, &msg, sizeof(msg), 0);
-    if (len > 0) {
-        if (msg.n.nlmsg_type == NLMSG_ERROR) {
+    if (len > 0)
+    {
+        if (msg.n.nlmsg_type == NLMSG_ERROR)
+        {
             printf("Error, receive NACK\n");
             return -1;
         }
-        if (!NLMSG_OK((&msg.n), len)) {
-            printf("Invalid reply message received via Netlink\n");
-            return -1;
+        if (!NLMSG_OK((&msg.n), len))
+        {
+             printf("Invalid reply message received via Netlink\n");
+             return -1;
         }
 #ifdef SSV_SMARTLINK_DEBUG
         printf("Receive CMD SET SI_SSID\n");
 #endif
         na = (struct nlattr *) GENLMSG_DATA(&msg);
-        if (na->nla_type != KSMARTLINK_ATTR_SI_SSID) {
+        if (na->nla_type != KSMARTLINK_ATTR_SI_SSID)
+        {
             printf("%s Receive nla_type ERROR\n",__FUNCTION__);
             return -1;
         }
@@ -443,9 +485,12 @@ static int _ssv_get_si_ssid(uint8_t *ssid)
 }
 int smarticomm_get_si_ssid(uint8_t *ssid)
 {
-    if (gnl_fd < 0) {
+    if (gnl_fd < 0)
+    {
         return SSV_ERR_GET_SI_SSID;
-    } else {
+    }
+    else
+    {
         return _ssv_get_si_ssid(ssid);
     }
 }
@@ -474,25 +519,30 @@ static int _ssv_get_si_pass(uint8_t *pass)
     nladdr.nl_family = AF_NETLINK;
     retval = sendto(gnl_fd, (char *)&msg, msg.n.nlmsg_len, 0,
                     (struct sockaddr *) &nladdr, sizeof(nladdr));
-    if (retval < 0) {
+    if (retval < 0)
+    {
         printf("Fail to send message to kernel\n");
         return retval;
     }
     len = recv(gnl_fd, &msg, sizeof(msg), 0);
-    if (len > 0) {
-        if (msg.n.nlmsg_type == NLMSG_ERROR) {
+    if (len > 0)
+    {
+        if (msg.n.nlmsg_type == NLMSG_ERROR)
+        {
             printf("Error, receive NACK\n");
             return -1;
         }
-        if (!NLMSG_OK((&msg.n), len)) {
-            printf("Invalid reply message received via Netlink\n");
-            return -1;
+        if (!NLMSG_OK((&msg.n), len))
+        {
+             printf("Invalid reply message received via Netlink\n");
+             return -1;
         }
 #ifdef SSV_SMARTLINK_DEBUG
         printf("Receive CMD SET SI_PASS\n");
 #endif
         na = (struct nlattr *) GENLMSG_DATA(&msg);
-        if (na->nla_type != KSMARTLINK_ATTR_SI_PASS) {
+        if (na->nla_type != KSMARTLINK_ATTR_SI_PASS)
+        {
             printf("%s Receive nla_type ERROR\n",__FUNCTION__);
             return -1;
         }
@@ -502,9 +552,12 @@ static int _ssv_get_si_pass(uint8_t *pass)
 }
 int smarticomm_get_si_pass(uint8_t *pass)
 {
-    if (gnl_fd < 0) {
+    if (gnl_fd < 0)
+    {
         return SSV_ERR_GET_SI_PASS;
-    } else {
+    }
+    else
+    {
         return _ssv_get_si_pass(pass);
     }
 }
@@ -513,7 +566,8 @@ static int _ssv_netlink_init(void)
     int fd;
     struct sockaddr_nl local;
     fd = socket(AF_NETLINK, SOCK_RAW, NETLINK_GENERIC);
-    if (fd < 0) {
+    if (fd < 0)
+    {
         printf("fail to create netlink socket\n");
         return -1;
     }
@@ -529,8 +583,10 @@ error:
 }
 static int _ssv_netlink_close(int *psock_fd)
 {
-    if (psock_fd) {
-        if (*psock_fd > 0) {
+    if (psock_fd)
+    {
+        if (*psock_fd > 0)
+        {
             close(*psock_fd);
         }
         *psock_fd = -1;
@@ -543,12 +599,14 @@ int ssv_smartlink_start(void)
     unsigned int ch=0;
     unsigned int accept=0;
     gnl_fd = _ssv_netlink_init();
-    if (gnl_fd < 0) {
+    if (gnl_fd < 0)
+    {
         ret = gnl_fd;
         goto out;
     }
     ret = _ssv_trigger_smartlink(1);
-    if (ret < 0) {
+    if (ret < 0)
+    {
         goto out;
     }
     ret = 0;
@@ -566,7 +624,8 @@ void hexdump(unsigned char *buf, int len)
     int i;
     printf("\n-----------------------------\n");
     printf("hexdump(len=%d):\n", len);
-    for (i = 0; i < len; i++) {
+    for (i = 0; i < len; i++)
+    {
         printf(" %02x", buf[i]);
         if ((i+1)%40 == 0)
             printf("\n");
@@ -580,17 +639,21 @@ int ssv_smartlink_recv_packet(uint8_t *pOutBuf, unsigned int *pOutBufLen)
     struct nlattr *na;
     struct ssv_wireless_register *reg;
     len = recv(gnl_fd, &msg, sizeof(msg), 0);
-    if (len > 0) {
-        if (msg.n.nlmsg_type == NLMSG_ERROR) {
+    if (len > 0)
+    {
+        if (msg.n.nlmsg_type == NLMSG_ERROR)
+        {
             printf("Error, receive NACK\n");
             return -1;
         }
-        if (!NLMSG_OK((&msg.n), len)) {
-            printf("Invalid reply message received via Netlink\n");
-            return -1;
+        if (!NLMSG_OK((&msg.n), len))
+        {
+             printf("Invalid reply message received via Netlink\n");
+             return -1;
         }
         na = (struct nlattr *) GENLMSG_DATA(&msg);
-        if (na->nla_type != KSMARTLINK_ATTR_RXFRAME) {
+        if (na->nla_type != KSMARTLINK_ATTR_RXFRAME)
+        {
             printf("%s Receive nla_type ERROR\n",__FUNCTION__);
             return -1;
         }
@@ -637,12 +700,14 @@ int smaricomm_start(void)
     unsigned int ch=0;
     unsigned int accept=0;
     gnl_fd = _ssv_netlink_init();
-    if (gnl_fd < 0) {
+    if (gnl_fd < 0)
+    {
         ret = gnl_fd;
         goto out;
     }
     ret = _ssv_trigger_smarticomm(START_SMART_ICOMM);
-    if (ret < 0) {
+    if (ret < 0)
+    {
         goto out;
     }
     ret = 0;

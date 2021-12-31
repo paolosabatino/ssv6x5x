@@ -1,19 +1,19 @@
 /*
- * Copyright (c) 2015 iComm-semi Ltd.
+ * Copyright (c) 2015 South Silicon Valley Microelectronics Inc.
+ * Copyright (c) 2015 iComm Corporation
  *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
+ * This program is free software: you can redistribute it and/or modify 
+ * it under the terms of the GNU General Public License as published by 
+ * the Free Software Foundation, either version 3 of the License, or 
  * (at your option) any later version.
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * This program is distributed in the hope that it will be useful, but 
+ * WITHOUT ANY WARRANTY; without even the implied warranty of 
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
  * See the GNU General Public License for more details.
- * You should have received a copy of the GNU General Public License
+ * You should have received a copy of the GNU General Public License 
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <linux/version.h>
 #include <linux/err.h>
 #include <linux/module.h>
 #include <linux/init.h>
@@ -27,7 +27,8 @@
 #include <linux/crypto.h>
 #include <linux/crc32.h>
 #include "sec.h"
-struct lib80211_wep_data {
+struct lib80211_wep_data
+{
     u32 iv;
     u8 key[WEP_KEY_LEN + 1];
     u8 key_len;
@@ -43,19 +44,22 @@ static void *lib80211_wep_init (int keyidx)
         goto fail;
     priv->key_idx = keyidx;
     priv->tx_tfm = crypto_alloc_blkcipher ("ecb(arc4)", 0, CRYPTO_ALG_ASYNC);
-    if (IS_ERR (priv->tx_tfm)) {
+    if (IS_ERR (priv->tx_tfm))
+    {
         priv->tx_tfm = NULL;
         goto fail;
     }
     priv->rx_tfm = crypto_alloc_blkcipher ("ecb(arc4)", 0, CRYPTO_ALG_ASYNC);
-    if (IS_ERR (priv->rx_tfm)) {
+    if (IS_ERR (priv->rx_tfm))
+    {
         priv->rx_tfm = NULL;
         goto fail;
     }
     get_random_bytes (&priv->iv, 4);
     return priv;
 fail:
-    if (priv) {
+    if (priv)
+    {
         if (priv->tx_tfm)
             crypto_free_blkcipher (priv->tx_tfm);
         if (priv->rx_tfm)
@@ -67,7 +71,8 @@ fail:
 static void lib80211_wep_deinit (void *priv)
 {
     struct lib80211_wep_data *_priv = priv;
-    if (_priv) {
+    if (_priv)
+    {
         if (_priv->tx_tfm)
             crypto_free_blkcipher (_priv->tx_tfm);
         if (_priv->rx_tfm)
@@ -88,7 +93,8 @@ static int lib80211_wep_build_iv (struct sk_buff *skb, int hdr_len,
     pos += hdr_len;
     klen = 3 + wep->key_len;
     wep->iv++;
-    if ((wep->iv & 0xff00) == 0xff00) {
+    if ((wep->iv & 0xff00) == 0xff00)
+    {
         u8 B = (wep->iv >> 16) & 0xff;
         if (B >= 3 && B < klen)
             wep->iv += 0x0100;
@@ -107,11 +113,13 @@ static int lib80211_wep_encrypt (struct sk_buff *skb, int hdr_len, void *priv)
     u8 *pos, *icv;
     struct scatterlist sg;
     u8 key[WEP_KEY_LEN + 3];
-    if (skb_tailroom (skb) < 4) {
+    if (skb_tailroom (skb) < 4)
+    {
         printk("####%s: too few tailroom\n", __FUNCTION__);
         return -1;
     }
-    if (lib80211_wep_build_iv (skb, hdr_len, NULL, 0, priv)) {
+    if (lib80211_wep_build_iv (skb, hdr_len, NULL, 0, priv))
+    {
         printk("####%s: build iv failure\n", __FUNCTION__);
         return -1;
     }
@@ -138,7 +146,8 @@ static int lib80211_wep_decrypt (struct sk_buff *skb, int hdr_len, void *priv)
     u8 key[WEP_KEY_LEN + 3];
     u8 keyidx, *pos, icv[4], *pos2;
     struct scatterlist sg;
-    if (skb->len < hdr_len + 8) {
+    if (skb->len < hdr_len + 8)
+    {
         printk ("%s::skb->len = %d\n", __FUNCTION__, skb->len);
         return -1;
     }
@@ -162,7 +171,8 @@ static int lib80211_wep_decrypt (struct sk_buff *skb, int hdr_len, void *priv)
     icv[2] = crc >> 16;
     icv[3] = crc >> 24;
     pos2 = (pos + plen);
-    if (memcmp (icv, pos + plen, 4) != 0) {
+    if (memcmp (icv, pos + plen, 4) != 0)
+    {
         return -2;
     }
     memmove (skb->data + 4, skb->data, hdr_len);
@@ -207,7 +217,7 @@ static struct ssv_crypto_ops ssv_crypt_wep = {
     .extra_mpdu_prefix_len = 4,
     .extra_mpdu_postfix_len = 4,
 #ifdef MULTI_THREAD_ENCRYPT
-    .encrypt_prepare = NULL,
+ .encrypt_prepare = NULL,
     .decrypt_prepare = NULL,
 #endif
 };

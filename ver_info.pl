@@ -1,5 +1,4 @@
 #!/usr/bin/perl
-
 use strict;
 
 my @tmp_string;
@@ -70,7 +69,6 @@ printf("#define SSV_ROOT_URl \"$svn_root_url\"\n");
 
 use Sys::Hostname;
 my $host = hostname();
-
 printf("#define COMPILERHOST \"$host\"\n");
 
 use POSIX qw(strftime);

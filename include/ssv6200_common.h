@@ -1,20 +1,21 @@
 /*
- * Copyright (c) 2015 iComm-semi Ltd.
+ * Copyright (c) 2015 South Silicon Valley Microelectronics Inc.
+ * Copyright (c) 2015 iComm Corporation
  *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
+ * This program is free software: you can redistribute it and/or modify 
+ * it under the terms of the GNU General Public License as published by 
+ * the Free Software Foundation, either version 3 of the License, or 
  * (at your option) any later version.
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * This program is distributed in the hope that it will be useful, but 
+ * WITHOUT ANY WARRANTY; without even the implied warranty of 
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
  * See the GNU General Public License for more details.
- * You should have received a copy of the GNU General Public License
+ * You should have received a copy of the GNU General Public License 
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
 #ifndef _SSV6200_COMMON_H_
-#define _SSV6200_COMMON_H_
+#define _SSV6200_COMMON_H_ 
 #include <ssv6xxx_common.h>
 #define FW_VERSION_REG ADR_TX_SEG
 #define M_ENG_CPU 0x00
@@ -53,7 +54,8 @@
 #define SSV6200_TX_PKT_RSVD SSV6200_TX_PKT_RSVD_SETTING*16
 #define SSV6200_ALLOC_RSVD TXPB_OFFSET+SSV6200_TX_PKT_RSVD
 #ifndef SSV_SUPPORT_HAL
-struct ssv6200_tx_desc {
+struct ssv6200_tx_desc
+{
     u32 len:16;
     u32 c_type:3;
     u32 f80211:1;
@@ -94,7 +96,8 @@ struct ssv6200_tx_desc {
     u32 RESERVED[8];
     struct fw_rc_retry_params rc_params[SSV62XX_TX_MAX_RATES];
 };
-struct ssv6200_rx_desc {
+struct ssv6200_rx_desc
+{
     u32 len:16;
     u32 c_type:3;
     u32 f80211:1;
@@ -154,18 +157,18 @@ struct ssv6200_rxphy_info {
     u32 service:16;
 };
 struct ssv6200_rxphy_info_padding {
-    u32 rpci:8;
-    u32 snr:8;
-    u32 RSVD:16;
+u32 rpci:8;
+u32 snr:8;
+u32 RSVD:16;
 };
 struct ssv6200_txphy_info {
     u32 rsvd[7];
 };
 #endif
 #define SSV_NUM_HW_STA 2
-typedef enum {
-    SSV6XXX_RC_COUNTER_CLEAR = 1,
-    SSV6XXX_RC_REPORT,
+typedef enum{
+    SSV6XXX_RC_COUNTER_CLEAR = 1 ,
+    SSV6XXX_RC_REPORT ,
 } ssv6xxx_host_rate_control_event;
 struct ssv62xx_tx_rate {
     s8 data_rate;
@@ -176,7 +179,7 @@ struct ampdu_ba_notify_data {
     struct ssv62xx_tx_rate tried_rates[SSV62XX_TX_MAX_RATES];
     u16 seq_no[MAX_AGGR_NUM];
 } __attribute__((packed));
-struct firmware_rate_control_report_data {
+struct firmware_rate_control_report_data{
     u8 wsid;
     struct ssv62xx_tx_rate rates[SSV62XX_TX_MAX_RATES];
     u16 ampdu_len;

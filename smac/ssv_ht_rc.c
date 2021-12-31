@@ -1,15 +1,16 @@
 /*
- * Copyright (c) 2015 iComm-semi Ltd.
+ * Copyright (c) 2015 South Silicon Valley Microelectronics Inc.
+ * Copyright (c) 2015 iComm Corporation
  *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
+ * This program is free software: you can redistribute it and/or modify 
+ * it under the terms of the GNU General Public License as published by 
+ * the Free Software Foundation, either version 3 of the License, or 
  * (at your option) any later version.
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * This program is distributed in the hope that it will be useful, but 
+ * WITHOUT ANY WARRANTY; without even the implied warranty of 
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
  * See the GNU General Public License for more details.
- * You should have received a copy of the GNU General Public License
+ * You should have received a copy of the GNU General Public License 
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
@@ -49,6 +50,14 @@ const struct mcs_group minstrel_mcs_groups[] = {
     MCS_GROUP(1, 0, 0),
     MCS_GROUP(1, 1, 0),
 };
+const u16 ampdu_max_transmit_length[RATE_TABLE_SIZE] =
+{
+    0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    4429, 8860, 13291, 17723, 26586, 35448, 39880, 44311,
+    4921, 9844, 14768, 19692, 29539, 39387, 44311, 49234,
+    4429, 8860, 13291, 17723, 26586, 35448, 39880, 44311
+};
 static u8 sample_table[SAMPLE_COLUMNS][MCS_GROUP_RATES];
 static int minstrel_ewma(int old, int new, int weight)
 {
@@ -67,7 +76,7 @@ static void minstrel_calc_rate_ewma(struct minstrel_rate_stats *mr)
             mr->probability = mr->cur_prob;
         else
             mr->probability = minstrel_ewma(mr->probability,
-                                            mr->cur_prob, EWMA_LEVEL);
+                mr->cur_prob, EWMA_LEVEL);
         mr->att_hist += mr->attempts;
         mr->succ_hist += mr->success;
     } else {
@@ -103,10 +112,11 @@ static void rate_control_ht_sample(struct ssv62xx_ht *mi,struct ssv_sta_rc_info 
     int i, index;
     if (mi->ampdu_packets > 0) {
         mi->avg_ampdu_len = minstrel_ewma(mi->avg_ampdu_len,
-                                          MINSTREL_FRAC(mi->ampdu_len, mi->ampdu_packets), EWMA_LEVEL);
+            MINSTREL_FRAC(mi->ampdu_len, mi->ampdu_packets), EWMA_LEVEL);
         mi->ampdu_len = 0;
         mi->ampdu_packets = 0;
-    } else
+    }
+    else
         return;
     mi->sample_slow = 0;
     mi->sample_count = 0;
@@ -202,7 +212,7 @@ static void rate_control_ht_sample(struct ssv62xx_ht *mi,struct ssv_sta_rc_info 
     mi->max_prob_rate = mg->max_prob_rate;
 #endif
 #ifdef RATE_CONTROL_HT_STUPID_DEBUG
-    printk("HT sample result max_tp_rate[%d]max_tp_rate2[%d]max_prob_rate[%d]\n",mi->max_tp_rate,mi->max_tp_rate2,mi->max_prob_rate);
+        printk("HT sample result max_tp_rate[%d]max_tp_rate2[%d]max_prob_rate[%d]\n",mi->max_tp_rate,mi->max_tp_rate2,mi->max_prob_rate);
 #endif
     mi->stats_update = jiffies;
 }
@@ -251,9 +261,9 @@ static void minstrel_calc_retransmit(struct ssv62xx_ht *mi,int index, struct ssv
 }
 #endif
 static void minstrel_ht_set_rate(struct ssv62xx_ht *mi,
-                                 struct fw_rc_retry_params *rate, int index,
-                                 bool sample, bool rtscts, struct ssv_sta_rc_info *rc_sta,
-                                 struct ssv_rate_ctrl *ssv_rc)
+                     struct fw_rc_retry_params *rate, int index,
+                     bool sample, bool rtscts, struct ssv_sta_rc_info *rc_sta,
+                     struct ssv_rate_ctrl *ssv_rc)
 {
     struct minstrel_rate_stats *mr;
     mr = minstrel_get_ratestats(mi, index);
@@ -314,10 +324,12 @@ static int minstrel_get_sample_rate(struct ssv62xx_ht *mi, struct ssv_sta_rc_inf
     minstrel_next_sample_idx(mi);
     if (minstrel_get_duration(sample_idx, rc_sta) >
         minstrel_get_duration(mi->max_tp_rate, rc_sta)) {
-        if (mr->sample_skipped < 20) {
+        if (mr->sample_skipped < 20)
+        {
             return -1;
         }
-        if (mi->sample_slow++ > 2) {
+        if (mi->sample_slow++ > 2)
+        {
             return -1;
         }
     }
@@ -344,7 +356,8 @@ s32 ssv62xx_ht_rate_update(struct sk_buff *skb, struct ssv_softc *sc, struct fw_
     struct ssv_sta_priv_data *sta_priv;
     struct rc_pid_sta_info *spinfo;
     int ret = 0;
-    if (sc->sc_flags & SC_OP_FIXED_RATE) {
+    if (sc->sc_flags & SC_OP_FIXED_RATE)
+    {
         ar[0].count = 3;
         ar[0].drate = ssv_rc->rc_table[sc->max_rate_idx].hw_rate_idx;
         ar[0].crate = ssv_rc->rc_table[sc->max_rate_idx].ctrl_rate_idx;
@@ -357,7 +370,8 @@ s32 ssv62xx_ht_rate_update(struct sk_buff *skb, struct ssv_softc *sc, struct fw_
         _fill_txinfo_rates(ssv_rc, skb, ar);
         return ssv_rc->rc_table[sc->max_rate_idx].hw_rate_idx;
     }
-    if(sta == NULL) {
+    if(sta == NULL)
+    {
         printk("@Q@...station NULL\n");
         BUG_ON(1);
     }
@@ -365,22 +379,26 @@ s32 ssv62xx_ht_rate_update(struct sk_buff *skb, struct ssv_softc *sc, struct fw_
     rc_sta = &ssv_rc->sta_rc_info[sta_priv->rc_idx];
     spinfo= &rc_sta->spinfo;
 #if 0
-    if ((rc_sta->rc_wsid >= SSV_RC_MAX_HARDWARE_SUPPORT) || (rc_sta->rc_wsid < 0)) {
+    if ((rc_sta->rc_wsid >= SSV_RC_MAX_HARDWARE_SUPPORT) || (rc_sta->rc_wsid < 0))
+    {
         struct ssv_sta_priv_data *ssv_sta_priv;
         int rateidx=99;
         ssv_sta_priv = (struct ssv_sta_priv_data *)sta->drv_priv;
         {
             if ((rc_sta->ht_rc_type >= RC_TYPE_HT_SGI_20) &&
-                (ssv_sta_priv->rx_data_rate < SSV62XX_RATE_MCS_INDEX)) {
+                (ssv_sta_priv->rx_data_rate < SSV62XX_RATE_MCS_INDEX))
+            {
                 if(ssv6xxx_rc_rate_set[rc_sta->ht_rc_type][0] == 12)
                     rateidx = (int)rc_sta->pinfo.rinfo[4].rc_index;
                 else
                     rateidx = (int)rc_sta->pinfo.rinfo[0].rc_index;
-#if 0
+        #if 0
                 printk("RC %d rx %d tx %d\n", ssv_sta_priv->sta_idx,
                        ssv_sta_priv->rx_data_rate, rateidx);
-#endif
-            } else {
+        #endif
+            }
+            else
+            {
                 rateidx = (int)ssv_sta_priv->rx_data_rate;
                 rateidx -= SSV62XX_RATE_MCS_INDEX;
                 rateidx %= 8;
@@ -406,25 +424,25 @@ s32 ssv62xx_ht_rate_update(struct sk_buff *skb, struct ssv_softc *sc, struct fw_
     if (sample_idx >= 0) {
         sample = true;
         minstrel_ht_set_rate(mi, &ar[0], sample_idx,
-                             true, false, rc_sta, ssv_rc);
+            true, false, rc_sta, ssv_rc);
     } else {
         minstrel_ht_set_rate(mi, &ar[0], mi->max_tp_rate,
-                             false, false, rc_sta, ssv_rc);
+            false, false, rc_sta, ssv_rc);
     }
     ar[0].count = mi->first_try_count;
     ret = ar[0].drate;
     {
         if (sample_idx >= 0)
             minstrel_ht_set_rate(mi, &ar[1], mi->max_tp_rate,
-                                 false, false, rc_sta, ssv_rc);
+                false, false, rc_sta, ssv_rc);
         else
             minstrel_ht_set_rate(mi, &ar[1], mi->max_tp_rate2,
-                                 false, true, rc_sta, ssv_rc);
+                false, true, rc_sta, ssv_rc);
         ar[1].count = mi->second_try_count;
         if(ret > ar[1].drate)
             ret = ar[1].drate;
         minstrel_ht_set_rate(mi, &ar[2], mi->max_prob_rate,
-                             false, !sample, rc_sta, ssv_rc);
+                     false, !sample, rc_sta, ssv_rc);
         ar[2].count = mi->other_try_count;
         if(ret > ar[2].drate)
             ret = ar[2].drate;
@@ -466,7 +484,7 @@ void ssv62xx_ht_rc_caps(const u16 ssv6xxx_rc_rate_set[RC_TYPE_MAX][13],struct ss
     else
         group_id = 1;
     for (i = 0; i < MCS_GROUP_RATES; i++) {
-        printk("[RC]HT duration[%d][%d]\n",i,minstrel_mcs_groups[group_id].duration[i]);
+            printk("[RC]HT duration[%d][%d]\n",i,minstrel_mcs_groups[group_id].duration[i]);
     }
 #endif
     init_sample_table();
@@ -528,15 +546,16 @@ void ssv6xxx_ht_report_handler(struct ssv_softc *sc,struct sk_buff *skb,struct s
             if(report_data->rates[i].data_rate == -1)
                 break;
             if(report_data->rates[i].count == 0) {
-                printk("*********************************\n");
-                printk("       Illegal HT report         \n");
-                printk("*********************************\n");
+                    printk("*********************************\n");
+                    printk("       Illegal HT report         \n");
+                    printk("*********************************\n");
             }
             printk("        i=[%d] rate[%d] count[%d]\n",i,report_data->rates[i].data_rate,report_data->rates[i].count);
         }
 #endif
         report_ampdu_packets = 1;
-    } else if(host_event->h_event == SOC_EVT_RC_MPDU_REPORT) {
+    }
+    else if(host_event->h_event == SOC_EVT_RC_MPDU_REPORT) {
         report_data->ampdu_len = 1;
         report_ampdu_packets = report_data->ampdu_len;
 #if 0
@@ -545,14 +564,16 @@ void ssv6xxx_ht_report_handler(struct ssv_softc *sc,struct sk_buff *skb,struct s
             if(report_data->rates[i].data_rate == -1)
                 break;
             if(report_data->rates[i].count == 0) {
-                printk("*********************************\n");
-                printk("       Illegal MPDU report       \n");
-                printk("*********************************\n");
+                    printk("*********************************\n");
+                    printk("       Illegal MPDU report       \n");
+                    printk("*********************************\n");
             }
             printk("        i=[%d] rate[%d] count[%d]\n",i,report_data->rates[i].data_rate,report_data->rates[i].count);
         }
 #endif
-    } else {
+    }
+    else
+    {
         printk("RC work get garbage!!\n");
         return;
     }
@@ -604,12 +625,14 @@ void ssv6xxx_ht_report_handler(struct ssv_softc *sc,struct sk_buff *skb,struct s
 #if 1
         printk("AMPDU rate update time!!\n");
 #endif
-        if(rc_sta->rc_num_rate == 12) {
+        if(rc_sta->rc_num_rate == 12)
+        {
             if(spinfo->txrate_idx >= 4)
                 rc_sta->ht.max_tp_rate = spinfo->txrate_idx - 4;
             else
                 rc_sta->ht.max_tp_rate = 0;
-        } else
+        }
+        else
             rc_sta->ht.max_tp_rate = spinfo->txrate_idx;
         mi->stats_update = jiffies;
     }

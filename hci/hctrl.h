@@ -1,20 +1,21 @@
 /*
- * Copyright (c) 2015 iComm-semi Ltd.
+ * Copyright (c) 2015 South Silicon Valley Microelectronics Inc.
+ * Copyright (c) 2015 iComm Corporation
  *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
+ * This program is free software: you can redistribute it and/or modify 
+ * it under the terms of the GNU General Public License as published by 
+ * the Free Software Foundation, either version 3 of the License, or 
  * (at your option) any later version.
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * This program is distributed in the hope that it will be useful, but 
+ * WITHOUT ANY WARRANTY; without even the implied warranty of 
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
  * See the GNU General Public License for more details.
- * You should have received a copy of the GNU General Public License
+ * You should have received a copy of the GNU General Public License 
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
 #ifndef _HCTRL_H_
-#define _HCTRL_H_
+#define _HCTRL_H_ 
 #define SSV6XXX_HCI_OP_INVALID 0x00000001
 #define SSV6XXX_HCI_OP_IFERR 0x00000002
 #define SSV6XXX_INT_RX 0x00000001
@@ -68,14 +69,14 @@ struct ssv6xxx_hci_ctrl {
 #else
     struct work_struct hci_tx_work[SSV_HW_TXQ_NUM];
 #endif
-    wait_queue_head_t tx_wait_q;
-    struct task_struct *hci_tx_task;
+ wait_queue_head_t tx_wait_q;
+ struct task_struct *hci_tx_task;
     u32 read_rs0_info_fail;
     u32 read_rs1_info_fail;
     u32 rx_work_running;
     u32 isr_running;
     u32 xmit_running;
-    u32 isr_disable;
+ u32 isr_disable;
     u32 isr_summary_eable;
     u32 isr_routine_time;
     u32 isr_tx_time;
@@ -85,18 +86,17 @@ struct ssv6xxx_hci_ctrl {
     u32 isr_miss_cnt;
     unsigned long prev_isr_jiffes;
     unsigned long prev_rx_isr_jiffes;
-    struct work_struct isr_reset_work;
+ struct work_struct isr_reset_work;
 #ifdef CONFIG_SSV6XXX_DEBUGFS
-    struct dentry *debugfs_dir;
-    u32 isr_mib_enable;
-    u32 isr_mib_reset;
-    long long isr_total_time;
-    long long isr_tx_io_time;
-    long long isr_rx_io_time;
-    u32 isr_rx_io_count;
-    u32 isr_tx_io_count;
-    long long isr_rx_proc_time;
-#endif
+ struct dentry *debugfs_dir;
+ u32 isr_mib_enable;
+ u32 isr_mib_reset;
+ long long isr_total_time;
+ long long isr_tx_io_time;
+ long long isr_rx_io_time;
+ u32 isr_rx_io_count;
+ u32 isr_tx_io_count;
+ long long isr_rx_proc_time;
 #ifdef CONFIG_IRQ_DEBUG_COUNT
     bool irq_enable;
     u32 irq_count;
@@ -107,102 +107,104 @@ struct ssv6xxx_hci_ctrl {
     u32 irq_rx_pkt_count;
     u32 irq_tx_pkt_count;
 #endif
-    struct ssv6xxx_tx_hw_info tx_info;
-    struct ssv6xxx_rx_hw_info rx_info;
+#endif
+ struct ssv6xxx_tx_hw_info tx_info;
+ struct ssv6xxx_rx_hw_info rx_info;
 };
 struct ssv6xxx_hci_txq_info {
-    u32 tx_use_page:8;
+ u32 tx_use_page:8;
     u32 tx_use_id:6;
     u32 txq0_size:4;
-    u32 txq1_size:4;
-    u32 txq2_size:5;
-    u32 txq3_size:5;
+ u32 txq1_size:4;
+ u32 txq2_size:5;
+ u32 txq3_size:5;
 };
 struct ssv6xxx_hci_txq_info2 {
-    u32 tx_use_page:9;
+ u32 tx_use_page:9;
     u32 tx_use_id:8;
-    u32 txq4_size:4;
+ u32 txq4_size:4;
     u32 rsvd:11;
 };
-struct ssv6xxx_hw_resource {
-    int free_tx_page;
-    int free_tx_id;
-    int max_tx_frame[SSV_HW_TXQ_NUM];
+struct ssv6xxx_hw_resource
+{
+ u32 free_tx_page;
+ u32 free_tx_id;
+ int max_tx_frame[SSV_HW_TXQ_NUM];
 };
 static inline void ssv6xxx_hwif_irq_request(struct ssv6xxx_hci_ctrl *hctrl, irq_handler_t irq_handler)
 {
-    if(hctrl->shi->if_ops->irq_request)
-        hctrl->shi->if_ops->irq_request(IFDEV(hctrl), irq_handler, hctrl);
+ if(hctrl->shi->if_ops->irq_request)
+  hctrl->shi->if_ops->irq_request(IFDEV(hctrl), irq_handler, hctrl);
 }
 static inline void ssv6xxx_hwif_irq_enable(struct ssv6xxx_hci_ctrl *hctrl)
 {
-    if(hctrl->shi->if_ops->irq_enable)
-        hctrl->shi->if_ops->irq_enable(IFDEV(hctrl));
+ if(hctrl->shi->if_ops->irq_enable)
+  hctrl->shi->if_ops->irq_enable(IFDEV(hctrl));
 }
 static inline void ssv6xxx_hwif_irq_disable(struct ssv6xxx_hci_ctrl *hctrl)
 {
-    if(hctrl->shi->if_ops->irq_disable)
-        hctrl->shi->if_ops->irq_disable(IFDEV(hctrl), false);
+ if(hctrl->shi->if_ops->irq_disable)
+  hctrl->shi->if_ops->irq_disable(IFDEV(hctrl), false);
 }
 static inline int ssv6xxx_hwif_irq_getstatus(struct ssv6xxx_hci_ctrl *hctrl, int *status)
 {
-    if(hctrl->shi->if_ops->irq_getstatus)
-        return hctrl->shi->if_ops->irq_getstatus(IFDEV(hctrl), status);
-    return 0;
+ if(hctrl->shi->if_ops->irq_getstatus)
+  return hctrl->shi->if_ops->irq_getstatus(IFDEV(hctrl), status);
+ return 0;
 }
 static inline void ssv6xxx_hwif_irq_setmask(struct ssv6xxx_hci_ctrl *hctrl, int mask)
 {
-    if(hctrl->shi->if_ops->irq_setmask)
-        hctrl->shi->if_ops->irq_setmask(IFDEV(hctrl), mask);
+ if(hctrl->shi->if_ops->irq_setmask)
+  hctrl->shi->if_ops->irq_setmask(IFDEV(hctrl), mask);
 }
 static inline void ssv6xxx_hwif_irq_trigger(struct ssv6xxx_hci_ctrl *hctrl)
 {
-    if(hctrl->shi->if_ops->irq_trigger)
-        hctrl->shi->if_ops->irq_trigger(IFDEV(hctrl));
+ if(hctrl->shi->if_ops->irq_trigger)
+  hctrl->shi->if_ops->irq_trigger(IFDEV(hctrl));
 }
 static inline void ssv6xxx_hwif_pmu_wakeup(struct ssv6xxx_hci_ctrl *hctrl)
 {
-    if(hctrl->shi->if_ops->pmu_wakeup)
-        hctrl->shi->if_ops->pmu_wakeup(IFDEV(hctrl));
+ if(hctrl->shi->if_ops->pmu_wakeup)
+  hctrl->shi->if_ops->pmu_wakeup(IFDEV(hctrl));
 }
 static inline int ssv6xxx_hwif_write_sram(struct ssv6xxx_hci_ctrl *hctrl, u32 addr, u8 *data, u32 size)
 {
-    if(hctrl->shi->if_ops->write_sram)
-        return hctrl->shi->if_ops->write_sram(IFDEV(hctrl), addr, data, size);
-    return 0;
+ if(hctrl->shi->if_ops->write_sram)
+  return hctrl->shi->if_ops->write_sram(IFDEV(hctrl), addr, data, size);
+ return 0;
 }
 static inline bool ssv6xxx_hwif_ready(struct ssv6xxx_hci_ctrl *hctrl)
 {
-    if(hctrl->shi->if_ops->property)
-        return hctrl->shi->if_ops->is_ready(IFDEV(hctrl));
-    return false;
+ if(hctrl->shi->if_ops->property)
+  return hctrl->shi->if_ops->is_ready(IFDEV(hctrl));
+ return false;
 }
 static inline int ssv6xxx_hwif_property(struct ssv6xxx_hci_ctrl *hctrl)
 {
-    if(hctrl->shi->if_ops->property)
-        return hctrl->shi->if_ops->property(IFDEV(hctrl));
-    return 0;
+ if(hctrl->shi->if_ops->property)
+  return hctrl->shi->if_ops->property(IFDEV(hctrl));
+ return 0;
 }
 static inline void ssv6xxx_hwif_load_fw_pre_config_device(struct ssv6xxx_hci_ctrl *hctrl)
 {
-    if(hctrl->shi->if_ops->load_fw_pre_config_device)
-        hctrl->shi->if_ops->load_fw_pre_config_device(IFDEV(hctrl));
+ if(hctrl->shi->if_ops->load_fw_pre_config_device)
+  hctrl->shi->if_ops->load_fw_pre_config_device(IFDEV(hctrl));
 }
 static inline void ssv6xxx_hwif_load_fw_post_config_device(struct ssv6xxx_hci_ctrl *hctrl)
 {
-    if(hctrl->shi->if_ops->load_fw_post_config_device)
-        hctrl->shi->if_ops->load_fw_post_config_device(IFDEV(hctrl));
+ if(hctrl->shi->if_ops->load_fw_post_config_device)
+  hctrl->shi->if_ops->load_fw_post_config_device(IFDEV(hctrl));
 }
 #if !defined(USE_THREAD_RX) || defined(USE_BATCH_RX)
 static inline void ssv6xxx_hwif_rx_task(struct ssv6xxx_hci_ctrl *hctrl, int (*rx_cb)(struct sk_buff_head *rxq, void *args),
-                                        int (*is_rx_q_full)(void *args), void *args, u32 *pkt)
+     void *args, u32 *pkt)
 #else
 static inline void ssv6xxx_hwif_rx_task(struct ssv6xxx_hci_ctrl *hctrl, int (*rx_cb)(struct sk_buff *rx_skb, void *args),
-                                        int (*is_rx_q_full)(void *args), void *args, u32 *pkt)
+     void *args, u32 *pkt)
 #endif
 {
-    if(hctrl->shi->if_ops->hwif_rx_task)
-        hctrl->shi->if_ops->hwif_rx_task(IFDEV(hctrl), rx_cb, is_rx_q_full, args, pkt);
+ if(hctrl->shi->if_ops->hwif_rx_task)
+  hctrl->shi->if_ops->hwif_rx_task(IFDEV(hctrl), rx_cb, args, pkt);
 }
 static inline void ssv6xxx_hwif_interface_reset(struct ssv6xxx_hci_ctrl *hctrl)
 {
@@ -244,7 +246,7 @@ static inline void ssv6xxx_hwif_sysplf_reset(struct ssv6xxx_hci_ctrl *hctrl, u32
 #define HCI_HWIF_PROPERTY(ct) ssv6xxx_hwif_property(ct)
 #define HCI_LOAD_FW_PRE_CONFIG_DEVICE(ct) ssv6xxx_hwif_load_fw_pre_config_device(ct)
 #define HCI_LOAD_FW_POST_CONFIG_DEVICE(ct) ssv6xxx_hwif_load_fw_post_config_device(ct)
-#define HCI_RX_TASK(ct,rx_cb,is_rx_q_full,args,pkt) ssv6xxx_hwif_rx_task(ct, rx_cb, is_rx_q_full, args, pkt)
+#define HCI_RX_TASK(ct,hdle,args,pkt) ssv6xxx_hwif_rx_task(ct, hdle, args, pkt)
 #define HCI_IFC_RESET(ct) ssv6xxx_hwif_interface_reset(ct)
 #define HCI_START_USB_ACC(ct,epnum) ssv6xxx_hwif_start_usb_acc(ct, epnum)
 #define HCI_STOP_USB_ACC(ct,epnum) ssv6xxx_hwif_stop_usb_acc(ct, epnum)

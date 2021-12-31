@@ -1,15 +1,16 @@
 /*
- * Copyright (c) 2015 iComm-semi Ltd.
+ * Copyright (c) 2015 South Silicon Valley Microelectronics Inc.
+ * Copyright (c) 2015 iComm Corporation
  *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
+ * This program is free software: you can redistribute it and/or modify 
+ * it under the terms of the GNU General Public License as published by 
+ * the Free Software Foundation, either version 3 of the License, or 
  * (at your option) any later version.
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * This program is distributed in the hope that it will be useful, but 
+ * WITHOUT ANY WARRANTY; without even the implied warranty of 
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
  * See the GNU General Public License for more details.
- * You should have received a copy of the GNU General Public License
+ * You should have received a copy of the GNU General Public License 
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
@@ -18,11 +19,7 @@
 #include <linux/delay.h>
 #include <linux/version.h>
 #include <linux/time.h>
-#ifdef SSV_MAC80211
-#include "ssv_mac80211.h"
-#else
 #include <net/mac80211.h>
-#endif
 #include <ssv6200.h>
 #include "dev.h"
 #include "ssv6xxx_debugfs.h"
@@ -39,7 +36,7 @@ static ssize_t queue_status_read (struct file *file,
     if (!status_buf)
         return -ENOMEM;
     status_size = ssv6xxx_tx_queue_status_dump(sc, status_buf,
-                  QUEUE_STATUS_BUF_SIZE);
+                                       QUEUE_STATUS_BUF_SIZE);
     ret = simple_read_from_buffer(user_buf, count, ppos, status_buf,
                                   status_size);
     kfree(status_buf);
@@ -52,17 +49,17 @@ static int queue_status_open (struct inode *inode, struct file *file)
 }
 static const struct file_operations queue_status_fops
     = { .read = queue_status_read,
-    .open = queue_status_open
-};
+        .open = queue_status_open };
 #endif
-int tu_ssv6xxx_init_debugfs (struct ssv_softc *sc, const char *name)
+int ssv6xxx_init_debugfs (struct ssv_softc *sc, const char *name)
 {
 #ifdef CONFIG_SSV6XXX_DEBUGFS
     struct ieee80211_hw *hw = sc->hw;
     struct dentry *phy_debugfs_dir = hw->wiphy->debugfsdir;
     struct dentry *drv_debugfs_dir;
     drv_debugfs_dir = debugfs_create_dir(name, phy_debugfs_dir);
-    if (!drv_debugfs_dir) {
+    if (!drv_debugfs_dir)
+    {
         dev_err(sc->dev, "Failed to create debugfs.\n");
         return -ENOMEM;
     }
@@ -92,10 +89,11 @@ int ssv6xxx_debugfs_add_interface(struct ssv_softc *sc, struct ieee80211_vif *vi
     struct ssv_vif_priv_data *vif_priv = (struct ssv_vif_priv_data *)vif->drv_priv;
     struct ssv_vif_info *vif_info = &sc->vif_info[vif_priv->vif_idx];
     snprintf(vif_addr, sizeof(vif_addr), "%02X-%02X-%02X-%02X-%02X-%02X",
-             vif->addr[0], vif->addr[1], vif->addr[2],
-             vif->addr[3], vif->addr[4], vif->addr[5]);
+            vif->addr[0], vif->addr[1], vif->addr[2],
+            vif->addr[3], vif->addr[4], vif->addr[5]);
     vif_debugfs_dir = debugfs_create_dir(vif_addr, drv_debugfs_dir);
-    if (!vif_debugfs_dir) {
+    if (!vif_debugfs_dir)
+    {
         dev_err(sc->dev, "Failed to create interface debugfs for %s.\n", vif_addr);
         return -ENOMEM;
     }
@@ -142,7 +140,8 @@ int ssv6xxx_debugfs_add_sta(struct ssv_softc *sc, struct ssv_sta_info *sta)
              sta->sta->addr[0], sta->sta->addr[1], sta->sta->addr[2],
              sta->sta->addr[3], sta->sta->addr[4], sta->sta->addr[5]);
     sta_debugfs_dir = debugfs_create_dir(sta_addr, vif_debugfs_dir);
-    if (!sta_debugfs_dir) {
+    if (!sta_debugfs_dir)
+    {
         dev_err(sc->dev, "Failed to create interface debugfs for %s.\n", sta_addr);
         return -ENOMEM;
     }

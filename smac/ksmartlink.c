@@ -1,15 +1,16 @@
 /*
- * Copyright (c) 2015 iComm-semi Ltd.
+ * Copyright (c) 2015 South Silicon Valley Microelectronics Inc.
+ * Copyright (c) 2015 iComm Corporation
  *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
+ * This program is free software: you can redistribute it and/or modify 
+ * it under the terms of the GNU General Public License as published by 
+ * the Free Software Foundation, either version 3 of the License, or 
  * (at your option) any later version.
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * This program is distributed in the hope that it will be useful, but 
+ * WITHOUT ANY WARRANTY; without even the implied warranty of 
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
  * See the GNU General Public License for more details.
- * You should have received a copy of the GNU General Public License
+ * You should have received a copy of the GNU General Public License 
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
@@ -84,23 +85,22 @@ enum {
 int ksmartlink_cmd_smartlink(struct sk_buff *skb, struct genl_info *info)
 {
     u32 enable;
-    struct ssv_softc *ssv_smartlink_sc = ssv6xxx_driver_attach(SSV_DRVER_NAME);
+    struct ssv_softc *ssv_smartlink_sc = ssv6xxx_driver_attach(CABRIO_DRVER_NAME);
     if (info == NULL)
         return -EINVAL;
-    if (!info->attrs[KSMARTLINK_ATTR_ENABLE]) {
+    if (!info->attrs[KSMARTLINK_ATTR_ENABLE])
+    {
         printk("the attrs is not enable\n");
         return -EINVAL;
-    } else {
+    }
+    else
+    {
         enable = nla_get_u32(info->attrs[KSMARTLINK_ATTR_ENABLE]);
 #ifdef SSV_SMARTLINK_DEBUG
         printk("ksmartlink_cmd_smartlink enable=%d\n", enable);
 #endif
     }
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3,7,0)
-    ssv_smartlink_sc->ssv_usr_pid = info->snd_portid;
-#else
     ssv_smartlink_sc->ssv_usr_pid = info->snd_pid;
-#endif
     ssv_smartlink_sc->ssv_smartlink_status = enable;
     return 0;
 }
@@ -108,24 +108,22 @@ static int ksmartlink_set_channel(struct sk_buff *skb, struct genl_info *info)
 {
     int retval;
     u32 channel;
-    struct ssv_softc *ssv_smartlink_sc = ssv6xxx_driver_attach(SSV_DRVER_NAME);
-    struct ieee80211_channel chan;
+    struct ssv_softc *ssv_smartlink_sc = ssv6xxx_driver_attach(CABRIO_DRVER_NAME);
     if (info == NULL)
         return -EINVAL;
     if (!info->attrs[KSMARTLINK_ATTR_CHANNEL])
         return -EINVAL;
-    else {
+    else
+    {
         channel = nla_get_u32(info->attrs[KSMARTLINK_ATTR_CHANNEL]);
 #ifdef SSV_SMARTLINK_DEBUG
         printk("ksmartlink_set_channel channel=%d\n", channel);
 #endif
     }
-    memset(&chan, 0, sizeof( struct ieee80211_channel));
-    chan.hw_value = channel;
     mutex_lock(&ssv_smartlink_sc->mutex);
-    retval = HAL_SET_CHANNEL(ssv_smartlink_sc, &chan, NL80211_CHAN_HT20);
-    ssv_smartlink_sc->hw_chan = chan.hw_value;
-    ssv_smartlink_sc->hw_chan_type = NL80211_CHAN_HT20;
+    retval = HAL_SET_CHANNEL(ssv_smartlink_sc, channel);
+    ssv_smartlink_sc->hw_chan = chan->hw_value;
+    ssv_smartlink_sc->hw_chan_type = channel_type;
     mutex_unlock(&ssv_smartlink_sc->mutex);
     return retval;
 }
@@ -135,7 +133,7 @@ static int ksmartlink_get_channel(struct sk_buff *skb, struct genl_info *info)
     int retval;
     void *hdr;
     u32 channel = 0x00;
-    struct ssv_softc *ssv_smartlink_sc = ssv6xxx_driver_attach(SSV_DRVER_NAME);
+    struct ssv_softc *ssv_smartlink_sc = ssv6xxx_driver_attach(CABRIO_DRVER_NAME);
     if (info == NULL)
         return -EINVAL;
     mutex_lock(&ssv_smartlink_sc->mutex);
@@ -145,24 +143,22 @@ static int ksmartlink_get_channel(struct sk_buff *skb, struct genl_info *info)
     if (!msg)
         return -ENOMEM;
 #ifdef SSV_SMARTLINK_DEBUG
-    printk("ksmartlink_get_channel\n");
+        printk("ksmartlink_get_channel\n");
 #endif
     hdr = genlmsg_put(msg, 0, info->snd_seq, &ksmartlink_gnl_family, 0, KSMARTLINK_CMD_GET_CHANNEL);
-    if (!hdr) {
+    if (!hdr)
+    {
         retval = -ENOBUFS;
         goto free_msg;
     }
     retval = nla_put_u32(msg, KSMARTLINK_ATTR_CHANNEL, channel);
-    if (retval) {
+    if (retval)
+    {
         printk("Fail to add attribute in message\n");
         goto free_msg;
     }
     genlmsg_end(msg, hdr);
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3,7,0)
-    return genlmsg_unicast(genl_info_net(info), msg, info->snd_portid);
-#else
     return genlmsg_unicast(genl_info_net(info), msg, info->snd_pid);
-#endif
 free_msg:
     nlmsg_free(msg);
     return retval;
@@ -171,12 +167,13 @@ static int ksmartlink_set_promisc(struct sk_buff *skb, struct genl_info *info)
 {
     int retval;
     u32 promisc;
-    struct ssv_softc *ssv_smartlink_sc = ssv6xxx_driver_attach(SSV_DRVER_NAME);
+    struct ssv_softc *ssv_smartlink_sc = ssv6xxx_driver_attach(CABRIO_DRVER_NAME);
     if (info == NULL)
         return -EINVAL;
     if (!info->attrs[KSMARTLINK_ATTR_PROMISC])
         return -EINVAL;
-    else {
+    else
+    {
         promisc = nla_get_u32(info->attrs[KSMARTLINK_ATTR_PROMISC]);
 #ifdef SSV_SMARTLINK_DEBUG
         printk("ksmartlink_set_promisc promisc=%d\n", promisc);
@@ -193,7 +190,7 @@ static int ksmartlink_get_promisc(struct sk_buff *skb, struct genl_info *info)
     int retval;
     void *hdr;
     u32 promisc = 0x00;
-    struct ssv_softc *ssv_smartlink_sc = ssv6xxx_driver_attach(SSV_DRVER_NAME);
+    struct ssv_softc *ssv_smartlink_sc = ssv6xxx_driver_attach(CABRIO_DRVER_NAME);
     if (info == NULL)
         return -EINVAL;
     mutex_lock(&ssv_smartlink_sc->mutex);
@@ -203,24 +200,22 @@ static int ksmartlink_get_promisc(struct sk_buff *skb, struct genl_info *info)
     if (!msg)
         return -ENOMEM;
 #ifdef SSV_SMARTLINK_DEBUG
-    printk("ksmartlink_get_promisc\n");
+        printk("ksmartlink_get_promisc\n");
 #endif
     hdr = genlmsg_put(msg, 0, info->snd_seq, &ksmartlink_gnl_family, 0, KSMARTLINK_CMD_GET_PROMISC);
-    if (!hdr) {
+    if (!hdr)
+    {
         retval = -ENOBUFS;
         goto free_msg;
     }
     retval = nla_put_u32(msg, KSMARTLINK_ATTR_PROMISC, promisc);
-    if (retval) {
+    if (retval)
+    {
         printk("Fail to add attribute in message\n");
         goto free_msg;
     }
     genlmsg_end(msg, hdr);
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3,7,0)
-    return genlmsg_unicast(genl_info_net(info), msg, info->snd_portid);
-#else
     return genlmsg_unicast(genl_info_net(info), msg, info->snd_pid);
-#endif
 free_msg:
     nlmsg_free(msg);
     return retval;
@@ -229,12 +224,13 @@ free_msg:
 static int ksmartlink_start_smarticomm(struct sk_buff *skb, struct genl_info *info)
 {
     u32 enable;
-    struct ssv_softc *ssv_smartlink_sc = ssv6xxx_driver_attach(SSV_DRVER_NAME);
+    struct ssv_softc *ssv_smartlink_sc = ssv6xxx_driver_attach(CABRIO_DRVER_NAME);
     if (info == NULL)
         return -EINVAL;
     if (!info->attrs[KSMARTLINK_ATTR_ENABLE])
         return -EINVAL;
-    else {
+    else
+    {
         enable = nla_get_u32(info->attrs[KSMARTLINK_ATTR_ENABLE]);
 #ifdef SSV_SMARTLINK_DEBUG
         printk("ksmartlink_start_smarticomm enable=%d\n", enable);
@@ -250,7 +246,8 @@ static int ksmartlink_set_si_cmd(struct sk_buff *skb, struct genl_info *info)
         return -EINVAL;
     if (!info->attrs[KSMARTLINK_ATTR_SI_CMD])
         return -EINVAL;
-    else {
+    else
+    {
         si_cmd = nla_get_u32(info->attrs[KSMARTLINK_ATTR_SI_CMD]);
 #ifdef SSV_SMARTLINK_DEBUG
         printk("ksmartlink_set_si_cmd si_cmd=%d\n", si_cmd);
@@ -272,24 +269,22 @@ static int ksmartlink_get_si_status(struct sk_buff *skb, struct genl_info *info)
     if (!msg)
         return -ENOMEM;
 #ifdef SSV_SMARTLINK_DEBUG
-    printk("ksmartlink_get_si_status\n");
+        printk("ksmartlink_get_si_status\n");
 #endif
     hdr = genlmsg_put(msg, 0, info->snd_seq, &ksmartlink_gnl_family, 0, KSMARTLINK_CMD_GET_SI_STATUS);
-    if (!hdr) {
+    if (!hdr)
+    {
         retval = -ENOBUFS;
         goto free_msg;
     }
     retval = nla_put_string(msg, KSMARTLINK_ATTR_SI_STATUS, status);
-    if (retval) {
+    if (retval)
+    {
         printk("Fail to add attribute in message\n");
         goto free_msg;
     }
     genlmsg_end(msg, hdr);
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3,7,0)
-    return genlmsg_unicast(genl_info_net(info), msg, info->snd_portid);
-#else
     return genlmsg_unicast(genl_info_net(info), msg, info->snd_pid);
-#endif
 free_msg:
     nlmsg_free(msg);
     return retval;
@@ -307,24 +302,22 @@ static int ksmartlink_get_si_ssid(struct sk_buff *skb, struct genl_info *info)
     if (!msg)
         return -ENOMEM;
 #ifdef SSV_SMARTLINK_DEBUG
-    printk("ksmartlink_get_si_ssid\n");
+        printk("ksmartlink_get_si_ssid\n");
 #endif
     hdr = genlmsg_put(msg, 0, info->snd_seq, &ksmartlink_gnl_family, 0, KSMARTLINK_CMD_GET_SI_SSID);
-    if (!hdr) {
+    if (!hdr)
+    {
         retval = -ENOBUFS;
         goto free_msg;
     }
     retval = nla_put_string(msg, KSMARTLINK_ATTR_SI_SSID, ssid);
-    if (retval) {
+    if (retval)
+    {
         printk("Fail to add attribute in message\n");
         goto free_msg;
     }
     genlmsg_end(msg, hdr);
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3,7,0)
-    return genlmsg_unicast(genl_info_net(info), msg, info->snd_portid);
-#else
     return genlmsg_unicast(genl_info_net(info), msg, info->snd_pid);
-#endif
 free_msg:
     nlmsg_free(msg);
     return retval;
@@ -342,58 +335,27 @@ static int ksmartlink_get_si_pass(struct sk_buff *skb, struct genl_info *info)
     if (!msg)
         return -ENOMEM;
 #ifdef SSV_SMARTLINK_DEBUG
-    printk("ksmartlink_get_si_pass\n");
+        printk("ksmartlink_get_si_pass\n");
 #endif
     hdr = genlmsg_put(msg, 0, info->snd_seq, &ksmartlink_gnl_family, 0, KSMARTLINK_CMD_GET_SI_PASS);
-    if (!hdr) {
+    if (!hdr)
+    {
         retval = -ENOBUFS;
         goto free_msg;
     }
     retval = nla_put_string(msg, KSMARTLINK_ATTR_SI_PASS, pass);
-    if (retval) {
+    if (retval)
+    {
         printk("Fail to add attribute in message\n");
         goto free_msg;
     }
     genlmsg_end(msg, hdr);
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3,7,0)
-    return genlmsg_unicast(genl_info_net(info), msg, info->snd_portid);
-#else
     return genlmsg_unicast(genl_info_net(info), msg, info->snd_pid);
-#endif
 free_msg:
     nlmsg_free(msg);
     return retval;
 }
 #endif
-int smartlink_nl_send_msg(struct sk_buff *skb_in)
-{
-    struct sk_buff *skb;
-    int retval;
-    void *msg_head;
-    unsigned char *pOutBuf=skb_in->data;
-    int inBufLen=skb_in->len;
-    struct ssv_softc *ssv_smartlink_sc = ssv6xxx_driver_attach(SSV_DRVER_NAME);
-    skb = genlmsg_new(NLMSG_GOODSIZE, GFP_KERNEL);
-    if (skb == NULL)
-        return -ENOMEM;
-    msg_head = genlmsg_put(skb, 0, 0, &ksmartlink_gnl_family, 0, KSMARTLINK_CMD_RX_FRAME);
-    if (msg_head == NULL) {
-        retval = -ENOMEM;
-        printk("Fail to create the netlink message header\n");
-        goto free_msg;
-    }
-    retval = nla_put(skb, KSMARTLINK_ATTR_RXFRAME, inBufLen, pOutBuf);
-    if (retval != 0) {
-        printk("Fail to add attribute in message\n");
-        goto free_msg;
-    }
-    genlmsg_end(skb, msg_head);
-    return genlmsg_unicast(&init_net, skb, ssv_smartlink_sc->ssv_usr_pid);
-free_msg:
-    nlmsg_free(skb);
-    return retval;
-}
-EXPORT_SYMBOL(smartlink_nl_send_msg);
 struct genl_ops ksmartlink_gnl_ops[] = {
     {
         .cmd = KSMARTLINK_CMD_SMARTLINK,
@@ -468,22 +430,50 @@ struct genl_ops ksmartlink_gnl_ops[] = {
     },
 #endif
 };
+int smartlink_nl_send_msg(struct sk_buff *skb_in)
+{
+    struct sk_buff *skb;
+    int retval;
+    void *msg_head;
+    unsigned char *pOutBuf=skb_in->data;
+    int inBufLen=skb_in->len;
+    struct ssv_softc *ssv_smartlink_sc = ssv6xxx_driver_attach(CABRIO_DRVER_NAME);
+    skb = genlmsg_new(NLMSG_GOODSIZE, GFP_KERNEL);
+    if (skb == NULL)
+        return -ENOMEM;
+    msg_head = genlmsg_put(skb, 0, 0, &ksmartlink_gnl_family, 0, KSMARTLINK_CMD_RX_FRAME);
+    if (msg_head == NULL)
+    {
+        retval = -ENOMEM;
+        printk("Fail to create the netlink message header\n");
+        goto free_msg;
+    }
+    retval = nla_put(skb, KSMARTLINK_ATTR_RXFRAME, inBufLen, pOutBuf);
+    if (retval != 0)
+    {
+        printk("Fail to add attribute in message\n");
+        goto free_msg;
+    }
+    genlmsg_end(skb, msg_head);
+    return genlmsg_unicast(&init_net, skb, ssv_smartlink_sc->ssv_usr_pid);
+free_msg:
+    nlmsg_free(skb);
+    return retval;
+}
+EXPORT_SYMBOL(smartlink_nl_send_msg);
 int ksmartlink_init(void)
 {
     int rc;
     printk("INIT SSV KSMARTLINK GENERIC NETLINK MODULE\n");
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3,13,0)
     rc = genl_register_family_with_ops(&ksmartlink_gnl_family,
-                                       ksmartlink_gnl_ops);
-#else
-    rc = genl_register_family_with_ops(&ksmartlink_gnl_family,
-                                       ksmartlink_gnl_ops, ARRAY_SIZE(ksmartlink_gnl_ops));
-#endif
-    if (rc != 0) {
+        ksmartlink_gnl_ops, ARRAY_SIZE(ksmartlink_gnl_ops));
+    if (rc != 0)
+    {
         printk("Fail to insert SSV KSMARTLINK NETLINK MODULE\n");
         return -1;
     }
-    if(ssv6xxx_driver_attach(SSV_DRVER_NAME) == NULL) {
+    if(ssv6xxx_driver_attach(CABRIO_DRVER_NAME) == NULL)
+    {
         printk("Fail to attach WIFI friver\n");
         return -1;
     }

@@ -1,20 +1,21 @@
 /*
- * Copyright (c) 2015 iComm-semi Ltd.
+ * Copyright (c) 2015 South Silicon Valley Microelectronics Inc.
+ * Copyright (c) 2015 iComm Corporation
  *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
+ * This program is free software: you can redistribute it and/or modify 
+ * it under the terms of the GNU General Public License as published by 
+ * the Free Software Foundation, either version 3 of the License, or 
  * (at your option) any later version.
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * This program is distributed in the hope that it will be useful, but 
+ * WITHOUT ANY WARRANTY; without even the implied warranty of 
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
  * See the GNU General Public License for more details.
- * You should have received a copy of the GNU General Public License
+ * You should have received a copy of the GNU General Public License 
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
 #ifndef _SSV_RC_COM_H_
-#define _SSV_RC_COM_H_
+#define _SSV_RC_COM_H_ 
 #define SSV_RC_MAX_STA 8
 #define MCS_GROUP_RATES 8
 #define SSV_HT_RATE_MAX 8
@@ -93,29 +94,29 @@ struct rc_pid_sta_info {
 struct rc_pid_rateinfo {
     u16 rc_index;
     u16 index;
-    s32 diff;
-    u16 perfect_tx_time;
-    u32 throughput;
-    unsigned long this_attempt;
-    unsigned long this_success;
-    unsigned long this_fail;
-    u64 attempt;
-    u64 success;
-    u64 fail;
+ s32 diff;
+ u16 perfect_tx_time;
+ u32 throughput;
+ unsigned long this_attempt;
+ unsigned long this_success;
+ unsigned long this_fail;
+ u64 attempt;
+ u64 success;
+ u64 fail;
 };
 struct rc_pid_info {
-    unsigned int target;
+ unsigned int target;
 #if 0
-    u8 coeff_p;
-    u8 coeff_i;
-    u8 coeff_d;
-    u8 smoothing_shift;
-    u8 sharpen_factor;
-    u8 sharpen_duration;
-    u8 norm_offset;
+ u8 coeff_p;
+ u8 coeff_i;
+ u8 coeff_d;
+ u8 smoothing_shift;
+ u8 sharpen_factor;
+ u8 sharpen_duration;
+ u8 norm_offset;
 #endif
-    int oldrate;
-    struct rc_pid_rateinfo rinfo[12];
+ int oldrate;
+ struct rc_pid_rateinfo rinfo[12];
 };
 struct mcs_group {
     unsigned int duration[MCS_GROUP_RATES];
