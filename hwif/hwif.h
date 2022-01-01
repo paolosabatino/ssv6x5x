@@ -15,6 +15,7 @@
 
 #ifndef __HWIF_H__
 #define __HWIF_H__
+#include <linux/interrupt.h>
 #include <linux/mmc/host.h>
 #include <ssv6xxx_common.h>
 #define SYS_REG_BASE 0xc0000000

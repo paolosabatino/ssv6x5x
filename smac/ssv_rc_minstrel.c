@@ -308,8 +308,10 @@ static void ssv_minstrel_get_rate(void *priv, struct ieee80211_sta *sta,
     u64 delta;
     struct rc_setting *rc_setting = &sc->sh->cfg.rc_setting;
     int force_sample_pr;
+#if LINUX_VERSION_CODE < KERNEL_VERSION(5,2,0)
     if (rate_control_send_low(sta, priv_sta, txrc))
         return;
+#endif
     if (sc->sh->cfg.auto_rate_enable == false) {
         ssv_minstrel_set_fix_data_rate(sc, minstrel_sta_priv, ar);
         return;
@@ -564,7 +566,11 @@ static void ssv_minstrel_free_sta(void *priv, struct ieee80211_sta *sta, void *p
     kfree(minstrel_sta_priv->ratelist);
     kfree(minstrel_sta_priv);
 }
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4,14,0)
+static void *ssv_minstrel_alloc(struct ieee80211_hw *hw)
+#else
 static void *ssv_minstrel_alloc(struct ieee80211_hw *hw, struct dentry *debugfsdir)
+#endif
 {
     struct ssv_softc *sc = hw->priv;
     struct ssv_minstrel_priv *smp;
@@ -700,11 +706,13 @@ static void ssv_minstrel_add_sta_debugfs(void *priv, void *priv_sta, struct dent
     minstrel_sta_priv->dbg_stats = debugfs_create_file("rc_stats", S_IRUGO, dir,
                                    minstrel_sta_priv, &ssv_minstrel_stat_fops);
 }
+#if LINUX_VERSION_CODE < KERNEL_VERSION(5,2,0)
 static void ssv_minstrel_remove_sta_debugfs(void *priv, void *priv_sta)
 {
     struct ssv_minstrel_sta_priv *minstrel_sta_priv = priv_sta;
     debugfs_remove(minstrel_sta_priv->dbg_stats);
 }
+#endif
 #endif
 struct rate_control_ops ssv_minstrel = {
 #if LINUX_VERSION_CODE < KERNEL_VERSION(3,15,0)
@@ -721,7 +729,9 @@ struct rate_control_ops ssv_minstrel = {
     .free_sta = ssv_minstrel_free_sta,
 #ifdef CONFIG_MAC80211_DEBUGFS
     .add_sta_debugfs = ssv_minstrel_add_sta_debugfs,
+#if LINUX_VERSION_CODE < KERNEL_VERSION(5,2,0)
     .remove_sta_debugfs = ssv_minstrel_remove_sta_debugfs,
+#endif
 #endif
 };
 int ssv6xxx_minstrel_rate_control_register(void)

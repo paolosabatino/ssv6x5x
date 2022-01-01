@@ -17,6 +17,7 @@
 #define _SSV6200_H_
 #include <linux/device.h>
 #include <linux/interrupt.h>
+#include <linux/version.h>
 #ifdef SSV_MAC80211
 #include "ssv_mac80211.h"
 #else
@@ -105,11 +106,16 @@ struct txResourceControl {
 #include "ssv_cfg.h"
 static inline void txrxboost_init(void)
 {
+#if LINUX_VERSION_CODE < KERNEL_VERSION(5,3,0)
     struct sched_param param = { .sched_priority = 0 };
     sched_setscheduler(current, SCHED_NORMAL, &param);
+#else
+    sched_set_normal(current, 0);
+#endif
 }
 static inline void txrxboost_change(u32 tx_frame_qlen, u32 low_threshold, u32 high_threshold, u32 prio)
 {
+#if LINUX_VERSION_CODE < KERNEL_VERSION(5,3,0)
     struct sched_param param;
     if (tx_frame_qlen > high_threshold) {
         param.sched_priority = (int)prio;
@@ -118,5 +124,12 @@ static inline void txrxboost_change(u32 tx_frame_qlen, u32 low_threshold, u32 hi
         param.sched_priority = 0;
         sched_setscheduler(current, SCHED_NORMAL, &param);
     }
+#else
+    if (tx_frame_qlen > high_threshold) {
+        sched_set_fifo_low(current);
+    } else if (tx_frame_qlen < low_threshold) {
+        sched_set_normal(current, 0);
+    }
+#endif
 }
 #endif

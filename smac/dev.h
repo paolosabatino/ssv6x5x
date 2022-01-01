@@ -1038,7 +1038,7 @@ int ssv6xxx_get_promisc(struct ssv_softc *sc, int *paccept);
 #endif
 int ssv6xxx_tx_task (void *data);
 int ssv6xxx_rx_task (void *data);
-void ssv6xxx_house_keeping(unsigned long argv);
+void ssv6xxx_house_keeping(struct timer_list *);
 void ssv6xxx_rx_stuck_process(struct work_struct *work);
 void ssv6xxx_mib_edca_process(struct work_struct *work);
 void ssv6xxx_tx_poll_process(struct work_struct *work);

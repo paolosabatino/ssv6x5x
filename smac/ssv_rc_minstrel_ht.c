@@ -312,6 +312,7 @@ static int ssv_minstrel_ht_get_sample_rate(struct ssv_softc *sc,
             case 3:
                 sample_up_pr = rc_setting->up_pr3;
                 forbid_time = rc_setting->forbid3;
+                break;
             case 6:
                 sample_up_pr = rc_setting->up_pr6;
                 forbid_time = rc_setting->forbid6;
@@ -724,8 +725,10 @@ void ssv_minstrel_ht_get_rate(void *priv, struct ieee80211_sta *sta, void *priv_
     struct ssv_minstrel_priv *smp = (struct ssv_minstrel_priv *)sc->rc;
     int sample_idx;
     bool sample = false;
+#if LINUX_VERSION_CODE < KERNEL_VERSION(5,2,0)
     if (rate_control_send_low(sta, priv_sta, txrc))
         return;
+#endif
     info->flags |= mhs->tx_flags;
     if (smp->max_rates == 1 && txrc->skb->protocol == cpu_to_be16(ETH_P_PAE))
         sample_idx = -1;

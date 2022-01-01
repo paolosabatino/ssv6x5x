@@ -3296,8 +3296,8 @@ tx_mpdu:
         }
         return 0;
     }
-    void ssv6xxx_house_keeping(unsigned long argv) {
-        struct ssv_softc *sc = (struct ssv_softc *)argv;
+    void ssv6xxx_house_keeping(struct timer_list *t) {
+        struct ssv_softc *sc = from_timer(sc, t, house_keeping);
         if (!sc->mac80211_dev_started ||
             (sc->sc_flags & SC_OP_HW_RESET) ||
             (sc->sc_flags & SC_OP_BLOCK_CNTL))
@@ -5064,15 +5064,15 @@ out:
 #endif
 
     static u64 ssv6200_get_systime_us(void) {
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 39))
+
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4,19,0)
+        struct timespec64 ts;
+        ktime_get_boottime_ts64(&ts);
+#else
         struct timespec ts;
         get_monotonic_boottime(&ts);
-        return ((u64)ts.tv_sec * 1000000) + ts.tv_nsec / 1000;
-#else
-        struct timeval tv;
-        do_gettimeofday(&tv);
-        return ((u64)tv.tv_sec * 1000000) + tv.tv_usec;
 #endif
+        return ((u64)ts.tv_sec * 1000000) + ts.tv_nsec / 1000;
     }
 
     static void _proc_data_rx_skb (struct ssv_softc *sc, struct sk_buff *rx_skb) {

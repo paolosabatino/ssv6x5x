@@ -22,6 +22,15 @@
 #include "ssv_ht_rc.h"
 #include "ssv_skb.h"
 #include <hal.h>
+
+// Hack: redefine MAX_AMPDU_BUF because buf_size here is a 8-bit char
+// and mainline kernel value is 0x100, which overflows
+#ifdef IEEE80211_MAX_AMPDU_BUF
+#undef IEEE80211_MAX_AMPDU_BUF
+#define IEEE80211_MAX_AMPDU_BUF 0x40
+#endif
+
+
 extern struct ieee80211_ops ssv6200_ops;
 #define BA_WAIT_TIMEOUT (100)
 #define AMPDU_TID_TO_SC(ampdu_tid) \

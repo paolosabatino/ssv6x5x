@@ -24,10 +24,15 @@
 #include <smac/dev.h>
 #include <hal.h>
 #include "hctrl.h"
-MODULE_AUTHOR("iComm-semi, Ltd");
-MODULE_DESCRIPTION("HCI driver for SSV6xxx 802.11n wireless LAN cards.");
-MODULE_SUPPORTED_DEVICE("SSV6xxx WLAN cards");
-MODULE_LICENSE("Dual BSD/GPL");
+
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4,19,0)
+#define timespec timespec64
+#define getnstimeofday(_X) ktime_get_boottime_ts64(_X);
+#define timespec_sub(_X, _Y) timespec64_sub(_X, _Y)
+#define timespec_to_ns(_X) timespec64_to_ns(_X)
+#else
+#define getnstimeofday(_X) get_monotonic_boottime(_X);
+#endif
 static void ssv6xxx_hci_trigger_tx(struct ssv6xxx_hci_ctrl *ctrl_hci)
 {
     unsigned long flags;
@@ -165,9 +170,11 @@ static int ssv6xxx_hci_read_fw_block(char *buf, int len, void *image)
 {
     struct file *fp = (struct file *)image;
     int rdlen;
+    loff_t pos;
     if (!image)
         return 0;
-    rdlen = kernel_read(fp, fp->f_pos, buf, len);
+    pos = fp->f_pos;
+    rdlen = kernel_read(fp, buf, len, &pos);
     if (rdlen > 0)
         fp->f_pos += rdlen;
     return rdlen;

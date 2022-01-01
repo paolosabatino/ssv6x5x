@@ -1671,9 +1671,11 @@ static int ssv_cmd_rawpkt_context(char *buf, int len, void *file)
 {
     struct file *fp = (struct file *)file;
     int rdlen;
+    loff_t pos;
     if (!file)
         return 0;
-    rdlen = kernel_read(fp, fp->f_pos, buf, len);
+    pos = fp->f_pos;
+    rdlen = kernel_read(fp, buf, len, &pos);
     if (rdlen > 0)
         fp->f_pos += rdlen;
     return rdlen;

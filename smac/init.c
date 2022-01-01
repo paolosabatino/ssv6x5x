@@ -55,10 +55,7 @@
 #include <linux/cpu.h>
 #include <linux/notifier.h>
 #endif
-MODULE_AUTHOR("iComm-semi, Ltd");
-MODULE_DESCRIPTION("Support for SSV6xxx wireless LAN cards.");
-MODULE_SUPPORTED_DEVICE("SSV6xxx 802.11n WLAN cards");
-MODULE_LICENSE("Dual BSD/GPL");
+
 static const struct ieee80211_iface_limit ssv6xxx_p2p_limits[] = {
     {
         .max = 2,
@@ -747,10 +744,13 @@ static int tu_ssv6xxx_init_softc(struct ssv_softc *sc)
     sc->cmd_data.dbg_log.size = 0;
     sc->cmd_data.dbg_log.totalsize = 0;
     sc->cmd_data.dbg_log.data = NULL;
+    /*
     init_timer(&sc->house_keeping);
     sc->house_keeping.expires = jiffies + msecs_to_jiffies(HOUSE_KEEPING_TIMEOUT);
     sc->house_keeping.function = ssv6xxx_house_keeping;
     sc->house_keeping.data = (unsigned long)sc;
+    */
+    timer_setup(&sc->house_keeping, ssv6xxx_house_keeping, 0);
     sc->house_keeping_wq= create_singlethread_workqueue("ssv6xxx_house_keeping_wq");
     INIT_WORK(&sc->rx_stuck_work, ssv6xxx_rx_stuck_process);
     INIT_WORK(&sc->mib_edca_work, ssv6xxx_mib_edca_process);
@@ -761,6 +761,7 @@ static int tu_ssv6xxx_init_softc(struct ssv_softc *sc)
 #endif
     INIT_WORK(&sc->set_txpwr_work, ssv6xxx_set_txpwr_process);
     INIT_WORK(&sc->thermal_monitor_work, ssv6xxx_thermal_monitor_process);
+    mod_timer(&sc->house_keeping, jiffies + msecs_to_jiffies(HOUSE_KEEPING_TIMEOUT));
     sc->sc_flags |= SC_OP_DIRECTLY_ACK;
     atomic_set(&sc->ampdu_tx_frame, 0);
     sc->directly_ack_high_threshold = sc->sh->cfg.directly_ack_high_threshold;
@@ -2168,7 +2169,7 @@ static struct platform_driver ssv6xxx_driver = {
         .owner = THIS_MODULE,
     }
 };
-static int device_match_by_alias(struct device *dev, void *data)
+static int device_match_by_alias(struct device *dev, const void *data)
 {
     struct device_driver *driver = dev->driver;
     struct _pattern {

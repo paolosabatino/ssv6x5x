@@ -973,6 +973,7 @@ static void ssv6xxx_get_rate(void *priv, struct ieee80211_sta *sta, void *priv_s
         tx_info->flags |= IEEE80211_TX_CTL_NO_CCK_RATE;
     }
 #endif
+#if LINUX_VERSION_CODE < KERNEL_VERSION(5,2,0)
     if (rate_control_send_low(sta, priv_sta, txrc)) {
         int i = 0;
         int total_rates = (sizeof(ssv_11bgn_rate_table) / sizeof(ssv_11bgn_rate_table[0]));
@@ -1002,6 +1003,7 @@ static void ssv6xxx_get_rate(void *priv, struct ieee80211_sta *sta, void *priv_s
             WARN_ON("Failed to find matching low rate.");
         }
     }
+#endif
     if (rc_rate == NULL) {
         if (conf_is_ht(&sc->hw->conf) &&
             (sta->ht_cap.cap & IEEE80211_HT_CAP_LDPC_CODING))
@@ -1300,7 +1302,11 @@ static void ssv6xxx_rate_free_sta(void *priv, struct ieee80211_sta *sta,
     struct ssv_sta_rc_info *rc_sta=priv_sta;
     rc_sta->rc_valid = false;
 }
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4,14,0)
+static void *ssv6xxx_rate_alloc(struct ieee80211_hw *hw)
+#else
 static void *ssv6xxx_rate_alloc(struct ieee80211_hw *hw, struct dentry *debugfsdir)
+#endif
 {
     struct ssv_softc *sc=hw->priv;
     struct ssv_rate_ctrl *ssv_rc;

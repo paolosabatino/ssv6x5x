@@ -1095,19 +1095,21 @@ void ssv6006_rc_mac80211_rate_idx(struct ssv_softc *sc,
 {
     if (((hw_rate_idx & SSV6006RC_PHY_MODE_MSK) >>
          SSV6006RC_PHY_MODE_SFT)== SSV6006RC_N_MODE) {
-        rxs->flag |= RX_FLAG_HT;
+        rxs->flag |= RC_FLAG_HT;
+        /*
         if (((hw_rate_idx & SSV6006RC_20_40_MSK) >>
              SSV6006RC_20_40_SFT) == SSV6006RC_HT40) {
             rxs->flag |= RX_FLAG_40MHZ;
         }
+        */
         if (((hw_rate_idx & SSV6006RC_LONG_SHORT_MSK) >>
              SSV6006RC_LONG_SHORT_SFT) == SSV6006RC_SHORT) {
-            rxs->flag |= RX_FLAG_SHORT_GI;
+            rxs->flag |= RX_ENC_FLAG_SHORT_GI;
         }
     } else {
         if (((hw_rate_idx & SSV6006RC_LONG_SHORT_MSK) >>
              SSV6006RC_LONG_SHORT_SFT) == SSV6006RC_SHORT) {
-            rxs->flag |= RX_FLAG_SHORTPRE;
+            rxs->flag |= RX_ENC_FLAG_SHORTPRE;
         }
     }
     rxs->rate_idx = (hw_rate_idx & SSV6006RC_RATE_MSK) >>

@@ -27,7 +27,6 @@
 #include "ssv_cmd.h"
 #include "ssv_cfg.h"
 #include <linux/fs.h>
-#include <asm/segment.h>
 #include <asm/uaccess.h>
 #include <linux/buffer_head.h>
 #include <linux/ctype.h>
@@ -43,7 +42,7 @@
 MODULE_AUTHOR("iComm-semi, Ltd");
 MODULE_DESCRIPTION("Shared library for SSV wireless LAN cards.");
 MODULE_LICENSE("Dual BSD/GPL");
-static char *tu_stacfgpath = "/lib/firmware/ssv6x5x-wifi.cfg";
+char *tu_stacfgpath = "/lib/firmware/ssv6x5x-wifi.cfg";
 EXPORT_SYMBOL(tu_stacfgpath);
 module_param(tu_stacfgpath, charp, 0000);
 MODULE_PARM_DESC(tu_stacfgpath, "Get path of sta cfg");
@@ -119,11 +118,10 @@ static ssize_t ssv6xxx_p2p_write(struct file *filp, const char __user *buffer,
 out:
     return retval;
 }
-static struct file_operations ssv6xxx_p2p_fops = {
-    .owner = THIS_MODULE,
-    .open = ssv6xxx_p2p_open,
-    .read = ssv6xxx_p2p_read,
-    .write = ssv6xxx_p2p_write,
+static struct proc_ops ssv6xxx_p2p_fops = {
+    .proc_open = ssv6xxx_p2p_open,
+    .proc_read = ssv6xxx_p2p_read,
+    .proc_write = ssv6xxx_p2p_write,
 };
 static int ssv6xxx_freq_open(struct inode *inode, struct file *filp)
 {
@@ -153,10 +151,9 @@ static ssize_t ssv6xxx_freq_read(struct file *filp, char __user *buffer,
 out:
     return retval;
 }
-static struct file_operations ssv6xxx_freq_fops = {
-    .owner = THIS_MODULE,
-    .open = ssv6xxx_freq_open,
-    .read = ssv6xxx_freq_read,
+static struct proc_ops ssv6xxx_freq_fops = {
+    .proc_open = ssv6xxx_freq_open,
+    .proc_read = ssv6xxx_freq_read,
 };
 static int ssv6xxx_cmd_file_open(struct inode *inode, struct file *filp)
 {
@@ -243,7 +240,7 @@ size_t read_line(struct file *fp, char *buf, size_t size)
         if (fp->f_op && fp->f_op->read)
             num_read = fp->f_op->read(fp, &ch, 1, &fp->f_pos);
 #else
-        num_read = vfs_read(fp, &ch, 1, &fp->f_pos);
+        num_read = kernel_read(fp, &ch, 1, &fp->f_pos);
 #endif
         if (num_read < 0) {
             if (num_read == EINTR)
@@ -299,7 +296,6 @@ static void _import_default_cfg (char *tu_stacfgpath)
 {
     struct file *fp = (struct file *) NULL;
     char buf[MAX_CHARS_PER_LINE], cfg_cmd[32], cfg_value[32];
-    mm_segment_t fs;
     size_t s, read_len = 0, is_cmd_support = 0;
     printk(KERN_INFO "ssv6x5x: importing configuration from %s", tu_stacfgpath);
     if (tu_stacfgpath == NULL)
@@ -321,10 +317,7 @@ static void _import_default_cfg (char *tu_stacfgpath)
     do {
         memset(cfg_cmd, '\0', sizeof(cfg_cmd));
         memset(cfg_value, '\0', sizeof(cfg_value));
-        fs = get_fs();
-        set_fs(get_ds());
         read_len = read_line(fp, buf, MAX_CHARS_PER_LINE);
-        set_fs(fs);
         sscanf(buf, "%s = %s", cfg_cmd, cfg_value);
         if (!ischar(cfg_cmd) || !ischar(cfg_value)) {
             printk("ERORR invalid parameter: %s\n", buf);
@@ -347,11 +340,10 @@ static void _import_default_cfg (char *tu_stacfgpath)
     } while (read_len > 0);
     filp_close(fp, NULL);
 }
-static struct file_operations ssv6xxx_cmd_fops = {
-    .owner = THIS_MODULE,
-    .open = ssv6xxx_cmd_file_open,
-    .read = ssv6xxx_cmd_file_read,
-    .write = ssv6xxx_cmd_file_write,
+static struct proc_ops ssv6xxx_cmd_fops = {
+    .proc_open = ssv6xxx_cmd_file_open,
+    .proc_read = ssv6xxx_cmd_file_read,
+    .proc_write = ssv6xxx_cmd_file_write,
 };
 static void *ssv6xxx_dbg_seq_start(struct seq_file *s, loff_t *pos)
 {
@@ -418,12 +410,11 @@ static int ssv6xxx_dbg_file_open(struct inode *inode, struct file *filp)
     }
     return ret;
 }
-static struct file_operations ssv6xxx_dbg_fops = {
-    .owner = THIS_MODULE,
-    .open = ssv6xxx_dbg_file_open,
-    .read = seq_read,
-    .llseek = seq_lseek,
-    .release = seq_release,
+static struct proc_ops ssv6xxx_dbg_fops = {
+    .proc_open = ssv6xxx_dbg_file_open,
+    .proc_read = seq_read,
+    .proc_lseek = seq_lseek,
+    .proc_release = seq_release,
 };
 int ssv_init_cli (const char *dev_name, struct ssv_cmd_data *cmd_data)
 {
@@ -443,7 +434,7 @@ int ssv_init_cli (const char *dev_name, struct ssv_cmd_data *cmd_data)
     proc_file_entry = proc_create_data(PROC_SSV_P2P_ENTRY, S_IRUGO|S_IWUGO, cmd_data->proc_dev_entry, &ssv6xxx_p2p_fops, cmd_data);
     if (proc_file_entry == NULL)
         printk(KERN_ERR "Failed to create %s for SSV P2P.\n", PROC_SSV_P2P_ENTRY);
-    atomic_set(&cmd_data->cli_count, 0);
+     atomic_set(&cmd_data->cli_count, 0);
     return 0;
 }
 EXPORT_SYMBOL(ssv_init_cli);
@@ -501,10 +492,12 @@ static void __exit tu_ssvdevice_exit(void)
 #endif
     remove_proc_entry(PROC_DIR_ENTRY, NULL);
 }
+/*
 #if (defined(CONFIG_SSV_SUPPORT_ANDROID)||defined(CONFIG_SSV_BUILD_AS_ONE_KO))
 EXPORT_SYMBOL(tu_ssvdevice_init);
 EXPORT_SYMBOL(tu_ssvdevice_exit);
 #else
+*/
 module_init(tu_ssvdevice_init);
 module_exit(tu_ssvdevice_exit);
-#endif
+//#endif
